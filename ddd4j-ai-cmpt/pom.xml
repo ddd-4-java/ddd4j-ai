@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.ddd4j.ai</groupId>
+        <artifactId>ddd4j-ai</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>ddd4j-ai-cmpt</artifactId>
+    <packaging>pom</packaging>
+    <description>AI组件模块</description>
+
+    <modules>
+        <module>ddd4j-ai-cmpt-chat</module>
+        <module>ddd4j-ai-cmpt-memory</module>
+        <module>ddd4j-ai-cmpt-embeding</module>
+        <module>ddd4j-ai-cmpt-vectordb</module>
+        <module>ddd4j-ai-cmpt-agent</module>
+        <module>ddd4j-ai-cmpt-flow</module>
+        <module>ddd4j-ai-cmpt-rag</module>
+        <module>ddd4j-ai-cmpt-asr</module>
+        <module>ddd4j-ai-cmpt-tts</module>
+        <module>ddd4j-ai-cmpt-mcp</module>
+        <module>ddd4j-ai-cmpt-ocr</module>
+        <module>ddd4j-ai-cmpt-router</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- 导入外部依赖版本管理 -->
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-dependencies</artifactId>
+                <version>${revision}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>
+

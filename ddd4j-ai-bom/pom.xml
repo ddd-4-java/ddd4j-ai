@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.ddd4j.ai</groupId>
+        <artifactId>ddd4j-ai</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>ddd4j-ai-bom</artifactId>
+    <packaging>pom</packaging>
+    <description>BOM依赖管理</description>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- 内部模块依赖版本管理 -->
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-cmpt-chat</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-cmpt-memory</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-cmpt-embeding</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-cmpt-vectordb</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-cmpt-agent</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-cmpt-flow</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-cmpt-rag</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-cmpt-asr</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-cmpt-tts</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-cmpt-mcp</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-cmpt-ocr</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-cmpt-router</artifactId>
+                <version>${revision}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>
+
