@@ -8,7 +8,7 @@
     <parent>
         <groupId>io.ddd4j.boot</groupId>
         <artifactId>ddd4j-boot-parent</artifactId>
-        <version>3.3.x.20251215-SNAPSHOT</version>
+        <version>3.5.x.20251215-SNAPSHOT</version>
         <relativePath/>
     </parent>
 

@@ -15,7 +15,6 @@
     <description>公共依赖，便于依赖组件版本控制</description>
 
     <properties>
-        <ddd4j-cloud.version>2023.0.x.20251205-SNAPSHOT</ddd4j-cloud.version>
         <tts-edge-java.version>1.3.1</tts-edge-java.version>
         <protobuf-java.version>4.31.0</protobuf-java.version>
         <google-protos.version>2.57.0</google-protos.version>
@@ -40,22 +39,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- 导入Ddd4j Cloud 外部依赖版本管理 -->
-            <dependency>
-                <groupId>io.ddd4j.cloud</groupId>
-                <artifactId>ddd4j-cloud-dependencies</artifactId>
-                <version>${ddd4j-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <!-- 导入Ddd4j Cloud BOM -->
-            <dependency>
-                <groupId>io.ddd4j.cloud</groupId>
-                <artifactId>ddd4j-cloud-bom</artifactId>
-                <version>${ddd4j-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
             <!-- https://mvnrepository.com/artifact/javazoom/jlayer -->
             <dependency>
                 <groupId>javazoom</groupId>
