@@ -24,6 +24,7 @@
         <module>ddd4j-ai-cmpt-rag</module>
         <module>ddd4j-ai-cmpt-asr</module>
         <module>ddd4j-ai-cmpt-tts</module>
+        <module>ddd4j-ai-cmpt-sst</module>
         <module>ddd4j-ai-cmpt-mcp</module>
         <module>ddd4j-ai-cmpt-ocr</module>
         <module>ddd4j-ai-cmpt-router</module>
