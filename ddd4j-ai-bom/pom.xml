@@ -12,11 +12,17 @@
 
     <artifactId>ddd4j-ai-bom</artifactId>
     <packaging>pom</packaging>
-    <description>BOM依赖管理</description>
+    <description>Ddd4j AI BOM - AI 组件模块版本管理</description>
 
     <dependencyManagement>
         <dependencies>
-            <!-- 内部模块依赖版本管理 -->
+            <!-- AI 组件聚合 pom（供业务项目按需 import） -->
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-cmpt</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <!-- AI 组件子模块 -->
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
                 <artifactId>ddd4j-ai-cmpt-chat</artifactId>
@@ -75,6 +81,11 @@
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
                 <artifactId>ddd4j-ai-cmpt-router</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-cmpt-sst</artifactId>
                 <version>${revision}</version>
             </dependency>
         </dependencies>

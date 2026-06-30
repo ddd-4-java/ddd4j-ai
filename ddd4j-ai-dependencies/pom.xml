@@ -12,69 +12,47 @@
 
     <artifactId>ddd4j-ai-dependencies</artifactId>
     <packaging>pom</packaging>
-    <description>公共依赖，便于依赖组件版本控制</description>
+    <description>
+        Ddd4j AI 依赖 BOM：import io.ddd4j.boot:ddd4j-boot-dependencies（Boot 第三方 + Spring Framework），
+        并追加 Spring AI、MCP、语音与文档处理等 AI 专属依赖版本管理。
+    </description>
 
     <properties>
         <tts-edge-java.version>1.3.1</tts-edge-java.version>
         <protobuf-java.version>4.31.0</protobuf-java.version>
         <google-protos.version>2.57.0</google-protos.version>
-        <jsonschema.version>4.36.0</jsonschema.version>
-        <jlayer.version>1.0.1</jlayer.version>
+        <jsonschema.version>5.0.0</jsonschema.version>
         <mcp-bom.version>0.10.0</mcp-bom.version>
         <microsoft-speech-sdk.version>1.47.0</microsoft-speech-sdk.version>
-        <pdfbox.version>3.0.5</pdfbox.version>
-        <perf4j.version>0.9.16</perf4j.version>
-        <spring-ai.version>1.0.3</spring-ai.version>
-        <spring-ai-alibaba.version>1.1.0.0</spring-ai-alibaba.version>
-        <spring-ai-alibaba-extensions.version>1.1.2.0</spring-ai-alibaba-extensions.version>
-        <spring-ai-alibaba-nl2sql.version>1.0.0.3</spring-ai-alibaba-nl2sql.version>
-        <spring-ai-alibaba-graph.version>1.1.0.0</spring-ai-alibaba-graph.version>
+        <spring-ai.version>1.1.7</spring-ai.version>
+        <spring-ai-alibaba.version>1.1.2.3</spring-ai-alibaba.version>
+        <spring-ai-alibaba-nl2sql.version>1.0.0.3-20260305-cve</spring-ai-alibaba-nl2sql.version>
+        <spring-ai-alibaba-graph.version>1.1.2.2</spring-ai-alibaba-graph.version>
         <spring-ai-alibaba-mcp.version>1.0.0.2</spring-ai-alibaba-mcp.version>
         <spring-ai-community.version>1.0.0</spring-ai-community.version>
         <spring-ai-retry.version>${spring-ai.version}</spring-ai-retry.version>
-        <tika.version>3.2.2</tika.version>
-        <testcontainers.version>1.21.3</testcontainers.version>
         <whispercpp.version>1.4.0</whispercpp.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <!-- https://mvnrepository.com/artifact/javazoom/jlayer -->
+            <!-- 1. Boot 依赖 BOM：第三方库 + Spring Framework 版本对齐（不含 Spring Boot 自身，由 starter-parent 提供） -->
             <dependency>
-                <groupId>javazoom</groupId>
-                <artifactId>jlayer</artifactId>
-                <version>${jlayer.version}</version>
+                <groupId>io.ddd4j.boot</groupId>
+                <artifactId>ddd4j-boot-dependencies</artifactId>
+                <version>${ddd4j-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
-            <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
-            <dependency>
-                <groupId>com.google.protobuf</groupId>
-                <artifactId>protobuf-java</artifactId>
-                <version>${protobuf-java.version}</version>
-            </dependency>
+            <!-- 2. AI 专属第三方依赖 -->
+
             <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-common-protos -->
             <dependency>
                 <groupId>com.google.api.grpc</groupId>
                 <artifactId>proto-google-common-protos</artifactId>
                 <version>${google-protos.version}</version>
             </dependency>
-            <!-- https://mvnrepository.com/artifact/com.github.victools/jsonschema-generator -->
-            <dependency>
-                <groupId>com.github.victools</groupId>
-                <artifactId>jsonschema-generator</artifactId>
-                <version>${jsonschema.version}</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/com.github.victools/jsonschema-module-jackson -->
-            <dependency>
-                <groupId>com.github.victools</groupId>
-                <artifactId>jsonschema-module-jackson</artifactId>
-                <version>${jsonschema.version}</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/com.github.victools/jsonschema-module-swagger-2 -->
-            <dependency>
-                <groupId>com.github.victools</groupId>
-                <artifactId>jsonschema-module-swagger-2</artifactId>
-                <version>${jsonschema.version}</version>
-            </dependency>
+
             <!-- This SDK allows you to use the Microsoft Cognitive Speech Service. See https://aka.ms/csspeech for more information. -->
             <!-- https://mvnrepository.com/artifact/com.microsoft.cognitiveservices.speech/client-sdk -->
             <dependency>
@@ -90,63 +68,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox -->
-            <dependency>
-                <groupId>org.apache.pdfbox</groupId>
-                <artifactId>pdfbox</artifactId>
-                <version>${pdfbox.version}</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox-tools -->
-            <dependency>
-                <groupId>org.apache.pdfbox</groupId>
-                <artifactId>pdfbox-tools</artifactId>
-                <version>${pdfbox.version}</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox-io -->
-            <dependency>
-                <groupId>org.apache.pdfbox</groupId>
-                <artifactId>pdfbox-io</artifactId>
-                <version>${pdfbox.version}</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/org.apache.pdfbox/fontbox -->
-            <dependency>
-                <groupId>org.apache.pdfbox</groupId>
-                <artifactId>fontbox</artifactId>
-                <version>${pdfbox.version}</version>
-            </dependency>
-            <!-- Perf4J 是一个新的开放源码的性能记录，监测和分析库，主要用于企业Java应用程序。 -->
-            <dependency>
-                <groupId>org.perf4j</groupId>
-                <artifactId>perf4j</artifactId>
-                <version>${perf4j.version}</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/cn.dev33/sa-token-bom -->
-            <dependency>
-                <groupId>cn.dev33</groupId>
-                <artifactId>sa-token-bom</artifactId>
-                <version>${sa-token.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui -->
-            <dependency>
-                <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-                <version>${springdoc.version}</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webflux-ui -->
-            <dependency>
-                <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
-                <version>${springdoc.version}</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webflux-api -->
-            <dependency>
-                <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-starter-webflux-api</artifactId>
-                <version>${springdoc.version}</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/org.springframework.ai/spring-ai-bom -->
+            <!-- Spring AI 生态 BOM 与扩展 -->
             <dependency>
                 <groupId>org.springframework.ai</groupId>
                 <artifactId>spring-ai-bom</artifactId>
@@ -230,14 +152,6 @@
                 <groupId>io.github.whitemagic2014</groupId>
                 <artifactId>tts-edge-java</artifactId>
                 <version>${tts-edge-java.version}</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/org.apache.tika/tika-bom -->
-            <dependency>
-                <groupId>org.apache.tika</groupId>
-                <artifactId>tika-bom</artifactId>
-                <version>${tika.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
             </dependency>
             <!-- https://mvnrepository.com/artifact/io.github.ggerganov/whispercpp -->
             <dependency>

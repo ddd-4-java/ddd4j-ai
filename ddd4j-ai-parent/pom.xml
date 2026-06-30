@@ -5,14 +5,26 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.ddd4j.ai</groupId>
-        <artifactId>ddd4j-ai</artifactId>
+        <artifactId>ddd4j-ai-dependencies</artifactId>
         <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../ddd4j-ai-dependencies/pom.xml</relativePath>
     </parent>
 
     <artifactId>ddd4j-ai-parent</artifactId>
     <packaging>pom</packaging>
-    <description>AI父模块</description>
+    <description>Ddd4j AI 业务服务 Parent - 继承 AI 依赖治理并 import AI BOM</description>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-bom</artifactId>
+                <version>${revision}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 </project>
 

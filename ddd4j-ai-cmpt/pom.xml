@@ -5,14 +5,16 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.ddd4j.ai</groupId>
-        <artifactId>ddd4j-ai</artifactId>
+        <artifactId>ddd4j-ai-dependencies</artifactId>
         <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../ddd4j-ai-dependencies/pom.xml</relativePath>
     </parent>
 
     <artifactId>ddd4j-ai-cmpt</artifactId>
     <packaging>pom</packaging>
-    <description>AI组件模块</description>
+    <description>
+        ddd4j-ai 组件聚合：各 AI 能力 Spring Boot 自动配置与基础设施实现（对齐 ddd4j-boot-mq 等聚合模块范式）。
+    </description>
 
     <modules>
         <module>ddd4j-ai-cmpt-chat</module>
@@ -29,19 +31,6 @@
         <module>ddd4j-ai-cmpt-ocr</module>
         <module>ddd4j-ai-cmpt-router</module>
     </modules>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- 导入外部依赖版本管理 -->
-            <dependency>
-                <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-dependencies</artifactId>
-                <version>${revision}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
 </project>
 

@@ -4,11 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- 继承 ddd4j-boot-parent 进行公网组件的管理和公共组件公用 -->
+    <!-- 对齐 ddd4j-boot 根工程：继承 Spring Boot 官方 parent，BOM/依赖/业务 parent 分层管理 -->
     <parent>
-        <groupId>io.ddd4j.boot</groupId>
-        <artifactId>ddd4j-boot-parent</artifactId>
-        <version>3.5.x.20251215-SNAPSHOT</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.13</version>
         <relativePath/>
     </parent>
 
@@ -27,8 +27,16 @@
     </modules>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <!-- 当前项目版本号 -->
         <revision>1.0.0-SNAPSHOT</revision>
+        <!-- ddd4j-boot BOM 坐标（ddd4j-ai-dependencies import 引用） -->
+        <ddd4j-boot.version>3.4.x.20260630-SNAPSHOT</ddd4j-boot.version>
+        <java.version>17</java.version>
+        <maven.version>3.6.3</maven.version>
+        <maven-flatten-plugin.version>1.7.3</maven-flatten-plugin.version>
+        <maven-dependency-check-plugin.version>12.2.2</maven-dependency-check-plugin.version>
     </properties>
 
     <distributionManagement>
@@ -96,6 +104,38 @@
     </pluginRepositories>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>flatten-maven-plugin</artifactId>
+                    <version>${maven-flatten-plugin.version}</version>
+                    <configuration>
+                        <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                        <updatePomFile>true</updatePomFile>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <version>${maven-dependency-check-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <finalName>${project.build.finalName}</finalName>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <!--环境监察插件：代码编译前的环境监察-->
             <plugin>
@@ -148,24 +188,6 @@
                 <artifactId>maven-deploy-plugin</artifactId>
             </plugin>
         </plugins>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-maven-plugin</artifactId>
-                    <configuration>
-                        <finalName>${project.build.finalName}</finalName>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>repackage</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 
 </project>
