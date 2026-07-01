@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!-- POM的模型版本 -->
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- 对齐 ddd4j-boot 根工程：继承 Spring Boot 官方 parent，BOM/依赖/业务 parent 分层管理 -->
+    <!-- Inherit defaults from Ddd4j 2.0.x -->
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.13</version>
-        <relativePath/>
+        <groupId>io.ddd4j</groupId>
+        <artifactId>ddd4j-parent</artifactId>
+        <version>2.0.x.20260630-SNAPSHOT</version>
+        <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <!-- 组织或公司或项目名称 -->
@@ -31,8 +32,6 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <!-- 当前项目版本号 -->
         <revision>1.0.0-SNAPSHOT</revision>
-        <!-- ddd4j-boot BOM 坐标（ddd4j-ai-dependencies import 引用） -->
-        <ddd4j-boot.version>3.4.x.20260630-SNAPSHOT</ddd4j-boot.version>
         <java.version>17</java.version>
         <maven.version>3.6.3</maven.version>
         <maven-flatten-plugin.version>1.7.3</maven-flatten-plugin.version>
