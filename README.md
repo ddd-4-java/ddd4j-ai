@@ -65,10 +65,11 @@
 |--ddd4j-ai
 |----ddd4j-ai-bom                           # BOM 依赖管理
 |----ddd4j-ai-dependencies                 # 第三方 AI 依赖版本控制
+|----ddd4j-ai-core                         # AI 通用纯 Java 契约
 |----ddd4j-ai-cmpt                         # AI 组件父模块
 |------ddd4j-ai-cmpt-chat                  # 对话组件
 |------ddd4j-ai-cmpt-memory                 # 记忆体组件
-|------ddd4j-ai-cmpt-embeding               # 向量嵌入组件
+|------ddd4j-ai-cmpt-embedding              # 向量嵌入组件
 |------ddd4j-ai-cmpt-vectordb              # 向量数据库组件
 |------ddd4j-ai-cmpt-agent                 # 智能体组件
 |------ddd4j-ai-cmpt-flow                  # 工作流组件
@@ -87,9 +88,10 @@
 
 | 组件模块 | 说明 | 当前状态 |
 |----------|------|----------|
+| ddd4j-ai-core | AI 通用纯 Java 契约，不绑定 Spring Boot | 骨架模块 |
 | ddd4j-ai-cmpt-chat | AI 对话能力，基于 Spring AI ChatClient 封装 | 骨架模块 |
 | ddd4j-ai-cmpt-memory | 会话记忆与上下文管理 | 骨架模块 |
-| ddd4j-ai-cmpt-embeding | 文本向量嵌入（Embedding） | 骨架模块 |
+| ddd4j-ai-cmpt-embedding | 文本向量嵌入（Embedding） | 骨架模块 |
 | ddd4j-ai-cmpt-vectordb | 向量数据库接入与检索 | 骨架模块 |
 | ddd4j-ai-cmpt-agent | AI 智能体编排与工具调用 | 骨架模块 |
 | ddd4j-ai-cmpt-flow | AI 工作流（对接 Spring AI Alibaba Graph 等） | 骨架模块 |

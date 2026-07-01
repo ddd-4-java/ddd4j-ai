@@ -19,7 +19,7 @@
     <modules>
         <module>ddd4j-ai-cmpt-chat</module>
         <module>ddd4j-ai-cmpt-memory</module>
-        <module>ddd4j-ai-cmpt-embeding</module>
+        <module>ddd4j-ai-cmpt-embedding</module>
         <module>ddd4j-ai-cmpt-vectordb</module>
         <module>ddd4j-ai-cmpt-agent</module>
         <module>ddd4j-ai-cmpt-flow</module>
@@ -33,4 +33,3 @@
     </modules>
 
 </project>
-

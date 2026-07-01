@@ -22,6 +22,11 @@
                 <artifactId>ddd4j-ai-cmpt</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-core</artifactId>
+                <version>${revision}</version>
+            </dependency>
             <!-- AI 组件子模块 -->
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
@@ -35,7 +40,7 @@
             </dependency>
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-cmpt-embeding</artifactId>
+                <artifactId>ddd4j-ai-cmpt-embedding</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
@@ -92,4 +97,3 @@
     </dependencyManagement>
 
 </project>
-

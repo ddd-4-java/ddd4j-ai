@@ -5,13 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.ddd4j.ai</groupId>
-        <artifactId>ddd4j-ai-cmpt</artifactId>
+        <artifactId>ddd4j-ai-dependencies</artifactId>
         <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../ddd4j-ai-dependencies/pom.xml</relativePath>
     </parent>
 
-    <artifactId>ddd4j-ai-cmpt-embeding</artifactId>
-    <description>向量嵌入组件</description>
-
+    <artifactId>ddd4j-ai-core</artifactId>
+    <description>ddd4j-ai core contracts shared by AI components without Spring Boot coupling.</description>
 </project>
-

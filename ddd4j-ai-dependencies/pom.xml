@@ -18,6 +18,7 @@
     </description>
 
     <properties>
+        <ddd4j-boot.version>3.4.x.20260630-SNAPSHOT</ddd4j-boot.version>
         <tts-edge-java.version>1.3.1</tts-edge-java.version>
         <protobuf-java.version>4.31.0</protobuf-java.version>
         <google-protos.version>2.57.0</google-protos.version>
@@ -26,6 +27,7 @@
         <microsoft-speech-sdk.version>1.47.0</microsoft-speech-sdk.version>
         <spring-ai.version>1.1.7</spring-ai.version>
         <spring-ai-alibaba.version>1.1.2.3</spring-ai-alibaba.version>
+        <spring-ai-alibaba-extensions.version>${spring-ai-alibaba.version}</spring-ai-alibaba-extensions.version>
         <spring-ai-alibaba-nl2sql.version>1.0.0.3-20260305-cve</spring-ai-alibaba-nl2sql.version>
         <spring-ai-alibaba-graph.version>1.1.2.2</spring-ai-alibaba-graph.version>
         <spring-ai-alibaba-mcp.version>1.0.0.2</spring-ai-alibaba-mcp.version>
@@ -163,4 +165,3 @@
     </dependencyManagement>
 
 </project>
-
