@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.ddd4j.ai</groupId>
-        <artifactId>ddd4j-ai-cmpt</artifactId>
+        <artifactId>ddd4j-ai-extensions</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>ddd4j-ai-cmpt-sst</artifactId>
+    <artifactId>ddd4j-ai-extension-sst</artifactId>
     <description>语音转文本组件</description>
 
     <dependencies>
@@ -29,4 +29,3 @@
     </dependencies>
 
 </project>
-

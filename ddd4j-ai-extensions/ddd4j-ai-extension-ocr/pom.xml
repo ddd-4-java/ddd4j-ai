@@ -5,13 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.ddd4j.ai</groupId>
-        <artifactId>ddd4j-ai-cmpt</artifactId>
+        <artifactId>ddd4j-ai-extensions</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>ddd4j-ai-cmpt-asr</artifactId>
-    <description>语音识别组件</description>
+    <artifactId>ddd4j-ai-extension-ocr</artifactId>
+    <description>文档识别组件</description>
 
 </project>
-

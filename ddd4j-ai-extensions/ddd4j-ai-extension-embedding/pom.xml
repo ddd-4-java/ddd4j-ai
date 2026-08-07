@@ -5,13 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.ddd4j.ai</groupId>
-        <artifactId>ddd4j-ai-cmpt</artifactId>
+        <artifactId>ddd4j-ai-extensions</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>ddd4j-ai-cmpt-memory</artifactId>
-    <description>记忆体组件</description>
+    <artifactId>ddd4j-ai-extension-embedding</artifactId>
+    <description>向量嵌入组件</description>
 
 </project>
-

@@ -10,26 +10,26 @@
         <relativePath>../ddd4j-ai-dependencies/pom.xml</relativePath>
     </parent>
 
-    <artifactId>ddd4j-ai-cmpt</artifactId>
+    <artifactId>ddd4j-ai-extensions</artifactId>
     <packaging>pom</packaging>
     <description>
         ddd4j-ai 组件聚合：各 AI 能力 Spring Boot 自动配置与基础设施实现（对齐 ddd4j-boot-mq 等聚合模块范式）。
     </description>
 
     <modules>
-        <module>ddd4j-ai-cmpt-chat</module>
-        <module>ddd4j-ai-cmpt-memory</module>
-        <module>ddd4j-ai-cmpt-embedding</module>
-        <module>ddd4j-ai-cmpt-vectordb</module>
-        <module>ddd4j-ai-cmpt-agent</module>
-        <module>ddd4j-ai-cmpt-flow</module>
-        <module>ddd4j-ai-cmpt-rag</module>
-        <module>ddd4j-ai-cmpt-asr</module>
-        <module>ddd4j-ai-cmpt-tts</module>
-        <module>ddd4j-ai-cmpt-sst</module>
-        <module>ddd4j-ai-cmpt-mcp</module>
-        <module>ddd4j-ai-cmpt-ocr</module>
-        <module>ddd4j-ai-cmpt-router</module>
+        <module>ddd4j-ai-extension-chat</module>
+        <module>ddd4j-ai-extension-memory</module>
+        <module>ddd4j-ai-extension-embedding</module>
+        <module>ddd4j-ai-extension-vectordb</module>
+        <module>ddd4j-ai-extension-agent</module>
+        <module>ddd4j-ai-extension-flow</module>
+        <module>ddd4j-ai-extension-rag</module>
+        <module>ddd4j-ai-extension-asr</module>
+        <module>ddd4j-ai-extension-tts</module>
+        <module>ddd4j-ai-extension-sst</module>
+        <module>ddd4j-ai-extension-mcp</module>
+        <module>ddd4j-ai-extension-ocr</module>
+        <module>ddd4j-ai-extension-router</module>
     </modules>
 
 </project>

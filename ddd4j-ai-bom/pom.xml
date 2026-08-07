@@ -19,7 +19,7 @@
             <!-- AI 组件聚合 pom（供业务项目按需 import） -->
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-cmpt</artifactId>
+                <artifactId>ddd4j-ai-extensions</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
@@ -30,67 +30,67 @@
             <!-- AI 组件子模块 -->
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-cmpt-chat</artifactId>
+                <artifactId>ddd4j-ai-extension-chat</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-cmpt-memory</artifactId>
+                <artifactId>ddd4j-ai-extension-memory</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-cmpt-embedding</artifactId>
+                <artifactId>ddd4j-ai-extension-embedding</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-cmpt-vectordb</artifactId>
+                <artifactId>ddd4j-ai-extension-vectordb</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-cmpt-agent</artifactId>
+                <artifactId>ddd4j-ai-extension-agent</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-cmpt-flow</artifactId>
+                <artifactId>ddd4j-ai-extension-flow</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-cmpt-rag</artifactId>
+                <artifactId>ddd4j-ai-extension-rag</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-cmpt-asr</artifactId>
+                <artifactId>ddd4j-ai-extension-asr</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-cmpt-tts</artifactId>
+                <artifactId>ddd4j-ai-extension-tts</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-cmpt-mcp</artifactId>
+                <artifactId>ddd4j-ai-extension-mcp</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-cmpt-ocr</artifactId>
+                <artifactId>ddd4j-ai-extension-ocr</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-cmpt-router</artifactId>
+                <artifactId>ddd4j-ai-extension-router</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-cmpt-sst</artifactId>
+                <artifactId>ddd4j-ai-extension-sst</artifactId>
                 <version>${revision}</version>
             </dependency>
         </dependencies>

@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.ddd4j.ai</groupId>
-        <artifactId>ddd4j-ai-cmpt</artifactId>
+        <artifactId>ddd4j-ai-extensions</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>ddd4j-ai-cmpt-embedding</artifactId>
-    <description>向量嵌入组件</description>
+    <artifactId>ddd4j-ai-extension-router</artifactId>
+    <description>智能路由组件</description>
 
 </project>

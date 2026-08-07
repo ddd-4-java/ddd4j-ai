@@ -14,7 +14,8 @@
     <packaging>pom</packaging>
     <description>
         Ddd4j AI 依赖 BOM：import io.ddd4j.boot:ddd4j-boot-dependencies（Boot 第三方 + Spring Framework），
-        并追加 Spring AI、MCP、语音与文档处理等 AI 专属依赖版本管理。
+        并追加 Spring AI、Spring AI Alibaba、LangChain4j、AgentScope Java、MCP、语音与文档处理等
+        AI 专属依赖版本管理。
     </description>
 
     <properties>
@@ -23,30 +24,23 @@
         <protobuf-java.version>4.31.0</protobuf-java.version>
         <google-protos.version>2.57.0</google-protos.version>
         <jsonschema.version>5.0.0</jsonschema.version>
-        <mcp-bom.version>0.10.0</mcp-bom.version>
+        <mcp-bom.version>2.0.0</mcp-bom.version>
         <microsoft-speech-sdk.version>1.47.0</microsoft-speech-sdk.version>
-        <spring-ai.version>1.1.7</spring-ai.version>
-        <spring-ai-alibaba.version>1.1.2.3</spring-ai-alibaba.version>
+        <spring-ai.version>2.0.0</spring-ai.version>
+        <spring-ai-alibaba.version>2.0.0-M1.1</spring-ai-alibaba.version>
         <spring-ai-alibaba-extensions.version>${spring-ai-alibaba.version}</spring-ai-alibaba-extensions.version>
         <spring-ai-alibaba-nl2sql.version>1.0.0.3-20260305-cve</spring-ai-alibaba-nl2sql.version>
-        <spring-ai-alibaba-graph.version>1.1.2.2</spring-ai-alibaba-graph.version>
-        <spring-ai-alibaba-mcp.version>1.0.0.2</spring-ai-alibaba-mcp.version>
+        <spring-ai-alibaba-graph.version>${spring-ai-alibaba.version}</spring-ai-alibaba-graph.version>
         <spring-ai-community.version>1.0.0</spring-ai-community.version>
         <spring-ai-retry.version>${spring-ai.version}</spring-ai-retry.version>
+        <langchain4j.version>1.18.1</langchain4j.version>
+        <agentscope-java.version>2.0.1</agentscope-java.version>
         <whispercpp.version>1.4.0</whispercpp.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <!-- 1. Boot 依赖 BOM：第三方库 + Spring Framework 版本对齐（不含 Spring Boot 自身，由 starter-parent 提供） -->
-            <dependency>
-                <groupId>io.ddd4j.boot</groupId>
-                <artifactId>ddd4j-boot-dependencies</artifactId>
-                <version>${ddd4j-boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <!-- 2. AI 专属第三方依赖 -->
+            <!-- 1. AI 专属依赖管理优先声明，确保其版本覆盖 Boot 通用依赖管理中的旧 AI 组件 -->
 
             <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-common-protos -->
             <dependency>
@@ -94,6 +88,31 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- https://central.sonatype.com/artifact/dev.langchain4j/langchain4j-bom -->
+            <dependency>
+                <groupId>dev.langchain4j</groupId>
+                <artifactId>langchain4j-bom</artifactId>
+                <version>${langchain4j.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- https://central.sonatype.com/artifact/io.agentscope/agentscope-bom -->
+            <dependency>
+                <groupId>io.agentscope</groupId>
+                <artifactId>agentscope-bom</artifactId>
+                <version>${agentscope-java.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- 2. Boot 依赖 BOM：第三方库 + Spring Framework 版本对齐（不含 Spring Boot 自身，由 starter-parent 提供） -->
+            <dependency>
+                <groupId>io.ddd4j.boot</groupId>
+                <artifactId>ddd4j-boot-dependencies</artifactId>
+                <version>${ddd4j-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- 3. 未纳入上述 BOM 的 AI 专属第三方依赖 -->
             <!-- https://mvnrepository.com/artifact/com.alibaba.cloud.ai/spring-ai-alibaba-starter-tool-calling-bingsearch -->
             <dependency>
                 <groupId>com.alibaba.cloud.ai</groupId>

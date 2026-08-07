@@ -5,13 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.ddd4j.ai</groupId>
-        <artifactId>ddd4j-ai-cmpt</artifactId>
+        <artifactId>ddd4j-ai-extensions</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>ddd4j-ai-cmpt-agent</artifactId>
-    <description>智能体组件</description>
+    <artifactId>ddd4j-ai-extension-rag</artifactId>
+    <description>检索增强组件</description>
 
 </project>
-

@@ -36,7 +36,7 @@
 
 - **5. 与 Ddd4j Boot 无缝集成**：业务服务继承 `ddd4j-ai-parent` 或引入 `ddd4j-ai-bom`，即可在现有 DDD 分层项目中叠加 AI 能力
 
-- **6. 语音组件已落地**：`ddd4j-ai-cmpt-sst` 已实现基于 Azure Cognitive Speech 的 TTS/STT 及 FFmpeg 音频格式转换
+- **6. 语音组件已落地**：`ddd4j-ai-extension-sst` 已实现基于 Azure Cognitive Speech 的 TTS/STT 及 FFmpeg 音频格式转换
 
 ### 📦 项目定位
 
@@ -53,9 +53,9 @@
 
 | 模块 | 说明 |
 |------|------|
-| ddd4j-ai-bom | AI 组件 BOM：统一管理各 `ddd4j-ai-cmpt-*` 模块版本，外部项目 import 引用 |
+| ddd4j-ai-bom | AI 扩展 BOM：统一管理各 `ddd4j-ai-extension-*` 模块版本，外部项目 import 引用 |
 | ddd4j-ai-dependencies | AI 依赖 BOM：import `ddd4j-boot-dependencies`，并追加 Spring AI / MCP / 语音等版本 |
-| ddd4j-ai-cmpt | 组件聚合模块（parent 为 `ddd4j-ai-dependencies`，对齐 `ddd4j-boot-mq` 范式） |
+| ddd4j-ai-extensions | 扩展聚合模块（parent 为 `ddd4j-ai-dependencies`，对齐 `ddd4j-boot-mq` 范式） |
 | ddd4j-ai-parent | 业务 AI 服务 Parent：parent 为 `ddd4j-ai-dependencies`，import `ddd4j-ai-bom` |
 | ddd4j-ai-samples | 示例模块集合，展示各 AI 组件在业务服务中的集成方式（持续完善中） |
 
@@ -66,20 +66,20 @@
 |----ddd4j-ai-bom                           # BOM 依赖管理
 |----ddd4j-ai-dependencies                 # 第三方 AI 依赖版本控制
 |----ddd4j-ai-core                         # AI 通用纯 Java 契约
-|----ddd4j-ai-cmpt                         # AI 组件父模块
-|------ddd4j-ai-cmpt-chat                  # 对话组件
-|------ddd4j-ai-cmpt-memory                 # 记忆体组件
-|------ddd4j-ai-cmpt-embedding              # 向量嵌入组件
-|------ddd4j-ai-cmpt-vectordb              # 向量数据库组件
-|------ddd4j-ai-cmpt-agent                 # 智能体组件
-|------ddd4j-ai-cmpt-flow                  # 工作流组件
-|------ddd4j-ai-cmpt-rag                   # 检索增强（RAG）组件
-|------ddd4j-ai-cmpt-asr                   # 语音识别（ASR）组件
-|------ddd4j-ai-cmpt-tts                   # 文本转语音（TTS）组件
-|------ddd4j-ai-cmpt-sst                   # 语音合成/识别一体化组件（已实现 Azure Speech）
-|------ddd4j-ai-cmpt-mcp                   # 模型上下文协议（MCP）组件
-|------ddd4j-ai-cmpt-ocr                   # 光学字符识别（OCR）组件
-|------ddd4j-ai-cmpt-router                # 智能路由组件
+|----ddd4j-ai-extensions                   # AI 扩展父模块
+|------ddd4j-ai-extension-chat             # 对话扩展
+|------ddd4j-ai-extension-memory           # 记忆体扩展
+|------ddd4j-ai-extension-embedding        # 向量嵌入扩展
+|------ddd4j-ai-extension-vectordb         # 向量数据库扩展
+|------ddd4j-ai-extension-agent            # 智能体扩展
+|------ddd4j-ai-extension-flow             # 工作流扩展
+|------ddd4j-ai-extension-rag              # 检索增强（RAG）扩展
+|------ddd4j-ai-extension-asr              # 语音识别（ASR）扩展
+|------ddd4j-ai-extension-tts              # 文本转语音（TTS）扩展
+|------ddd4j-ai-extension-sst              # 语音合成/识别一体化扩展（已实现 Azure Speech）
+|------ddd4j-ai-extension-mcp              # 模型上下文协议（MCP）扩展
+|------ddd4j-ai-extension-ocr              # 光学字符识别（OCR）扩展
+|------ddd4j-ai-extension-router           # 智能路由扩展
 |----ddd4j-ai-parent                       # 业务 AI 服务父 POM
 |----ddd4j-ai-samples                      # 示例工程（规划中）
 ```
@@ -89,21 +89,21 @@
 | 组件模块 | 说明 | 当前状态 |
 |----------|------|----------|
 | ddd4j-ai-core | AI 通用纯 Java 契约，不绑定 Spring Boot | 骨架模块 |
-| ddd4j-ai-cmpt-chat | AI 对话能力，基于 Spring AI ChatClient 封装 | 骨架模块 |
-| ddd4j-ai-cmpt-memory | 会话记忆与上下文管理 | 骨架模块 |
-| ddd4j-ai-cmpt-embedding | 文本向量嵌入（Embedding） | 骨架模块 |
-| ddd4j-ai-cmpt-vectordb | 向量数据库接入与检索 | 骨架模块 |
-| ddd4j-ai-cmpt-agent | AI 智能体编排与工具调用 | 骨架模块 |
-| ddd4j-ai-cmpt-flow | AI 工作流（对接 Spring AI Alibaba Graph 等） | 骨架模块 |
-| ddd4j-ai-cmpt-rag | 检索增强生成（RAG）管道 | 骨架模块 |
-| ddd4j-ai-cmpt-asr | 自动语音识别（ASR），规划对接 WhisperCpp 等 | 骨架模块 |
-| ddd4j-ai-cmpt-tts | 文本转语音（TTS），规划对接 Edge TTS 等 | 骨架模块 |
-| ddd4j-ai-cmpt-sst | 语音合成与识别，已实现 Azure Speech + FFmpeg 音频转换 | **已实现** |
-| ddd4j-ai-cmpt-mcp | Model Context Protocol 工具与资源接入 | 骨架模块 |
-| ddd4j-ai-cmpt-ocr | 文档/图像 OCR，规划对接 PDFBox、Tika 等 | 骨架模块 |
-| ddd4j-ai-cmpt-router | 多模型智能路由与负载策略 | 骨架模块 |
+| ddd4j-ai-extension-chat | AI 对话能力，基于 Spring AI ChatClient 封装 | 骨架模块 |
+| ddd4j-ai-extension-memory | 会话记忆与上下文管理 | 骨架模块 |
+| ddd4j-ai-extension-embedding | 文本向量嵌入（Embedding） | 骨架模块 |
+| ddd4j-ai-extension-vectordb | 向量数据库接入与检索 | 骨架模块 |
+| ddd4j-ai-extension-agent | AI 智能体编排与工具调用 | 骨架模块 |
+| ddd4j-ai-extension-flow | AI 工作流（对接 Spring AI Alibaba Graph 等） | 骨架模块 |
+| ddd4j-ai-extension-rag | 检索增强生成（RAG）管道 | 骨架模块 |
+| ddd4j-ai-extension-asr | 自动语音识别（ASR），规划对接 WhisperCpp 等 | 骨架模块 |
+| ddd4j-ai-extension-tts | 文本转语音（TTS），规划对接 Edge TTS 等 | 骨架模块 |
+| ddd4j-ai-extension-sst | 语音合成与识别，已实现 Azure Speech + FFmpeg 音频转换 | **已实现** |
+| ddd4j-ai-extension-mcp | Model Context Protocol 工具与资源接入 | 骨架模块 |
+| ddd4j-ai-extension-ocr | 文档/图像 OCR，规划对接 PDFBox、Tika 等 | 骨架模块 |
+| ddd4j-ai-extension-router | 多模型智能路由与负载策略 | 骨架模块 |
 
-> **说明**：除 `ddd4j-ai-cmpt-sst` 外，其余组件当前为模块骨架（包结构与 POM 已就绪），实现将随版本迭代逐步补齐。
+> **说明**：除 `ddd4j-ai-extension-sst` 外，其余扩展当前为模块骨架（包结构与 POM 已就绪），实现将随版本迭代逐步补齐。
 
 ### 📖 使用说明
 
@@ -131,7 +131,7 @@
 <dependencies>
     <dependency>
         <groupId>io.ddd4j.ai</groupId>
-        <artifactId>ddd4j-ai-cmpt-sst</artifactId>
+        <artifactId>ddd4j-ai-extension-sst</artifactId>
     </dependency>
 </dependencies>
 ```
@@ -168,7 +168,7 @@
 
 ### ⚙️ 配置说明
 
-#### Azure Speech（ddd4j-ai-cmpt-sst）
+#### Azure Speech（ddd4j-ai-extension-sst）
 
 在 `application.yml` 中配置 Azure 认知语音服务：
 
@@ -187,11 +187,13 @@ azure:
 
 | 依赖 | 版本 |
 |------|------|
-| Spring AI BOM | 1.0.3 |
-| Spring AI Alibaba BOM | 1.1.0.0 |
-| Spring AI Alibaba Extensions BOM | 1.1.2.0 |
+| Spring AI BOM | 2.0.0 |
+| Spring AI Alibaba BOM | 2.0.0-M1.1 |
+| Spring AI Alibaba Extensions BOM | 2.0.0-M1.1 |
+| LangChain4j BOM | 1.18.1 |
+| AgentScope Java BOM | 2.0.1 |
 | Spring AI Community | 1.0.0 |
-| MCP SDK BOM | 0.10.0 |
+| MCP SDK BOM | 2.0.0 |
 | Microsoft Speech SDK | 1.47.0 |
 | WhisperCpp | 1.4.0 |
 | tts-edge-java | 1.3.1 |
@@ -209,13 +211,13 @@ azure:
 ```xml
 <dependency>
     <groupId>io.ddd4j.ai</groupId>
-    <artifactId>ddd4j-ai-cmpt-sst</artifactId>
+    <artifactId>ddd4j-ai-extension-sst</artifactId>
 </dependency>
 ```
 
 #### 2. 配置 Azure Speech
 
-见上文 [Azure Speech 配置](#azure-speechddd4j-ai-cmpt-sst)。
+见上文 [Azure Speech 配置](#azure-speechddd4j-ai-extension-sst)。
 
 #### 3. 注入并使用 SpeechService
 
@@ -272,10 +274,10 @@ byte[] mp3Bytes = ffmpegService.convertWavToMp3FromByteAry(wavBytes);
 
 ### 📁 组件模块目录结构
 
-AI 组件遵循与 Ddd4j Boot 一致的 COLA 分层约定，以 `ddd4j-ai-cmpt-sst` 为例：
+AI 扩展遵循与 Ddd4j Boot 一致的 COLA 分层约定，以 `ddd4j-ai-extension-sst` 为例：
 
 ```
-ddd4j-ai-cmpt-sst/
+ddd4j-ai-extension-sst/
 ├── src/main/java/io/ddd4j/ai/cmpt/sst
 │   ├── dto/                   # 数据传输对象（Adapter 入参）
 │   │   ├── STTDto.java
