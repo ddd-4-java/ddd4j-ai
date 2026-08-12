@@ -2,41 +2,16 @@
 
 **Ddd4j AI** 是 [Ddd4j Boot](../ddd4j-boot/README.md) 生态下的 **AI 能力扩展项目**，面向基于领域驱动设计（DDD）与 COLA 架构的业务系统，提供可插拔的 AI 组件模块。
 
-项目继承 `spring-boot-starter-parent` 构建规范，通过 `ddd4j-ai-dependencies` → `ddd4j-boot-dependencies` 链式治理第三方版本，在 [Spring AI](https://docs.spring.io/spring-ai/reference/index.html) 1.0.x 基础上，统一管理 Spring AI Alibaba、MCP、向量检索、语音处理等 AI 依赖版本，并以 **组件化（cmpt）** 方式向业务服务暴露能力。
-
-### 🎯 核心设计理念
-
-#### **与 Ddd4j Boot 协同**
-
-- **统一父工程**：根工程继承 `spring-boot-starter-parent`；`ddd4j-ai-dependencies` import `ddd4j-boot-dependencies`；业务服务继承 `ddd4j-ai-parent`（import `ddd4j-ai-bom`）
-- **组件化交付**：每个 AI 能力独立为 Maven 子模块，业务服务按需引入，避免单体 AI 依赖膨胀
-- **基础设施层定位**：AI 组件作为 COLA 架构中的 **Infrastructure 适配器**，通过端口接口与领域层解耦
-
-#### **领域驱动设计（DDD）**
-
-- **限界上下文**：对话、RAG、Agent、语音等能力按子域拆分为独立组件，便于按业务边界演进
-- **防腐层（ACL）**：对外部大模型、向量库、语音服务等通过组件封装，隔离供应商 API 变化
-- **充血模型友好**：组件提供应用层可调用的服务能力，业务规则仍保留在领域层
-
-#### **架构模式**
-
-- **菱形架构（COLA）**：组件模块遵循 `interfaces → application → domain ← infrastructure` 依赖方向（随模块演进逐步完善）
-- **依赖倒置**：领域网关接口由业务服务定义，AI 组件在基础设施层提供实现
-- **BOM 版本对齐**：`ddd4j-ai-bom` 管理 AI 组件模块版本；`ddd4j-ai-dependencies` 管理 AI 第三方依赖并 import Boot 依赖 BOM
+项目继承 `spring-boot-starter-parent` 构建规范，通过 `ddd4j-ai-dependencies` → `ddd4j-boot-dependencies` 链式治理第三方版本，在 [Spring AI](https://docs.spring.io/spring-ai/reference/index.html) 2.0.0 基础上，统一管理 Spring AI Alibaba、MCP、向量检索、语音处理等 AI 依赖版本，并以 **组件化（cmpt）** 方式向业务服务暴露能力。
 
 ### ✨ 主要特性
 
 - **1. 模块化 AI 组件**：覆盖对话（Chat）、记忆（Memory）、嵌入（Embedding）、向量库（VectorDB）、智能体（Agent）、工作流（Flow）、RAG、ASR/TTS/SST、MCP、OCR、智能路由等能力域
-
-- **2. Spring AI 生态集成**：统一管理 Spring AI BOM（1.0.3）、Spring AI Alibaba、Spring AI Community（Moonshot、千帆等）及扩展包版本
-
+- **2. Spring AI 生态集成**：统一管理 Spring AI BOM（2.0.0）、Spring AI Alibaba、Spring AI Community（Moonshot、千帆等）及扩展包版本
 - **3. MCP 协议支持**：通过 `mcp-bom` 管理 Model Context Protocol SDK，为 Agent 工具调用提供标准化接入
-
-- **4. 多模态能力规划**：依赖管理中已纳入 WhisperCpp、Edge TTS、Microsoft Speech SDK、PDFBox、Apache Tika 等，支撑语音与文档处理场景
-
+- **4. 多模态能力规划**：依赖管理中已纳入 WhisperCpp、Edge TTS、Microsoft Speech SDK 等，支撑语音处理场景（PDFBox、Apache Tika 等 OCR 依赖规划中）
 - **5. 与 Ddd4j Boot 无缝集成**：业务服务继承 `ddd4j-ai-parent` 或引入 `ddd4j-ai-bom`，即可在现有 DDD 分层项目中叠加 AI 能力
-
-- **6. 语音组件已落地**：`ddd4j-ai-extension-sst` 已实现基于 Azure Cognitive Speech 的 TTS/STT 及 FFmpeg 音频格式转换
+- **6. 语音组件已落地**：`ddd4j-ai-extension-sst` 已实现基于 Azure Cognitive Speech 的 TTS/STT 及 FFmpeg 音频格式转换；`ddd4j-ai-core` 已实现通用 AI 契约
 
 ### 📦 项目定位
 
@@ -46,64 +21,6 @@
 - **保持架构一致性**：AI 能力以基础设施组件形式接入，不侵入领域模型
 - **支持渐进式演进**：组件模块可独立开发与发布，业务按需引入
 - **覆盖典型 LLM 应用场景**：对话、RAG、Agent 编排、工具调用（MCP）、语音与文档处理
-
-### 🏗️ 项目架构
-
-**Maven 模块架构**：
-
-| 模块 | 说明 |
-|------|------|
-| ddd4j-ai-bom | AI 扩展 BOM：统一管理各 `ddd4j-ai-extension-*` 模块版本，外部项目 import 引用 |
-| ddd4j-ai-dependencies | AI 依赖 BOM：import `ddd4j-boot-dependencies`，并追加 Spring AI / MCP / 语音等版本 |
-| ddd4j-ai-extensions | 扩展聚合模块（parent 为 `ddd4j-ai-dependencies`，对齐 `ddd4j-boot-mq` 范式） |
-| ddd4j-ai-parent | 业务 AI 服务 Parent：parent 为 `ddd4j-ai-dependencies`，import `ddd4j-ai-bom` |
-| ddd4j-ai-samples | 示例模块集合，展示各 AI 组件在业务服务中的集成方式（持续完善中） |
-
-**模块结构树**：
-
-```
-|--ddd4j-ai
-|----ddd4j-ai-bom                           # BOM 依赖管理
-|----ddd4j-ai-dependencies                 # 第三方 AI 依赖版本控制
-|----ddd4j-ai-core                         # AI 通用纯 Java 契约
-|----ddd4j-ai-extensions                   # AI 扩展父模块
-|------ddd4j-ai-extension-chat             # 对话扩展
-|------ddd4j-ai-extension-memory           # 记忆体扩展
-|------ddd4j-ai-extension-embedding        # 向量嵌入扩展
-|------ddd4j-ai-extension-vectordb         # 向量数据库扩展
-|------ddd4j-ai-extension-agent            # 智能体扩展
-|------ddd4j-ai-extension-flow             # 工作流扩展
-|------ddd4j-ai-extension-rag              # 检索增强（RAG）扩展
-|------ddd4j-ai-extension-asr              # 语音识别（ASR）扩展
-|------ddd4j-ai-extension-tts              # 文本转语音（TTS）扩展
-|------ddd4j-ai-extension-sst              # 语音合成/识别一体化扩展（已实现 Azure Speech）
-|------ddd4j-ai-extension-mcp              # 模型上下文协议（MCP）扩展
-|------ddd4j-ai-extension-ocr              # 光学字符识别（OCR）扩展
-|------ddd4j-ai-extension-router           # 智能路由扩展
-|----ddd4j-ai-parent                       # 业务 AI 服务父 POM
-|----ddd4j-ai-samples                      # 示例工程（规划中）
-```
-
-**组件模块说明**：
-
-| 组件模块 | 说明 | 当前状态 |
-|----------|------|----------|
-| ddd4j-ai-core | AI 通用纯 Java 契约，不绑定 Spring Boot | 骨架模块 |
-| ddd4j-ai-extension-chat | AI 对话能力，基于 Spring AI ChatClient 封装 | 骨架模块 |
-| ddd4j-ai-extension-memory | 会话记忆与上下文管理 | 骨架模块 |
-| ddd4j-ai-extension-embedding | 文本向量嵌入（Embedding） | 骨架模块 |
-| ddd4j-ai-extension-vectordb | 向量数据库接入与检索 | 骨架模块 |
-| ddd4j-ai-extension-agent | AI 智能体编排与工具调用 | 骨架模块 |
-| ddd4j-ai-extension-flow | AI 工作流（对接 Spring AI Alibaba Graph 等） | 骨架模块 |
-| ddd4j-ai-extension-rag | 检索增强生成（RAG）管道 | 骨架模块 |
-| ddd4j-ai-extension-asr | 自动语音识别（ASR），规划对接 WhisperCpp 等 | 骨架模块 |
-| ddd4j-ai-extension-tts | 文本转语音（TTS），规划对接 Edge TTS 等 | 骨架模块 |
-| ddd4j-ai-extension-sst | 语音合成与识别，已实现 Azure Speech + FFmpeg 音频转换 | **已实现** |
-| ddd4j-ai-extension-mcp | Model Context Protocol 工具与资源接入 | 骨架模块 |
-| ddd4j-ai-extension-ocr | 文档/图像 OCR，规划对接 PDFBox、Tika 等 | 骨架模块 |
-| ddd4j-ai-extension-router | 多模型智能路由与负载策略 | 骨架模块 |
-
-> **说明**：除 `ddd4j-ai-extension-sst` 外，其余扩展当前为模块骨架（包结构与 POM 已就绪），实现将随版本迭代逐步补齐。
 
 ### 📖 使用说明
 
@@ -183,24 +100,7 @@ azure:
 
 配置类：`io.ddd4j.ai.cmpt.sst.properties.AzureSpeechProperties`（前缀 `azure.speech`）。
 
-#### Spring AI 相关依赖版本（ddd4j-ai-dependencies 统一管理）
-
-| 依赖 | 版本 |
-|------|------|
-| Spring AI BOM | 2.0.0 |
-| Spring AI Alibaba BOM | 2.0.0-M1.1 |
-| Spring AI Alibaba Extensions BOM | 2.0.0-M1.1 |
-| LangChain4j BOM | 1.18.1 |
-| AgentScope Java BOM | 2.0.1 |
-| Spring AI Community | 1.0.0 |
-| MCP SDK BOM | 2.0.0 |
-| Microsoft Speech SDK | 1.47.0 |
-| WhisperCpp | 1.4.0 |
-| tts-edge-java | 1.3.1 |
-| Apache PDFBox | 3.0.5 |
-| Apache Tika BOM | 3.2.2 |
-
-业务服务通过继承 `ddd4j-ai-dependencies` 的 `dependencyManagement` 即可获得上述版本对齐，无需在各模块重复声明。
+> 第三方依赖版本（Spring AI / Alibaba / MCP / LangChain4j / AgentScope / 语音 SDK 等）统一由 `ddd4j-ai-dependencies` 管理，详见架构设计文档第 9 节。
 
 ### 🚀 快速开始
 
@@ -272,38 +172,25 @@ byte[] mp3Bytes = ffmpegService.convertWavToMp3FromByteAry(wavBytes);
 | 渠道枚举 | `TTSSTTChannel` | 当前支持 `Azure` |
 | 音频格式 | `AVFormatEnums` | 音频采样率与编码格式枚举 |
 
-### 📁 组件模块目录结构
+### 🏗️ 架构与设计规范
 
-AI 扩展遵循与 Ddd4j Boot 一致的 COLA 分层约定，以 `ddd4j-ai-extension-sst` 为例：
+项目采用 DDD + COLA（菱形架构）+ 防腐层（ACL）+ 依赖倒置 + BOM 版本对齐的设计理念，AI 组件作为基础设施适配器通过端口接口与领域层解耦。完整设计文档位于 [`docs/superpowers/specs/`](./docs/superpowers/specs/)：
 
-```
-ddd4j-ai-extension-sst/
-├── src/main/java/io/ddd4j/ai/cmpt/sst
-│   ├── dto/                   # 数据传输对象（Adapter 入参）
-│   │   ├── STTDto.java
-│   │   └── TTSDto.java
-│   ├── vo/                    # 视图对象（Adapter 出参）
-│   │   ├── STTResultVO.java
-│   │   └── TTSResultVO.java
-│   ├── enums/                 # 枚举与常量
-│   │   ├── AVFormatEnums.java
-│   │   ├── TTSSTTChannel.java
-│   │   └── ConvertKeyEnums.java
-│   ├── properties/            # 配置属性（Infrastructure）
-│   │   └── AzureSpeechProperties.java
-│   └── service/               # 服务能力
-│       ├── SpeechService.java              # 端口接口
-│       ├── SpeechServiceText2VoiceCallback.java
-│       ├── SpeechServiceVoice2TextCallback.java
-│       └── impl/
-│           ├── AzureSpeechService.java     # Azure 适配器实现
-│           └── FFmpegService.java          # FFmpeg 音频转换
-└── src/main/resources/
-```
+- **整体架构与组件契约**：[`2026-08-07-ddd4j-ai-architecture-design.md`](./docs/superpowers/specs/2026-08-07-ddd4j-ai-architecture-design.md)（架构理念、模块拓扑、组件状态总表、COLA 分层约定、依赖治理）
+- **Core 契约**（已实现）：[`2026-07-01-ai-core-contract-design.md`](./docs/superpowers/specs/2026-07-01-ai-core-contract-design.md)
+- **SST 语音**（已实现）：[`2026-01-05-sst-speech-component-design.md`](./docs/superpowers/specs/2026-01-05-sst-speech-component-design.md)
+- **待实施组件**（chat / memory / embedding / vectordb / rag / agent / mcp / ocr / flow / router / asr / tts）：见 `docs/superpowers/specs/` 同目录各 `2026-08-12-*-design.md`
 
-**依赖方向**：`service（端口）` ← `impl（基础设施适配器）`，业务应用层通过 Spring 注入 `SpeechService` 调用，不直接依赖 Azure SDK。
+### 🗺️ 版本路线图
 
-其余组件（chat、rag、agent 等）将按相同分层约定逐步填充 `application`、`domain`、`infrastructure`、`interfaces` 包结构。
+各组件实现遵循分批演进路线，完整实施计划位于 [`docs/superpowers/plans/`](./docs/superpowers/plans/)：
+
+| 版本 | 范围 | 状态 | 计划文档 |
+|------|------|------|----------|
+| **v1.0** | core 契约 + sst 语音 | ✅ 已完成 | [`2026-08-07-ddd4j-ai-v1-core-and-sst.md`](./docs/superpowers/plans/2026-08-07-ddd4j-ai-v1-core-and-sst.md) |
+| **v1.x-A** | chat / memory / embedding / vectordb（LLM 基础层） | 📋 规划中 | [`2026-08-12-ddd4j-ai-v1x-llm-foundation.md`](./docs/superpowers/plans/2026-08-12-ddd4j-ai-v1x-llm-foundation.md) |
+| **v1.x-B** | mcp / ocr / rag / agent（高阶能力） | 📋 规划中 | [`2026-08-12-ddd4j-ai-v1x-rag-agent-mcp-ocr.md`](./docs/superpowers/plans/2026-08-12-ddd4j-ai-v1x-rag-agent-mcp-ocr.md) |
+| **v2.0** | asr / tts / flow / router（编排与语音独立拆分） | 📋 规划中 | [`2026-08-12-ddd4j-ai-v2-orchestration.md`](./docs/superpowers/plans/2026-08-12-ddd4j-ai-v2-orchestration.md) |
 
 ### 🔗 相关资源
 
