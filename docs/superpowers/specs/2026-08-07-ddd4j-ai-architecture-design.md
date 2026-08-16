@@ -187,7 +187,7 @@ ddd4j-ai-extension-<domain>/
 
 ### 9.2 AI 第三方依赖版本（ddd4j-ai-dependencies 实际声明）
 
-> 以 `ddd4j-ai-dependencies/pom.xml` 为事实源（核对于 2026-08-12）。
+> 以 `ddd4j-ai-dependencies/pom.xml` 为事实源（核对于 2026-08-16，当日已升级至 Maven Central 最新稳定版）。
 
 | 依赖 | 版本 | 属性 |
 |------|------|------|
@@ -196,14 +196,18 @@ ddd4j-ai-extension-<domain>/
 | Spring AI Alibaba Extensions BOM | 2.0.0-M1.1 | 同上 |
 | Spring AI Alibaba Graph Core | 2.0.0-M1.1 | `spring-ai-alibaba-graph.version` |
 | Spring AI Community（Moonshot/千帆） | 1.0.0 | `spring-ai-community.version` |
-| LangChain4j BOM | 1.18.1 | `langchain4j.version` |
-| AgentScope Java BOM | 2.0.1 | `agentscope-java.version` |
+| LangChain4j BOM | 1.19.0 | `langchain4j.version` |
+| AgentScope Java BOM | 2.0.2 | `agentscope-java.version` |
 | MCP SDK BOM | 2.0.0 | `mcp-bom.version` |
-| Microsoft Speech SDK | 1.47.0 | `microsoft-speech-sdk.version` |
+| Microsoft Speech SDK | 1.51.1 | `microsoft-speech-sdk.version` |
 | WhisperCpp | 1.4.0 | `whispercpp.version` |
-| tts-edge-java | 1.3.1 | `tts-edge-java.version` |
-| Protobuf Java | 4.31.0 | `protobuf-java.version` |
+| tts-edge-java | 1.3.3 | `tts-edge-java.version` |
+| Protobuf Java | 4.35.1 | `protobuf-java.version` |
+| proto-google-common-protos | 2.74.0 | `google-protos.version` |
 | ddd4j-boot-dependencies | 3.4.x.20260630-SNAPSHOT | `ddd4j-boot.version` |
+
+> 版本升级记录（2026-08-16）：langchain4j 1.18.1→1.19.0、agentscope 2.0.1→2.0.2、speech-sdk 1.47.0→1.51.1、protobuf 4.31.0→4.35.1、proto-google-common-protos 2.57.0→2.74.0、tts-edge-java 1.3.1→1.3.3。升级后全模块 38 个单元测试全绿。
+> 备注：① protobuf 的 Central latest 指向 4.36.0-RC2，已排除 RC 选用最新稳定版 4.35.1；② agentscope Central latest 指向 2.0.2-subagent-bugfix（补丁变体），选用正式版 2.0.2；③ `jsonschema.version=5.0.0` 属性当前未被 dependencyManagement 引用（历史残留）。
 
 ### 9.3 待确认依赖（README 历史列出但 pom 未直接声明）
 
