@@ -1,0 +1,10 @@
+# Default code owners for ddd-4-java organization
+# All changes require review from the organization maintainers.
+
+*       @hiwepy
+
+# Profile & community health files
+/.github/       @hiwepy
+/profile/       @hiwepy
+/LICENSE        @hiwepy
+/README.md      @hiwepy
