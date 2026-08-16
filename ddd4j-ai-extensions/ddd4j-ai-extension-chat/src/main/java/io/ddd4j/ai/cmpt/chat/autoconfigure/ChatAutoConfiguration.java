@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Bean;
  *
  * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
  */
-@AutoConfiguration
+@AutoConfiguration(afterName = "org.springframework.ai.model.chat.client.autoconfigure.ChatClientAutoConfiguration")
 @ConditionalOnClass(ChatClient.class)
 @ConditionalOnBean(ChatClient.Builder.class)
 @ConditionalOnProperty(name = "ddd4j.ai.chat.enabled", havingValue = "true", matchIfMissing = true)

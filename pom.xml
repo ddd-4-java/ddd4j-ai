@@ -26,6 +26,7 @@
         <module>ddd4j-ai-extensions</module>
         <module>ddd4j-ai-parent</module>
         <module>ddd4j-ai-samples</module>
+        <module>ddd4j-ai-sample-app</module>
     </modules>
 
     <properties>
@@ -146,6 +147,24 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
+                <executions>
+                    <!-- 必须显式绑定：否则 flatten goal 不执行，install/deploy 的 pom
+                         中 parent 的 ${revision} 保持字面量，外部消费者无法解析 -->
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <!-- 编译插件：编译主代码至主输出目录 -->
             <plugin>

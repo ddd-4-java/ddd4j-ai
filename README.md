@@ -104,6 +104,25 @@ azure:
 
 ### 🚀 快速开始
 
+#### 0. 一键体验：可运行示例应用（推荐）
+
+[`ddd4j-ai-sample-app`](./ddd4j-ai-sample-app/) 是开箱即用的演示工程（Ollama + chat/memory/embedding/vectordb/rag 全组件 + REST 端点）：
+
+```bash
+# 1. 准备 Ollama 与模型
+ollama pull qwen2.5:0.5b && ollama pull all-minilm
+
+# 2. 启动示例应用（默认连接 http://localhost:11434）
+./mvnw -pl ddd4j-ai-sample-app spring-boot:run
+
+# 3. 体验端点
+curl "http://localhost:8080/chat?q=你好"
+curl -X POST "http://localhost:8080/chat/session?q=我叫小明&conversationId=demo"
+curl -X POST "http://localhost:8080/rag/ingest?content=灵犀计划是...内部代号"
+curl "http://localhost:8080/rag/ask?q=灵犀计划是什么"
+curl -N "http://localhost:8080/chat/stream?q=讲个笑话"   # SSE 流式
+```
+
 以下示例展示如何在 Spring Boot 业务服务中使用已实现的 **语音组件（sst）**。
 
 #### 1. 添加依赖

@@ -17,7 +17,10 @@ import org.springframework.context.annotation.Bean;
  *
  * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
  */
-@AutoConfiguration
+@AutoConfiguration(afterName = {
+        "org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration",
+        "org.springframework.ai.vectorstore.milvus.autoconfigure.MilvusVectorStoreAutoConfiguration",
+        "org.springframework.ai.vectorstore.redis.autoconfigure.RedisVectorStoreAutoConfiguration"})
 @ConditionalOnClass(VectorStore.class)
 @ConditionalOnBean(VectorStore.class)
 @ConditionalOnProperty(name = "ddd4j.ai.vectordb.enabled", havingValue = "true", matchIfMissing = true)

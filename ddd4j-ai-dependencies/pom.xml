@@ -40,6 +40,31 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- 0. Spring Boot 4 / Framework 7 基线前置对齐：上游 ddd4j-dependencies import 的
+                 micronaut-platform（4.10，Boot 3.5/FW 6.2 系）携带 spring-boot-* 3.5.x 与
+                 spring-* 6.2.x 管理条目，会压过 boot 4.0.x 线的基线（实测 starter-webmvc:4.0.5
+                 的 spring-boot-starter 被调解为 3.5.10 导致 NoSuchMethodError）。此处按
+                 「同 pom 内先 import 者优先」在所有上游 BOM 之前钉住 Boot 4.0.5 / FW 7.0.8。 -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>4.0.5</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- 实测上游某 BOM 存在 spring-boot / spring-boot-starter 3.5.10 的显式管理条目
+                 （优先于上述 BOM import，来源待 ddd4j 批次深挖），直接声明对齐 Boot 4.0.5 -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot</artifactId>
+                <version>4.0.5</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter</artifactId>
+                <version>4.0.5</version>
+            </dependency>
+
             <!-- 1. AI 专属依赖管理优先声明，确保其版本覆盖 Boot 通用依赖管理中的旧 AI 组件 -->
 
             <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-common-protos -->

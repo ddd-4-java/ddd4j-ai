@@ -1,0 +1,42 @@
+# ddd4j-ai 示例应用配置
+# 启动前提：Ollama 服务（默认 http://localhost:11434）且已拉取下方两个模型：
+#   ollama pull qwen2.5:0.5b && ollama pull all-minilm
+spring:
+  application:
+    name: ddd4j-ai-sample-app
+  ai:
+    ollama:
+      base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+      chat:
+        options:
+          model: qwen2.5:0.5b
+      embedding:
+        options:
+          model: all-minilm
+
+# ddd4j-ai 组件配置（均可省略，以下为显式示例）
+ddd4j:
+  ai:
+    chat:
+      enabled: true
+      default-system-prompt: 你是 ddd4j-ai 示例应用的助手，请用中文简洁回答。
+    memory:
+      enabled: true
+      window-size: 20
+    embedding:
+      enabled: true
+      batch-size: 32
+    vectordb:
+      enabled: true
+      default-top-k: 4
+    rag:
+      enabled: true
+      top-k: 4
+      chunking: true
+
+server:
+  port: 8080
+
+logging:
+  level:
+    io.ddd4j.ai: INFO

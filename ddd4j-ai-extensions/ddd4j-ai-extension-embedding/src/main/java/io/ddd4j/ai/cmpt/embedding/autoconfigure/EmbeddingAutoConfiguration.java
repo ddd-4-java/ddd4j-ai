@@ -17,7 +17,9 @@ import org.springframework.context.annotation.Bean;
  *
  * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
  */
-@AutoConfiguration
+@AutoConfiguration(afterName = {
+        "org.springframework.ai.model.ollama.autoconfigure.OllamaEmbeddingAutoConfiguration",
+        "org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration"})
 @ConditionalOnClass(EmbeddingModel.class)
 @ConditionalOnBean(EmbeddingModel.class)
 @ConditionalOnProperty(name = "ddd4j.ai.embedding.enabled", havingValue = "true", matchIfMissing = true)

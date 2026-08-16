@@ -83,3 +83,17 @@ spring-* 全套解析为 7.0.8。
 - `micronaut-platform` 等管理 FW 6.2.x 的 BOM 与 FW7 的并存问题在 ddd4j-dependencies 层永久防御
   （前置 import）；后续升级 micronaut 5.x（Boot 4 系）后可评估移除。
 - ddd4j 代码模块（ddd4j-core 等）自身的 FW7 编译适配不在本次范围（ddd4j-ai 仅依赖治理 POM）。
+
+## 7. 脚手架化补齐记录（2026-08-16 续）
+
+为达到「可作为 Spring AI 项目脚手架」状态追加的修复（全部经 ddd4j-ai-sample-app 端到端验证）：
+
+| 问题 | 根因 | 修复 |
+|---|---|---|
+| Boot 3.5.10 混入 Boot 4.0.5 类路径（`WebApplicationType.deduce` NoSuchMethod） | 上游某 BOM 对 `spring-boot`/`spring-boot-starter` 存在 3.5.10 显式管理条目（优先于 BOM import，来源待 ddd4j 批次深挖）；且 Boot 4 已无 `spring-boot-starter-web` | `ddd4j-ai-dependencies` 前置 import `spring-boot-dependencies:4.0.5` + 直接声明对齐两个 artifact；demo 改用 `spring-boot-starter-webmvc` |
+| demo 引依赖后组件 bean 未装配 | `@ConditionalOnBean(ChatClient.Builder/EmbeddingModel/VectorStore)` 在提供方自动配置**之前**评估恒 false | 四个组件 AutoConfiguration 补 `@AutoConfiguration(after/afterName=...)`（字符串引用不引入编译依赖） |
+| deploy 产物 parent 为字面 `${revision}`（外部消费者无法解析） | 根 pom 的 flatten-maven-plugin 未绑定 execution，flatten goal 从未执行 | 根 pom 显式绑定 flatten/clean executions；重新 install+deploy 后外部视角（清缓存拉私仓）单模块构建验证通过 |
+
+发布记录：六个治理 POM（ddd4j×4 + ddd4j-boot×2）经 deploy-file 发布至私仓 snapshot（consumer 兼容版，
+modelVersion 4.0.0）；ddd4j-ai 全模块经 `mvn deploy` 重新发布（flatten 修复后）。最终全量 105 测试全绿
+（core 19 + memory 14 + chat 17 + embedding 13 + vectordb 12 + rag 9 + sst 19 + sample-app 2）。
