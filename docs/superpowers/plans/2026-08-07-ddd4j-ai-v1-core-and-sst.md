@@ -133,10 +133,12 @@
 
 **Interfaces:** Consumes JUnit 5 + Mockito
 
-- [ ] **Step 1:** 写失败测试 —— `AiRequest.of(x)` 等价 `new AiRequest(x, Map.of())`；`input=null` 抛 NPE；`metadata=null` 返回空映射；传入可变 Map 后改动不影响实例（防御性拷贝）。
-- [ ] **Step 2:** 对称校验 `AiResponse`（output NPE / metadata 不可变 / `of` 工厂）。
-- [ ] **Step 3:** 用测试桩 `AiHandler` 验证 `handle(AiRequest)` → `AiResponse` 往返，并断言 `name()` 稳定返回。
+- [x] **Step 1:** 写失败测试 —— `AiRequest.of(x)` 等价 `new AiRequest(x, Map.of())`；`input=null` 抛 NPE；`metadata=null` 返回空映射；传入可变 Map 后改动不影响实例（防御性拷贝）。
+- [x] **Step 2:** 对称校验 `AiResponse`（output NPE / metadata 不可变 / `of` 工厂）。
+- [x] **Step 3:** 用测试桩 `AiHandler` 验证 `handle(AiRequest)` → `AiResponse` 往返，并断言 `name()` 稳定返回。
 - [ ] **Step 4:** 全部绿后 `git commit -m "test(ai-core): 补充 core 契约单元测试"`。
+
+> Completed 2026-08-16（19 个用例全绿：AiRequestTest 7 / AiResponseTest 7 / AiHandlerContractTest 5；Step 4 提交待执行）
 
 ---
 
@@ -150,11 +152,16 @@
 
 **Interfaces:** Consumes JUnit 5 + Mockito + Spring Boot test
 
-- [ ] **Step 1:** `AzureSpeechProperties` 的 `@ConfigurationProperties` 绑定测试（`azure.speech.*` → 字段）。
-- [ ] **Step 2:** 针对端口 `SpeechService<T>` 用测试桩验证回调路径（onSuccess/onFail/onCancel）。
-- [ ] **Step 3:** mock `SpeechConfig`/`SpeechSynthesizer`/`SpeechRecognizer`，验证 `tts()` 返回结构、`text2Voice()` 回调分支、三入口 `voice2Text*` 与 `doVoice2Text` 的 RecognizedSpeech/NoMatch/Canceled 分支。
-- [ ] **Step 4:** FFmpegService：命令构造单测；装 ffmpeg 时做端到端转换冒烟，无 ffmpeg 用 `Assumptions.assumeTrue` 跳过。
+- [x] **Step 1:** `AzureSpeechProperties` 的 `@ConfigurationProperties` 绑定测试（`azure.speech.*` → 字段）。
+- [x] **Step 2:** 针对端口 `SpeechService<T>` 用测试桩验证回调路径（onSuccess/onFail/onCancel）。
+- [x] **Step 3:** mock `SpeechConfig`/`SpeechSynthesizer`/`SpeechRecognizer`，验证 `tts()` 返回结构、`text2Voice()` 回调分支、三入口 `voice2Text*` 与 `doVoice2Text` 的 RecognizedSpeech/NoMatch/Canceled 分支。
+- [x] **Step 4:** FFmpegService：命令构造单测；装 ffmpeg 时做端到端转换冒烟，无 ffmpeg 用 `Assumptions.assumeTrue` 跳过。
 - [ ] **Step 5:** 全部绿后 `git commit -m "test(sst): 补充 sst 组件单元测试"`。
+
+> Completed 2026-08-16（19 个用例全绿：Properties 3 / 端口契约 4 / FFmpeg 端到端 4 / Azure SDK mock 8）。
+> 实施附带修复与发现：
+> - **修复**：`ddd4j-ai-extension-sst/pom.xml` 缺失 Spring 依赖（`spring-boot-starter`）导致该模块当前无法编译（存量问题，历史 target/ 为旧产物）；同时补齐 test 依赖（junit-jupiter/assertj/mockito）。
+> - **发现（未修，待后续迭代）**：① `tts()` 失败分支返回 `status=1`（与成功相同），建议引入独立失败码；② `FFmpegService.convertAudioToWavFromInputStream` 使用 `redirectErrorStream(true)`，stderr 文本污染输出流，RIFF 头不保证在开头（字节流版为 `false`，不一致）。
 
 ---
 
@@ -165,9 +172,11 @@
 
 **Interfaces:** Consumes ddd4j-ai-extension-sst
 
-- [ ] **Step 1:** 在 samples 模块新增 sst 端到端示例（配置 + 注入 SpeechService + 调用 tts/voice2Text）。
-- [ ] **Step 2:** README/示例说明对齐（保留 README 快速开始示例一致）。
+- [x] **Step 1:** 在 samples 模块新增 sst 端到端示例（配置 + 注入 SpeechService + 调用 tts/voice2Text）。
+- [x] **Step 2:** README/示例说明对齐（保留 README 快速开始示例一致）。
 - [ ] **Step 3:** `git commit -m "docs(samples): 补充 sst 示例"`。
+
+> Completed 2026-08-16（`SstSample`：TTS 同步/回调 + STT 含 FFmpeg 归一化/MP3 直识别；samples 由 `packaging=pom` 调整为默认 jar 以纳入编译验证）。
 
 ---
 

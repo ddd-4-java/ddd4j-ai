@@ -11,13 +11,19 @@
     </parent>
 
     <artifactId>ddd4j-ai-samples</artifactId>
-    <packaging>pom</packaging>
     <description>AI 示例模块（对齐 ddd4j-boot-samples 继承 parent 范式）</description>
 
     <properties>
         <maven.install.skip>true</maven.install.skip>
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.ddd4j.ai</groupId>
+            <artifactId>ddd4j-ai-extension-sst</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>
 
