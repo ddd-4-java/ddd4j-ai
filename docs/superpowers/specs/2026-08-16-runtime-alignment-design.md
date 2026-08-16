@@ -59,3 +59,27 @@ boot 4.0.x 的 dependencies 模块把 FW 压回 6.2.19。因此本设计采用**
 2. Ollama 集成测试的 classpath 探测跳过**解除后真实执行**：
    qwen2.5:0.5b 对话链路、all-minilm 嵌入链路、RAG 联合冒烟全绿。
 3. 架构 spec §9.4 由"已知约束"改写为"已解决（方案与生效版本记录）"。
+
+## 6. 实施结果（2026-08-16 当日完成，最终形态：源头治理）
+
+实施中发现比 §3 预估更深的一层：FW 6.2 的真实来源不是 boot-deps 的死属性
+（该属性无使用点，boot 根 pom 本身已 import FW7 BOM），而是 **`ddd4j-dependencies`
+import 的 `micronaut-platform:4.10.17`**（Boot 3.5/FW 6.2 系，其管理条目含
+spring-* 6.2.16），且按 Maven 规则"本 pom 的 import 优先于 parent 继承"压过了
+ddd4j 根 pom 的 FW7 BOM。最终落点：
+
+| 仓库 | 分支 | 变更 |
+|---|---|---|
+| ddd4j | feature/3.0.x | 根 pom `spring-framework.version` 6.2.19→7.0.8；`ddd4j-dependencies` 在 micronaut-platform 等 BOM **之前** import `spring-framework-bom`（防御 6.2.x 管理压制） |
+| ddd4j-boot | 4.0.x | dependencies 模块的 FW 死属性同步 6.2.19→7.0.8（消除误导），注释更新 |
+| ddd4j-ai | master | **回收** §3-B 的下游覆盖（spring-framework-bom 前置 import 与 webflux/messaging 直接声明全部删除），FW7 完全由上游提供 |
+
+验证：103 测试全绿（含 Ollama 真模型 9 例：chat 4 + embedding 3 + RAG 联合冒烟 2），
+spring-* 全套解析为 7.0.8。
+
+注意事项：
+- ddd4j feature/3.0.x 为 Maven 4 项目（pom `modelVersion 4.1.0`），本机 Maven 3.9 构建其 BOM 时
+  需将 modelVersion 降级为 4.0.0 后 install-file（本地仓库中的治理 POM 已按此处理）。
+- `micronaut-platform` 等管理 FW 6.2.x 的 BOM 与 FW7 的并存问题在 ddd4j-dependencies 层永久防御
+  （前置 import）；后续升级 micronaut 5.x（Boot 4 系）后可评估移除。
+- ddd4j 代码模块（ddd4j-core 等）自身的 FW7 编译适配不在本次范围（ddd4j-ai 仅依赖治理 POM）。

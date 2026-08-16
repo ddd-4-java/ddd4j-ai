@@ -222,13 +222,9 @@ Spring AI 2.0.0 的模型客户端（`OllamaApi` 等）依赖 Spring Framework 7
 `org.springframework.core.retry` 包。经版本线对齐（详见 `2026-08-16-runtime-alignment-design.md`）：
 
 - 父链升级：`ddd4j-parent:2.0.x → 3.0.x.20260630-SNAPSHOT`，`ddd4j-boot-dependencies:3.4.x → 4.0.x.20251215-SNAPSHOT`（Boot 4.0.5 线）。
-- **FW7 定向覆盖**：boot-deps 4.0.x 显式锁定 FW 6.2.19（其注释「不得升级至 7.x」），`ddd4j-ai-dependencies`
-  通过前置 import `spring-framework-bom:7.0.8` + 直接声明 `spring-webflux`/`spring-messaging`（后者存在
-  6.2.19 显式条目，且 FW7 的 `HttpHeaders` 不再 implements Map，混搭会抛 `IncompatibleClassChangeError`）
-  完成全套 FW 7.0.8 对齐。
-- 验证：103 个测试全绿，Ollama 真实模型链路（qwen2.5:0.5b 对话、all-minilm 嵌入、RAG 联合冒烟）全部真实执行。
-- 遗留：boot 4.0.x 的 FW 锁定与其上游约束冲突属已知状态，待 boot 4.1.x 线放开 FW7 后应回收本模块的覆盖；
-  上游 `4.0.x.20251215-SNAPSHOT` 私仓文件已失效，当前为本地构建安装。
+- **源头治理（最终形态）**：FW 6.2 的真实来源是 `ddd4j-dependencies` import 的 `micronaut-platform:4.10.17`（其管理条目含 spring-* 6.2.16，且本 pom 的 import 优先于 parent 继承）。已在上游完成切换：ddd4j 根 pom FW 属性 6.2.19→7.0.8、ddd4j-dependencies 前置 import spring-framework-bom（防御 6.2.x BOM 压制）、boot-deps 死属性同步清理；**ddd4j-ai 侧的临时覆盖已回收**，FW7 完全由上游提供。详见 `2026-08-16-runtime-alignment-design.md` §6。
+- 验证：103 个测试全绿，spring-* 全套 7.0.8，Ollama 真实模型链路（qwen2.5:0.5b 对话、all-minilm 嵌入、RAG 联合冒烟）全部真实执行。
+- 遗留：① `4.0.x.20251215-SNAPSHOT` 上游 SNAPSHOT 私仓文件已失效，当前为本地构建安装（含 modelVersion 4.1.0→4.0.0 降级处理）；② ddd4j 代码模块自身的 FW7 编译适配待后续批次。
 - 须知：ddd4j-parent 3.0.x 默认 `skipTests=true`，ddd4j-ai 执行测试需 `-DskipTests=false`。
 
 ## 10. 测试策略

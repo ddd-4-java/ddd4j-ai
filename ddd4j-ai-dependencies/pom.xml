@@ -20,7 +20,6 @@
 
     <properties>
         <ddd4j-boot.version>4.0.x.20251215-SNAPSHOT</ddd4j-boot.version>
-        <spring-framework-7.version>7.0.8</spring-framework-7.version>
         <tts-edge-java.version>1.3.3</tts-edge-java.version>
         <protobuf-java.version>4.35.1</protobuf-java.version>
         <google-protos.version>2.74.0</google-protos.version>
@@ -41,33 +40,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- 0. Spring Framework 7 定向覆盖：Spring AI 2.0 的模型客户端（OllamaApi 等）依赖
-                 FW 7 新增的 org.springframework.core.retry 包；ddd4j-boot-dependencies 4.0.x 显式
-                 锁定 FW 6.2.19（其注释「不得升级至 7.x」）。本模块作为 ddd4j-ai 的独立治理域，
-                 在 boot BOM 之前 import spring-framework-bom（同 pom 内先 import 者优先）以启用
-                 Spring AI 2.0 完整运行时。待 boot 4.1.x 线放开 FW7 后应回收此覆盖。
-                 设计依据：docs/superpowers/specs/2026-08-16-runtime-alignment-design.md -->
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-framework-bom</artifactId>
-                <version>${spring-framework-7.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <!-- boot-deps 4.0.x 对 spring-webflux/spring-messaging 存在 6.2.19 的显式管理条目，
-                 直接声明条目优先于上述 BOM import，需逐个对齐至 7.0.x（HttpHeaders 在 FW7 不再
-                 implements Map，混搭会在 WebClient 构建时抛 IncompatibleClassChangeError） -->
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-webflux</artifactId>
-                <version>${spring-framework-7.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-messaging</artifactId>
-                <version>${spring-framework-7.version}</version>
-            </dependency>
-
             <!-- 1. AI 专属依赖管理优先声明，确保其版本覆盖 Boot 通用依赖管理中的旧 AI 组件 -->
 
             <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-common-protos -->
