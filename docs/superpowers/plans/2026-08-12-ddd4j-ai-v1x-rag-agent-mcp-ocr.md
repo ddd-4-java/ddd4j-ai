@@ -53,6 +53,8 @@
 
 ## Task 3: 实现 ddd4j-ai-extension-rag
 
+> **Completed 2026-08-16**（v1.x-B 提前交付）：`RagService`（ingest/query/queryStream）+ `Reranker` 扩展点（默认 `NoopReranker` 直通）+ `RagPipeline`（组合 chat/vectordb 自家端口，PromptTemplate 模板可配，TokenTextSplitter 分块可配开关）。测试：管道 mock 测试 + 装配测试 + Ollama×pgvector 联合冒烟 `RagSmokeIntegrationTest`。
+
 **Files:**
 - Create: `.../cmpt/rag/service/RagService.java`、`service/impl/RagPipeline.java`、`properties/RagProperties.java`
 - Test: `.../cmpt/rag/service/RagServiceIT.java`（mock 三组件）

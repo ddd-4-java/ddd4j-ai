@@ -188,8 +188,8 @@ byte[] mp3Bytes = ffmpegService.convertWavToMp3FromByteAry(wavBytes);
 | 版本 | 范围 | 状态 | 计划文档 |
 |------|------|------|----------|
 | **v1.0** | core 契约 + sst 语音 | ✅ 已完成 | [`2026-08-07-ddd4j-ai-v1-core-and-sst.md`](./docs/superpowers/plans/2026-08-07-ddd4j-ai-v1-core-and-sst.md) |
-| **v1.x-A** | chat / memory / embedding / vectordb（LLM 基础层） | 📋 规划中 | [`2026-08-12-ddd4j-ai-v1x-llm-foundation.md`](./docs/superpowers/plans/2026-08-12-ddd4j-ai-v1x-llm-foundation.md) |
-| **v1.x-B** | mcp / ocr / rag / agent（高阶能力） | 📋 规划中 | [`2026-08-12-ddd4j-ai-v1x-rag-agent-mcp-ocr.md`](./docs/superpowers/plans/2026-08-12-ddd4j-ai-v1x-rag-agent-mcp-ocr.md) |
+| **v1.x-A** | chat / memory / embedding / vectordb（LLM 基础层） | ✅ 已完成 | [`2026-08-12-ddd4j-ai-v1x-llm-foundation.md`](./docs/superpowers/plans/2026-08-12-ddd4j-ai-v1x-llm-foundation.md) |
+| **v1.x-B** | mcp / ocr / rag / agent（高阶能力） | 🚧 进行中（rag 已实现） | [`2026-08-12-ddd4j-ai-v1x-rag-agent-mcp-ocr.md`](./docs/superpowers/plans/2026-08-12-ddd4j-ai-v1x-rag-agent-mcp-ocr.md) |
 | **v2.0** | asr / tts / flow / router（编排与语音独立拆分） | 📋 规划中 | [`2026-08-12-ddd4j-ai-v2-orchestration.md`](./docs/superpowers/plans/2026-08-12-ddd4j-ai-v2-orchestration.md) |
 
 ### 🔗 相关资源

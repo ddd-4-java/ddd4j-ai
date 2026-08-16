@@ -11,6 +11,64 @@
     </parent>
 
     <artifactId>ddd4j-ai-extension-memory</artifactId>
-    <description>记忆体组件</description>
+    <description>记忆体组件：窗口记忆策略 + 可插拔存储后端（内存/JDBC/Redis 等 ChatMemoryRepository）</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-model-chat-memory-repository-jdbc</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-model-chat-memory-repository-redis</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- spring-ai redis repository 需要 jedis 7.x 的 RedisClient；父链默认 4.x 无该类 -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>7.4.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>

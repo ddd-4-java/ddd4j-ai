@@ -2,7 +2,7 @@
 
 - 日期：2026-08-12
 - 作者：PartMe.AI
-- 状态：待实施（骨架：仅 package-info 占位）
+- 状态：**已实现**（2026-08-16，v1.x-A；实施修订：以单一通用 `VectorStoreAdapter` 委托任意 `VectorStore`，替代原计划的 {Milvus,PgVector,Redis} 三适配器——后端由业务侧引入的 spring-ai-starter-vector-store-* 决定，见 §9 实施备注）
 - 范围：`ddd4j-ai-extension-vectordb` —— 向量数据库接入与检索
 - 关联文档：整体架构见 `2026-08-07-ddd4j-ai-architecture-design.md`；嵌入见 `2026-08-12-embedding-component-design.md`；被 rag 引用
 

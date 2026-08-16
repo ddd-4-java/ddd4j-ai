@@ -2,7 +2,7 @@
 
 - 日期：2026-08-12
 - 作者：PartMe.AI
-- 状态：待实施（骨架：仅 package-info 占位）
+- 状态：**已实现**（2026-08-16，v1.x-B 提前交付 RAG 部分）
 - 范围：`ddd4j-ai-extension-rag` —— 检索增强生成管道
 - 关联文档：整体架构见 `2026-08-07-ddd4j-ai-architecture-design.md`；依赖 chat `2026-08-12-chat-component-design.md` / embedding `2026-08-12-embedding-component-design.md` / vectordb `2026-08-12-vectordb-component-design.md`
 
