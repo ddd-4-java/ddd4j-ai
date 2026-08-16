@@ -98,10 +98,15 @@ class RagSmokeIntegrationTest {
         dataSource.setUrl(PGVECTOR.getJdbcUrl());
         dataSource.setUsername(PGVECTOR.getUsername());
         dataSource.setPassword(PGVECTOR.getPassword());
-        PgVectorStore store = PgVectorStore.builder(new JdbcTemplate(dataSource), embeddingModel)
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        // pgvector 镜像需显式激活扩展后 vector 类型才可用
+        jdbcTemplate.execute("CREATE EXTENSION IF NOT EXISTS vector");
+        PgVectorStore store = PgVectorStore.builder(jdbcTemplate, embeddingModel)
                 .dimensions(384)
                 .initializeSchema(true)
                 .build();
+        // 手动构造需自行触发 schema 初始化
+        store.afterPropertiesSet();
         VectorDbService vectorDb = new VectorStoreAdapter(store, 4);
 
         MemoryService memory = new WindowMemoryService(new InMemoryChatMemoryRepository(), 20);

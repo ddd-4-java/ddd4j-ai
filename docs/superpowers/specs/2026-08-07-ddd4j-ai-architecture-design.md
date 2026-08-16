@@ -216,15 +216,20 @@ ddd4j-ai-extension-<domain>/
 | Apache PDFBox | 3.0.5 | **未在 ai-dependencies 声明** | 待确认是否经 `ddd4j-boot-dependencies` 间接提供；OCR 模块实施前需补齐或确认 |
 | Apache Tika BOM | 3.2.2 | **未在 ai-dependencies 声明** | 同上 |
 
-### 9.4 已知兼容性约束：Spring AI 2.0 与父链 Spring Framework 6.2（2026-08-16 发现）
+### 9.4 运行时对齐（2026-08-16 已解决）：Spring AI 2.0 与 Spring Framework 7
 
-Spring AI 2.0.0 的运行时（`OllamaApi` 等模型客户端）依赖 Spring Framework 7 新增的
-`org.springframework.core.retry` 包；当前父链 `ddd4j-boot-dependencies`（3.4.x）锁定
-Spring Framework 6.2，不含该包。影响与对策：
+Spring AI 2.0.0 的模型客户端（`OllamaApi` 等）依赖 Spring Framework 7 新增的
+`org.springframework.core.retry` 包。经版本线对齐（详见 `2026-08-16-runtime-alignment-design.md`）：
 
-- **组件层不受影响**：本项目的端口/适配器/AutoConfiguration 仅使用两代稳定兼容的 API（ChatClient、EmbeddingModel、VectorStore、@ConfigurationProperties），在 FW 6.2 下编译与装配测试全部通过。
-- **真实模型链路受限**：容器内真实模型调用（Ollama 测试）在 FW 6.2 类路径下会抛 `NoClassDefFoundError`，相关集成测试已按 classpath 探测自动跳过并注明原因。
-- **建议决策**：业务侧引入模型 starter 前，需将运行时升级到 Spring Boot 4 / FW 7，或由 ddd4j-boot-dependencies 提供 spring-ai 2.0 兼容线；单纯提升 spring-core 至 7（与 spring-context 6.2 混搭）不可行（`MimeType` 内部类已被 FW7 移除，实测编译失败）。
+- 父链升级：`ddd4j-parent:2.0.x → 3.0.x.20260630-SNAPSHOT`，`ddd4j-boot-dependencies:3.4.x → 4.0.x.20251215-SNAPSHOT`（Boot 4.0.5 线）。
+- **FW7 定向覆盖**：boot-deps 4.0.x 显式锁定 FW 6.2.19（其注释「不得升级至 7.x」），`ddd4j-ai-dependencies`
+  通过前置 import `spring-framework-bom:7.0.8` + 直接声明 `spring-webflux`/`spring-messaging`（后者存在
+  6.2.19 显式条目，且 FW7 的 `HttpHeaders` 不再 implements Map，混搭会抛 `IncompatibleClassChangeError`）
+  完成全套 FW 7.0.8 对齐。
+- 验证：103 个测试全绿，Ollama 真实模型链路（qwen2.5:0.5b 对话、all-minilm 嵌入、RAG 联合冒烟）全部真实执行。
+- 遗留：boot 4.0.x 的 FW 锁定与其上游约束冲突属已知状态，待 boot 4.1.x 线放开 FW7 后应回收本模块的覆盖；
+  上游 `4.0.x.20251215-SNAPSHOT` 私仓文件已失效，当前为本地构建安装。
+- 须知：ddd4j-parent 3.0.x 默认 `skipTests=true`，ddd4j-ai 执行测试需 `-DskipTests=false`。
 
 ## 10. 测试策略
 
