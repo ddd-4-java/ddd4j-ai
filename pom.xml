@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns="http://maven.apache.org/POM/4.1.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <!-- POM的模型版本 -->
-    <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.1.0</modelVersion>
 
     <!-- Inherit defaults from Ddd4j 3.0.x（对应 ddd4j-boot 4.0.x / Spring Boot 4 线） -->
     <parent>
@@ -19,15 +19,15 @@
     <packaging>pom</packaging>
     <version>${revision}</version>
 
-    <modules>
-        <module>ddd4j-ai-bom</module>
-        <module>ddd4j-ai-dependencies</module>
-        <module>ddd4j-ai-core</module>
-        <module>ddd4j-ai-extensions</module>
-        <module>ddd4j-ai-parent</module>
-        <module>ddd4j-ai-samples</module>
-        <module>ddd4j-ai-sample-app</module>
-    </modules>
+    <subprojects>
+        <subproject>ddd4j-ai-bom</subproject>
+        <subproject>ddd4j-ai-dependencies</subproject>
+        <subproject>ddd4j-ai-core</subproject>
+        <subproject>ddd4j-ai-extensions</subproject>
+        <subproject>ddd4j-ai-parent</subproject>
+        <subproject>ddd4j-ai-samples</subproject>
+        <subproject>ddd4j-ai-sample-app</subproject>
+    </subprojects>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -36,7 +36,6 @@
         <revision>1.0.0-SNAPSHOT</revision>
         <java.version>17</java.version>
         <maven.version>3.6.3</maven.version>
-        <maven-flatten-plugin.version>1.7.3</maven-flatten-plugin.version>
         <maven-dependency-check-plugin.version>12.2.2</maven-dependency-check-plugin.version>
     </properties>
 
@@ -108,15 +107,6 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>flatten-maven-plugin</artifactId>
-                    <version>${maven-flatten-plugin.version}</version>
-                    <configuration>
-                        <flattenMode>resolveCiFriendliesOnly</flattenMode>
-                        <updatePomFile>true</updatePomFile>
-                    </configuration>
-                </plugin>
-                <plugin>
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
                     <version>${maven-dependency-check-plugin.version}</version>
@@ -142,29 +132,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-            </plugin>
-            <!-- 模块版本管理插件 ：替换 ${revision} -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>flatten-maven-plugin</artifactId>
-                <executions>
-                    <!-- 必须显式绑定：否则 flatten goal 不执行，install/deploy 的 pom
-                         中 parent 的 ${revision} 保持字面量，外部消费者无法解析 -->
-                    <execution>
-                        <id>flatten</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>flatten</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>flatten.clean</id>
-                        <phase>clean</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <!-- 编译插件：编译主代码至主输出目录 -->
             <plugin>

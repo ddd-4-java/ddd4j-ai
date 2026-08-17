@@ -84,6 +84,28 @@ spring-* 全套解析为 7.0.8。
   （前置 import）；后续升级 micronaut 5.x（Boot 4 系）后可评估移除。
 - ddd4j 代码模块（ddd4j-core 等）自身的 FW7 编译适配不在本次范围（ddd4j-ai 仅依赖治理 POM）。
 
+## 8. Maven 4 原生化（2026-08-17，版本跟进至 boot 20260630）
+
+版本跟进（20251215→20260630）过程中连环暴露并根治两类问题：
+
+**① 私仓毒制品事件**：此前以 `4.0.x.20260630-SNAPSHOT` 发布的 ddd4j-boot 治理 POM 实为 4.1.x 分支内容
+（构建时 worktree 已切到 4.1.x，starter-parent 4.1.0）。Spring Boot **4.1.0** 的 spring-boot-dependencies
+import 了**错误坐标** `org.apache.artemis:artemis-bom`（正确坐标为 `org.apache.activemq:artemis-bom`，
+后者各镜像均可用）——这就是长期 401 死锁的真相。已从真实 4.0.x 分支（starter-parent 4.0.7）重新发布覆盖。
+
+**② ddd4j-ai 转为 Maven 4 原生项目**（与 ddd4j 上游 feature/3.0.x 一致）：
+- 全部 22 个 pom：`modelVersion 4.1.0` + namespace 升级；根/聚合 pom `<modules>`→`<subprojects>`、`<module>`→`<subproject>`。
+- **删除 flatten 插件**：Maven 4 consumer POM 机制原生解析 `${revision}`（install/deploy 产出的
+  consumer POM 中 parent/version 均为已解析值）；BOM dependencyManagement 中的 `${revision}` 为
+  CI-friendly 语义（消费端自动解析为 BOM 自身版本），与 ddd4j 上游 bom 行为一致。
+- 构建须知：**本项目需用 Maven 4 构建**（项目 `.mvn/wrapper` 已配置 4.0.0-rc-6，`./mvnw` 即可；
+  原生 modelVersion 4.1.0/subprojects Maven 3.9 无法解析）；`-Denforcer.skip=true` 仍需（enforcer 3.6.3
+  与 Maven 4-rc6 兼容问题）。**外部消费者不受影响**——consumer POM 为 model 4.0.0，Maven 3.9 实测
+  （继承 ddd4j-ai-parent + 引组件，编译通过）。
+- 版本落点：ddd4j-boot-dependencies `4.0.x.20260630-SNAPSHOT`；ddd4j-ai-dependencies 内 Boot 基线
+  pins 4.0.5→4.0.7（前置 import spring-boot-dependencies + 直接条目，对抗 micronaut-platform 的 3.5.x 管理）。
+- 验证：Maven 4 全量 105 测试全绿（含 Ollama 真模型链路）；deploy 私仓后 Maven 3.9 外部消费者编译通过。
+
 ## 7. 脚手架化补齐记录（2026-08-16 续）
 
 为达到「可作为 Spring AI 项目脚手架」状态追加的修复（全部经 ddd4j-ai-sample-app 端到端验证）：

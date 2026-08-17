@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
+<project xmlns="http://maven.apache.org/POM/4.1.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 https://maven.apache.org/xsd/maven-4.1.0.xsd">
+    <modelVersion>4.1.0</modelVersion>
     <parent>
         <groupId>io.ddd4j.ai</groupId>
         <artifactId>ddd4j-ai-dependencies</artifactId>
@@ -16,20 +16,20 @@
         ddd4j-ai 组件聚合：各 AI 能力 Spring Boot 自动配置与基础设施实现（对齐 ddd4j-boot-mq 等聚合模块范式）。
     </description>
 
-    <modules>
-        <module>ddd4j-ai-extension-chat</module>
-        <module>ddd4j-ai-extension-memory</module>
-        <module>ddd4j-ai-extension-embedding</module>
-        <module>ddd4j-ai-extension-vectordb</module>
-        <module>ddd4j-ai-extension-agent</module>
-        <module>ddd4j-ai-extension-flow</module>
-        <module>ddd4j-ai-extension-rag</module>
-        <module>ddd4j-ai-extension-asr</module>
-        <module>ddd4j-ai-extension-tts</module>
-        <module>ddd4j-ai-extension-sst</module>
-        <module>ddd4j-ai-extension-mcp</module>
-        <module>ddd4j-ai-extension-ocr</module>
-        <module>ddd4j-ai-extension-router</module>
-    </modules>
+    <subprojects>
+        <subproject>ddd4j-ai-extension-chat</subproject>
+        <subproject>ddd4j-ai-extension-memory</subproject>
+        <subproject>ddd4j-ai-extension-embedding</subproject>
+        <subproject>ddd4j-ai-extension-vectordb</subproject>
+        <subproject>ddd4j-ai-extension-agent</subproject>
+        <subproject>ddd4j-ai-extension-flow</subproject>
+        <subproject>ddd4j-ai-extension-rag</subproject>
+        <subproject>ddd4j-ai-extension-asr</subproject>
+        <subproject>ddd4j-ai-extension-tts</subproject>
+        <subproject>ddd4j-ai-extension-sst</subproject>
+        <subproject>ddd4j-ai-extension-mcp</subproject>
+        <subproject>ddd4j-ai-extension-ocr</subproject>
+        <subproject>ddd4j-ai-extension-router</subproject>
+    </subprojects>
 
 </project>
