@@ -20,6 +20,7 @@
 
     <properties>
         <ddd4j-boot.version>3.4.x.20260630-SNAPSHOT</ddd4j-boot.version>
+        <jackson-bom.version>2.22.1</jackson-bom.version>
         <tts-edge-java.version>1.3.3</tts-edge-java.version>
         <protobuf-java.version>4.35.1</protobuf-java.version>
         <google-protos.version>2.74.0</google-protos.version>
@@ -40,6 +41,15 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Jackson 版本治理（项目规范）：1.0.x 线基于 Jackson 2，
+                 import com.fasterxml.jackson:jackson-bom；dependencies 直接使用组件不写版本号。 -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!-- 1. AI 专属依赖管理优先声明，确保其版本覆盖 Boot 通用依赖管理中的旧 AI 组件 -->
 
             <!-- https://mvnrepository.com/artifact/com.google.api.grpc/proto-google-common-protos -->
