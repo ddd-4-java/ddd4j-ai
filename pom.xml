@@ -9,7 +9,7 @@
     <parent>
         <groupId>io.ddd4j</groupId>
         <artifactId>ddd4j-parent</artifactId>
-        <version>3.0.x.20260630-SNAPSHOT</version>
+        <version>3.0.x.20260730-SNAPSHOT</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -33,7 +33,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <!-- 当前项目版本号 -->
-        <revision>1.0.0-SNAPSHOT</revision>
+        <revision>2.0.x.20260630-SNAPSHOT</revision>
         <java.version>17</java.version>
         <maven.version>3.6.3</maven.version>
         <maven-dependency-check-plugin.version>12.2.2</maven-dependency-check-plugin.version>

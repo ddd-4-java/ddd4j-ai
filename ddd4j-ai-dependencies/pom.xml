@@ -20,6 +20,7 @@
 
     <properties>
         <ddd4j-boot.version>4.0.x.20260630-SNAPSHOT</ddd4j-boot.version>
+        <jackson-bom.version>3.2.1</jackson-bom.version>
         <tts-edge-java.version>1.3.3</tts-edge-java.version>
         <protobuf-java.version>4.35.1</protobuf-java.version>
         <google-protos.version>2.74.0</google-protos.version>
@@ -40,13 +41,22 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- 0. Jackson 版本治理（项目规范）：2.0.x 线基于 Jackson 3（tools.jackson），
+                 import tools.jackson:jackson-bom；dependencies 直接使用组件不写版本号。 -->
+            <dependency>
+                <groupId>tools.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!-- 0a. Jackson 2.x 基线对齐：上游 ddd4j-dependencies 链的传递 BOM 先 import 了
                  jackson-bom 2.13.5（「同 pom 内先 import 者优先」压过 Boot 4.0.7 的 jackson-2-bom
                  2.21.4 与下方本 pom 的 import），导致 jackson-databind 2.13.5 缺 2.16+ 的
-                 DatatypeFeature 类——Spring AI 的 OllamaApi 构造时 NoClassDefFoundError；
-                 而 Spring AI 2.0 运行时又需要 annotations >= 2.22 的 JsonApplyView
-                 （Jackson 3 databind 3.1.4 编译引用）。显式直接条目优先级最高，
-                 全家对齐 Jackson 2.22 线（Spring AI 2.0 基线，兼容 Boot 4.0.7 的 2.21.4 需求）。 -->
+                 DatatypeFeature 类——Spring AI 的 OllamaApi 构造时 NoClassDefFoundError（CI 全新
+                 类路径必现）。Spring AI 2.0 同时用 Jackson 2 API 与 Jackson 3（tools.jackson）；
+                 上游已管 annotations 2.22 与 tools-databind 3.2.1，但 fasterxml databind/core
+                 无管理（tools-bom 不含 Jackson 2 构件），本模块直接条目钉 2.22 线。 -->
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
@@ -56,12 +66,6 @@
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
                 <version>2.22.2</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <!-- Jackson 2.20+ 起 annotations 去 patch 号（2.22 线管理值为 2.22） -->
-                <version>2.22</version>
             </dependency>
             <!-- 0. Spring Boot 4 / Framework 7 基线前置对齐：上游 ddd4j-dependencies import 的
                  micronaut-platform（4.10，Boot 3.5/FW 6.2 系）携带 spring-boot-* 3.5.x 与
