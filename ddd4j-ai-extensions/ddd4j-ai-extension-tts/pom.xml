@@ -11,6 +11,26 @@
     </parent>
 
     <artifactId>ddd4j-ai-extension-tts</artifactId>
-    <description>文本转语音组件</description>
+    <description>文本转语音组件：Microsoft Edge TTS 免费在线合成（mp3 流，无需密钥）</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.github.whitemagic2014</groupId>
+            <artifactId>tts-edge-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>
