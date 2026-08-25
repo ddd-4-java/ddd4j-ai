@@ -11,6 +11,36 @@
     </parent>
 
     <artifactId>ddd4j-ai-extension-agent</artifactId>
-    <description>智能体组件</description>
+    <description>智能体编排组件：ReAct 工具调用循环 + 先规划后执行（Plan-Execute）双策略</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.ddd4j.ai</groupId>
+            <artifactId>ddd4j-ai-extension-chat</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.ddd4j.ai</groupId>
+            <artifactId>ddd4j-ai-extension-memory</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-client-chat</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>
