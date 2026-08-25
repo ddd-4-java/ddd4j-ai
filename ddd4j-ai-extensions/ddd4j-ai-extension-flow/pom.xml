@@ -11,6 +11,31 @@
     </parent>
 
     <artifactId>ddd4j-ai-extension-flow</artifactId>
-    <description>工作流组件</description>
+    <description>AI 工作流编排组件：Spring AI Alibaba Graph 节点（LLM/工具/分支）+ 声明式 DSL 编译执行</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.ddd4j.ai</groupId>
+            <artifactId>ddd4j-ai-extension-chat</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.cloud.ai</groupId>
+            <artifactId>spring-ai-alibaba-graph-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-client-chat</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>
