@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.ddd4j.ai</groupId>
+        <artifactId>ddd4j-ai-dependencies</artifactId>
+        <version>${revision}</version>
+        <relativePath>../ddd4j-ai-dependencies/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>ddd4j-ai-sdk-deps</artifactId>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>ddd4j AI 客户端 SDK 聚合：LLM CLI / 多模态 AI SDK 统一依赖（版本由 ddd4j-ai-dependencies BOM 集中管理）。当前已收录 3 个组件：claudecode-java-sdk（Anthropic Claude Code CLI）、codex-java-sdk（OpenAI Codex CLI）、dreamina-java-sdk（字节跳动 Dreamina 文生图）。其余 AI 组件（openclaw/opencode/opencli）由于上游 pom 缺显式 jackson-databind 依赖暂未收录，待上游修复后增量加入。原 ddd4j 主仓 ddd4j-ai-dependencies 模块（groupId io.ddd4j）按 #841 迁移至此。</description>
+    <url>https://github.com/ddd-4-java/ddd4j-ai</url>
+
+    <dependencies>
+        <!-- Anthropic Claude Code Java SDK（Easy4J 封装）：CLI/SDK 方式调用 Claude Code 会话 -->
+        <dependency>
+            <groupId>io.github.easy4j</groupId>
+            <artifactId>claudecode-java-sdk</artifactId>
+        </dependency>
+        <!-- OpenAI Codex CLI Java SDK（Easy4J 封装）：调用 OpenAI Codex CLI 执行编码任务 -->
+        <dependency>
+            <groupId>io.github.easy4j</groupId>
+            <artifactId>codex-java-sdk</artifactId>
+        </dependency>
+        <!-- 字节跳动 Dreamina AI 绘图 Java SDK（Easy4J 封装）：调用 Dreamina 文生图 API -->
+        <dependency>
+            <groupId>io.github.easy4j</groupId>
+            <artifactId>dreamina-java-sdk</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>
