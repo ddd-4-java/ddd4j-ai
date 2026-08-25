@@ -11,6 +11,22 @@
     </parent>
 
     <artifactId>ddd4j-ai-extension-asr</artifactId>
-    <description>语音识别组件</description>
+    <description>离线语音识别组件：Whisper.cpp（JNA）本地转写，自动重采样到 16kHz 单声道</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.github.ggerganov</groupId>
+            <artifactId>whispercpp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>
