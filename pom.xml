@@ -60,7 +60,7 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
-            <uniqueVersion>true</uniqueVersion>
+            <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
     </distributionManagement>
 
