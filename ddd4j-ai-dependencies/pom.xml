@@ -41,6 +41,8 @@
         <langchain4j.version>1.19.0</langchain4j.version>
         <agentscope-java.version>2.0.2</agentscope-java.version>
         <whispercpp.version>1.4.0</whispercpp.version>
+        <pdfbox.version>3.0.8</pdfbox.version>
+        <tika.version>3.3.2</tika.version>
     </properties>
 
     <dependencyManagement>
@@ -235,6 +237,21 @@
                 <groupId>io.github.ggerganov</groupId>
                 <artifactId>whispercpp</artifactId>
                 <version>${whispercpp.version}</version>
+            </dependency>
+            <!-- 文档/图像解析与 OCR：PDFBox 直接条目 + Tika BOM import（tika-core/parsers 走 BOM 管理） -->
+            <!-- https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox -->
+            <dependency>
+                <groupId>org.apache.pdfbox</groupId>
+                <artifactId>pdfbox</artifactId>
+                <version>${pdfbox.version}</version>
+            </dependency>
+            <!-- https://mvnrepository.com/artifact/org.apache.tika/tika-bom -->
+            <dependency>
+                <groupId>org.apache.tika</groupId>
+                <artifactId>tika-bom</artifactId>
+                <version>${tika.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
