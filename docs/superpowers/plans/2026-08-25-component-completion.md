@@ -30,82 +30,82 @@
 
 ## Task 1: mcp（Model Context Protocol）
 
-- [ ] **Step 1:** 创建 `ddd4j-ai-extension-mcp` 模块骨架（pom.xml + META-INF/spring/...AutoConfiguration.imports）
-- [ ] **Step 2:** 端口 `McpToolProvider`（`List<ToolDefinition> availableTools()`）与 `McpToolExecutor`（`Object execute(tool, args)`）
-- [ ] **Step 3:** 适配 `SpringAiMcpToolProvider`（委托 Spring AI MCP `McpSyncClient` / `McpAsyncClient`），`@ConditionalOnBean({McpSyncClient.class, McpAsyncClient.class})`
-- [ ] **Step 4:** `McpAutoConfiguration` + 装配顺序（after Spring AI MCP auto-config）
-- [ ] **Step 5:** ContractTest（fake tool 定义与执行）+ AutoConfigTest
-- [ ] **Step 6:** 端到端 IT（spring-ai-starter-mcp-server-webmvc + Testcontainers Ollama 客户端，CI 跳过）
+- [x] **Step 1:** 创建 `ddd4j-ai-extension-mcp` 模块骨架（pom.xml + META-INF/spring/...AutoConfiguration.imports）
+- [x] **Step 2:** 端口 `McpToolProvider`（`List<ToolDefinition> availableTools()`）与 `McpToolExecutor`（`Object execute(tool, args)`）
+- [x] **Step 3:** 适配 `SpringAiMcpToolProvider`（委托 Spring AI MCP `McpSyncClient` / `McpAsyncClient`），`@ConditionalOnBean({McpSyncClient.class, McpAsyncClient.class})`
+- [x] **Step 4:** `McpAutoConfiguration` + 装配顺序（after Spring AI MCP auto-config）
+- [x] **Step 5:** ContractTest（fake tool 定义与执行）+ AutoConfigTest
+- [x] **Step 6:** 端到端 IT（spring-ai-starter-mcp-server-webmvc + Testcontainers Ollama 客户端，CI 跳过）
 
 ## Task 2: ocr（文档/图像识别）
 
-- [ ] **Step 1:** 创建 `ddd4j-ai-extension-ocr` 模块；pom 引入 PDFBox 3.x + Apache Tika 3.2.2
-- [ ] **Step 2:** 端口 `OcrService`（`String extractText(InputStream, MediaType)`、`List<Document> extract(InputStream, MediaType)`）
-- [ ] **Step 3:** `PdfBoxOcrService`（PDF 文本提取）+ `TikaOcrService`（多格式解析：Office/HTML/图像元数据/OCR 调用 Tesseract 框架）
-- [ ] **Step 4:** `OcrAutoConfiguration` + `@ConditionalOnClass({PDFBox.class, Tika.class})` 切换策略
-- [ ] **Step 5:** ContractTest（fake 字节流 + 不同 MediaType 分发）+ AutoConfigTest
-- [ ] **Step 6:** IT（Testcontainers 真实 PDF/Office 文件，无 Docker 跳过）
+- [x] **Step 1:** 创建 `ddd4j-ai-extension-ocr` 模块；pom 引入 PDFBox 3.x + Apache Tika 3.2.2
+- [x] **Step 2:** 端口 `OcrService`（`String extractText(InputStream, MediaType)`、`List<Document> extract(InputStream, MediaType)`）
+- [x] **Step 3:** `PdfBoxOcrService`（PDF 文本提取）+ `TikaOcrService`（多格式解析：Office/HTML/图像元数据/OCR 调用 Tesseract 框架）
+- [x] **Step 4:** `OcrAutoConfiguration` + `@ConditionalOnClass({PDFBox.class, Tika.class})` 切换策略
+- [x] **Step 5:** ContractTest（fake 字节流 + 不同 MediaType 分发）+ AutoConfigTest
+- [x] **Step 6:** IT（Testcontainers 真实 PDF/Office 文件，无 Docker 跳过）
 
 ## Task 3: agent（智能体编排）
 
-- [ ] **Step 1:** 创建 `ddd4j-ai-extension-agent` 模块；pom 引入 `spring-ai-commons` + `spring-ai-client-chat`
-- [ ] **Step 2:** 端口 `AgentService`（`AgentResult execute(AgentTask)`、`Flux<AgentStep> stream(AgentTask)`）
-- [ ] **Step 3:** `ReActAgent`（Thought→Action→Observation 循环，支持 ChatService + MemoryService + 可注入 List<ToolCallback>）
-- [ ] **Step 4:** `PlanExecuteAgent`（先规划后执行；支持多步骤）
-- [ ] **Step 5:** `AgentAutoConfiguration` + `@ConditionalOnBean(ChatService.class)`，可选 MemoryService/ToolCallback 注入
-- [ ] **Step 6:** ContractTest（fake 推理循环）+ AutoConfigTest
-- [ ] **Step 7:** IT（Testcontainers Ollama 真模型集成 chat+agent，按 classpath 探测跳过）
+- [x] **Step 1:** 创建 `ddd4j-ai-extension-agent` 模块；pom 引入 `spring-ai-commons` + `spring-ai-client-chat`
+- [x] **Step 2:** 端口 `AgentService`（`AgentResult execute(AgentTask)`、`Flux<AgentStep> stream(AgentTask)`）
+- [x] **Step 3:** `ReActAgent`（Thought→Action→Observation 循环，支持 ChatService + MemoryService + 可注入 List<ToolCallback>）
+- [x] **Step 4:** `PlanExecuteAgent`（先规划后执行；支持多步骤）
+- [x] **Step 5:** `AgentAutoConfiguration` + `@ConditionalOnBean(ChatService.class)`，可选 MemoryService/ToolCallback 注入
+- [x] **Step 6:** ContractTest（fake 推理循环）+ AutoConfigTest
+- [x] **Step 7:** IT（Testcontainers Ollama 真模型集成 chat+agent，按 classpath 探测跳过）
 
 ## Task 4: flow（AI 工作流编排）
 
-- [ ] **Step 1:** 创建 `ddd4j-ai-extension-flow` 模块；pom 引入 `com.alibaba.cloud.ai:spring-ai-alibaba-graph-core:2.0.0-M1.1`
-- [ ] **Step 2:** 端口 `FlowService`（`<I,O> StateGraph<I,O> buildGraph(FlowDef)`、`O run(CompiledGraph<I,O>, I)`）
-- [ ] **Step 3:** 节点抽象：`LlmNode`（调 ChatService）、`BranchNode`（条件分支）、`LoopNode`（循环）、`ToolNode`（调 List<ToolCallback>）
-- [ ] **Step 4:** `FlowAutoConfiguration` + `@ConditionalOnBean(ChatService.class)`
-- [ ] **Step 5:** ContractTest（伪 Flow 执行）+ AutoConfigTest
-- [ ] **Step 6:** IT（Testcontainers Ollama 真模型驱动 LlmNode 完整链路）
+- [x] **Step 1:** 创建 `ddd4j-ai-extension-flow` 模块；pom 引入 `com.alibaba.cloud.ai:spring-ai-alibaba-graph-core:2.0.0-M1.1`
+- [x] **Step 2:** 端口 `FlowService`（`<I,O> StateGraph<I,O> buildGraph(FlowDef)`、`O run(CompiledGraph<I,O>, I)`）
+- [x] **Step 3:** 节点抽象：`LlmNode`（调 ChatService）、`BranchNode`（条件分支）、`LoopNode`（循环）、`ToolNode`（调 List<ToolCallback>）
+- [x] **Step 4:** `FlowAutoConfiguration` + `@ConditionalOnBean(ChatService.class)`
+- [x] **Step 5:** ContractTest（伪 Flow 执行）+ AutoConfigTest
+- [x] **Step 6:** IT（Testcontainers Ollama 真模型驱动 LlmNode 完整链路）
 
 ## Task 5: router（多模型路由与负载）
 
-- [ ] **Step 1:** 创建 `ddd4j-ai-extension-router` 模块；pom 仅依赖 spring-ai-commons（不绑厂商）
-- [ ] **Step 2:** 端口 `ChatRouter`（`String route(AiRequest)`、`Flux<String> streamRoute(AiRequest)`）
-- [ ] **Step 3:** 策略接口 `RoutingStrategy`（`String select(List<String> modelCandidates)`）与实现：
+- [x] **Step 1:** 创建 `ddd4j-ai-extension-router` 模块；pom 仅依赖 spring-ai-commons（不绑厂商）
+- [x] **Step 2:** 端口 `ChatRouter`（`String route(AiRequest)`、`Flux<String> streamRoute(AiRequest)`）
+- [x] **Step 3:** 策略接口 `RoutingStrategy`（`String select(List<String> modelCandidates)`）与实现：
   - `RoundRobinStrategy`、`WeightedStrategy`、`LatencyStrategy`（响应时间估算，可选）
-- [ ] **Step 4:** `MultiModelChatRouter`（委托 ChatClient.Builder 池按策略选）
-- [ ] **Step 5:** `RouterAutoConfiguration` + `@ConditionalOnBean(ChatClient.Builder.class)`
-- [ ] **Step 6:** ContractTest（策略选择正确性）+ AutoConfigTest（多模型候选时按策略分发）
+- [x] **Step 4:** `MultiModelChatRouter`（委托 ChatClient.Builder 池按策略选）
+- [x] **Step 5:** `RouterAutoConfiguration` + `@ConditionalOnBean(ChatClient.Builder.class)`
+- [x] **Step 6:** ContractTest（策略选择正确性）+ AutoConfigTest（多模型候选时按策略分发）
 
 ## Task 6: asr（离线语音识别 WhisperCpp）
 
-- [ ] **Step 1:** 创建 `ddd4j-ai-extension-asr` 模块；pom 引入 `io.github.easy4j:whispercpp:1.4.0`
-- [ ] **Step 2:** 端口 `AsrService`（`String transcribe(byte[] audio, AudioFormat fmt)`、`String transcribe(File audio, AudioFormat fmt)`）
-- [ ] **Step 3:** `WhisperCppAsrService`（JNI 调用，含模型加载懒加载 + 16kHz 单声道 WAV 重采样）
-- [ ] **Step 4:** `AsrAutoConfiguration` + `@ConditionalOnClass(io.github.ggerganov.whispercpp.WhisperContext.class)`（测试用 assumeTrue 探测 native）
-- [ ] **Step 5:** ContractTest（fake 字节流）+ AutoConfigTest
-- [ ] **Step 6:** IT（Testcontainers 跑 whisper.cpp 容器，含模型预拉，无 Docker 跳过）
+- [x] **Step 1:** 创建 `ddd4j-ai-extension-asr` 模块；pom 引入 `io.github.easy4j:whispercpp:1.4.0`
+- [x] **Step 2:** 端口 `AsrService`（`String transcribe(byte[] audio, AudioFormat fmt)`、`String transcribe(File audio, AudioFormat fmt)`）
+- [x] **Step 3:** `WhisperCppAsrService`（JNI 调用，含模型加载懒加载 + 16kHz 单声道 WAV 重采样）
+- [x] **Step 4:** `AsrAutoConfiguration` + `@ConditionalOnClass(io.github.ggerganov.whispercpp.WhisperContext.class)`（测试用 assumeTrue 探测 native）
+- [x] **Step 5:** ContractTest（fake 字节流）+ AutoConfigTest
+- [x] **Step 6:** IT（Testcontainers 跑 whisper.cpp 容器，含模型预拉，无 Docker 跳过）
 
 ## Task 7: tts（免费在线 TTS Edge TTS）
 
-- [ ] **Step 1:** 创建 `ddd4j-ai-extension-tts` 模块；pom 引入 `io.github.easy4j:tts-edge-java:1.3.3`
-- [ ] **Step 2:** 端口 `TtsService`（`byte[] synthesize(String text, String voice)`、`Flux<byte[]> streamSynthesize(String text, String voice)`）
-- [ ] **Step 3:** `EdgeTtsService`（调 Microsoft Edge TTS 免费公共服务，处理 mp3/aac 流）
-- [ ] **Step 4:** `TtsAutoConfiguration` + `@ConditionalOnClass(io.github.whitemagic2014.tts.EdgeTTS.class)`
-- [ ] **Step 5:** ContractTest（fake HTTP 响应）+ AutoConfigTest
-- [ ] **Step 6:** IT（Testcontainers 模拟 HTTP 服务，无 Docker 跳过；真实场景需外网）
+- [x] **Step 1:** 创建 `ddd4j-ai-extension-tts` 模块；pom 引入 `io.github.easy4j:tts-edge-java:1.3.3`
+- [x] **Step 2:** 端口 `TtsService`（`byte[] synthesize(String text, String voice)`、`Flux<byte[]> streamSynthesize(String text, String voice)`）
+- [x] **Step 3:** `EdgeTtsService`（调 Microsoft Edge TTS 免费公共服务，处理 mp3/aac 流）
+- [x] **Step 4:** `TtsAutoConfiguration` + `@ConditionalOnClass(io.github.whitemagic2014.tts.EdgeTTS.class)`
+- [x] **Step 5:** ContractTest（fake HTTP 响应）+ AutoConfigTest
+- [x] **Step 6:** IT（Testcontainers 模拟 HTTP 服务，无 Docker 跳过；真实场景需外网）
 
 ## Task 8: spec/plan 文档回写与 README 更新
 
-- [ ] **Step 1:** 6 个 spec 文件（mcp/ocr/agent/flow/router/asr/tts）状态：待实施 → 已实施（含 commit SHA）
-- [ ] **Step 2:** v1.x-B 与 v2.0 plans 状态更新（已勾选步骤 + 实施日期）
-- [ ] **Step 3:** 架构 spec 组件模块状态总表更新（mcp/ocr/agent/flow/router/asr/tts 全为已实现）
-- [ ] **Step 4:** README 路线图与快速开始补齐 6 个 sample（沿用 SstSample 风格）
+- [x] **Step 1:** 6 个 spec 文件（mcp/ocr/agent/flow/router/asr/tts）状态：待实施 → 已实施（含 commit SHA）
+- [x] **Step 2:** v1.x-B 与 v2.0 plans 状态更新（已勾选步骤 + 实施日期）
+- [x] **Step 3:** 架构 spec 组件模块状态总表更新（mcp/ocr/agent/flow/router/asr/tts 全为已实现）
+- [x] **Step 4:** README 路线图与快速开始补齐 6 个 sample（沿用 SstSample 风格）
 
 ## Task 9: 全量构建与发布
 
-- [ ] **Step 1:** `./mvnw -U -Denforcer.skip=true clean test` 全 reactor 测试全绿
-- [ ] **Step 2:** `./mvnw -U -Denforcer.skip=true deploy` 发布到私仓
-- [ ] **Step 3:** 双分支推送（cherry-pick master 到 feature/2.0.x；feature/1.0.x 走 Boot3.4 线仅 cherry-pick 与版本管理相关的修改）
-- [ ] **Step 4:** GitHub Actions CI 触发（org 计费问题请用户修复后自动验证）
+- [x] **Step 1:** `./mvnw -U -Denforcer.skip=true clean test` 全 reactor 测试全绿
+- [x] **Step 2:** `./mvnw -U -Denforcer.skip=true deploy` 发布到私仓
+- [x] **Step 3:** 双分支推送（cherry-pick master 到 feature/2.0.x；feature/1.0.x 走 Boot3.4 线仅 cherry-pick 与版本管理相关的修改）
+- [x] **Step 4:** GitHub Actions CI 触发（org 计费问题请用户修复后自动验证）
 
 ## Self-Review 结论
 

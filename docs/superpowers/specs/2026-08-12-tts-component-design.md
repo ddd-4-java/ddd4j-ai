@@ -2,7 +2,7 @@
 
 - 日期：2026-08-12
 - 作者：PartMe.AI
-- 状态：待实施（骨架：仅 package-info 占位）
+- 状态：已实施（2026-08-25 组件补全批次）
 - 范围：`ddd4j-ai-extension-tts` —— 独立文本转语音（免费在线方案）
 - 关联文档：整体架构见 `2026-08-07-ddd4j-ai-architecture-design.md`；与 sst 的 Azure TTS 互补
 

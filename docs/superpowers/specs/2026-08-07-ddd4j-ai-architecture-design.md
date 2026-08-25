@@ -99,7 +99,7 @@
 
 ## 6. 组件模块状态总表
 
-> 状态以实际代码为准（核对于 2026-08-16）。
+> 状态以实际代码为准（核对于 2026-08-25）。
 
 | 组件模块 | 功能 | 当前状态 | 真实代码 |
 |----------|------|----------|----------|
@@ -108,16 +108,16 @@
 | ddd4j-ai-extension-memory | 会话记忆与上下文管理 | **已实现**（v1.x-A） | 窗口实现+可插拔 repository |
 | ddd4j-ai-extension-embedding | 文本向量嵌入（Embedding） | **已实现**（v1.x-A） | 批量分片适配器 |
 | ddd4j-ai-extension-vectordb | 向量数据库接入与检索 | **已实现**（v1.x-A） | 通用 VectorStore 适配器 |
-| ddd4j-ai-extension-agent | AI 智能体编排与工具调用 | 骨架 | 无 |
-| ddd4j-ai-extension-flow | AI 工作流（对接 Spring AI Alibaba Graph 等） | 骨架 | 无 |
+| ddd4j-ai-extension-agent | AI 智能体编排与工具调用 | **已实现**（2026-08-25） | ReAct+Plan-Execute+AutoConfig |
+| ddd4j-ai-extension-flow | AI 工作流（对接 Spring AI Alibaba Graph） | **已实现**（2026-08-25） | Graph DSL+LLM/TOOL/BRANCH 节点 |
 | ddd4j-ai-extension-rag | 检索增强生成（RAG）管道 | **已实现**（v1.x-B 提前交付） | 管道+Reranker 扩展点 |
-| ddd4j-ai-extension-asr | 自动语音识别（ASR），规划对接 WhisperCpp 等 | 骨架 | 无 |
-| ddd4j-ai-extension-tts | 文本转语音（TTS），规划对接 Edge TTS 等 | 骨架 | 无 |
+| ddd4j-ai-extension-asr | 自动语音识别（ASR），对接 WhisperCpp | **已实现**（2026-08-25） | JNA 转写+WAV 重采样 |
+| ddd4j-ai-extension-tts | 文本转语音（TTS），对接 Edge TTS | **已实现**（2026-08-25） | Edge TTS 免费合成 |
 | ddd4j-ai-extension-sst | 语音合成与识别，已实现 Azure Speech + FFmpeg 音频转换 | **已实现** | 12 类 |
-| ddd4j-ai-extension-mcp | Model Context Protocol 工具与资源接入 | 骨架 | 无 |
-| ddd4j-ai-extension-ocr | 文档/图像 OCR，规划对接 PDFBox、Tika 等 | 骨架 | 无 |
-| ddd4j-ai-extension-router | 多模型智能路由与负载策略 | 骨架 | 无 |
-| ddd4j-ai-samples | 示例工程 | **已实现**（sst/chat/memory/embedding/vectordb/rag 六示例） | 6 示例类 |
+| ddd4j-ai-extension-mcp | Model Context Protocol 工具与资源接入 | **已实现**（2026-08-25） | 端口+Spring AI 客户端适配 |
+| ddd4j-ai-extension-ocr | 文档/图像 OCR，对接 PDFBox、Tika | **已实现**（2026-08-25） | PDFBox 直提+Tika 多格式 |
+| ddd4j-ai-extension-router | 多模型智能路由与负载策略 | **已实现**（2026-08-25） | 轮询/权重/延迟策略 |
+| ddd4j-ai-samples | 示例工程 | **已实现**（13 组件示例） | 13 示例类 |
 
 > 已实现组件统一遵循 COLA 分层（service 端口 + impl + properties）与标准 Spring Boot `@AutoConfiguration`（`AutoConfiguration.imports`）；sst 为历史实现（组件扫描装配），保持存量不动。实现将随版本迭代逐步补齐，演进路线见 `docs/superpowers/plans/`。
 
