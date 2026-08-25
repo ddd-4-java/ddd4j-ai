@@ -11,6 +11,27 @@
     </parent>
 
     <artifactId>ddd4j-ai-extension-router</artifactId>
-    <description>智能路由组件</description>
+    <description>多模型路由组件：按策略（轮询/权重/延迟）在 ChatClient 池中分发请求</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.ddd4j.ai</groupId>
+            <artifactId>ddd4j-ai-core</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-client-chat</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>
