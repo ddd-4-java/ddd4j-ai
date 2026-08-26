@@ -2,10 +2,12 @@ package io.ddd4j.ai.cmpt.document.parser;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -33,6 +35,7 @@ import io.ddd4j.ai.cmpt.document.DocumentImage;
 import io.ddd4j.ai.cmpt.document.DocumentParser;
 import io.ddd4j.ai.cmpt.document.DocumentSection;
 import io.ddd4j.ai.cmpt.document.DocumentTable;
+import io.ddd4j.ai.cmpt.document.DocumentTooLargeException;
 import io.ddd4j.ai.cmpt.document.MediaType;
 import io.ddd4j.ai.cmpt.document.SourceType;
 import io.ddd4j.ai.cmpt.document.properties.DocumentProperties;
@@ -83,24 +86,39 @@ public final class TikaDocumentParser implements DocumentParser {
     @Override
     public Document parse(File file) throws Exception {
         Objects.requireNonNull(file, "file must not be null");
-        byte[] bytes = Files.readAllBytes(file.toPath());
-        String mime = TIKA.detect(bytes, file.getName());
-        return toDocument(file.getName(), mime, bytes, parse(bytes));
+        long limit = properties.getMaxFileSizeBytes();
+        if (limit > 0 && Files.size(file.toPath()) > limit) {
+            throw new DocumentTooLargeException(
+                    "document exceeds size limit: " + file.getName() + " > " + limit + " bytes");
+        }
+        String mime = TIKA.detect(file.toPath());
+        if (isAudio(mime) && asrService != null) {
+            // 音频转写需完整字节（asr 端口契约），受同一大小上限保护
+            byte[] bytes = Files.readAllBytes(file.toPath());
+            return map(file.getName(), mime, appendTranscription(parse(file.toPath()), bytes));
+        }
+        return map(file.getName(), mime, parse(file.toPath()));
     }
 
     @Override
     public Document parse(InputStream in, String filename) throws Exception {
         Objects.requireNonNull(in, "in must not be null");
-        byte[] bytes = in.readAllBytes();
-        String mime = TIKA.detect(bytes, filename);
-        return toDocument(filename, mime, bytes, parse(bytes));
+        File tmp = File.createTempFile("dai-doc-", "-" + (filename == null ? "tmp" : filename));
+        try {
+            copyLimited(in, tmp.toPath());
+            return parse(tmp);
+        } finally {
+            tmp.delete();
+        }
     }
 
-    private Document toDocument(String name, String mime, byte[] bytes, Parsed parsed) throws Exception {
-        if (isAudio(mime) && asrService != null) {
-            return map(name, mime, appendTranscription(parsed, bytes));
+    /** 限额复制：超过 max-file-size-bytes 抛 {@link DocumentTooLargeException}（流式计数，不全量入内存）。 */
+    private void copyLimited(InputStream in, Path target) throws IOException {
+        long limit = properties.getMaxFileSizeBytes();
+        InputStream source = limit > 0 ? new LimitedInputStream(in, limit) : in;
+        try (source; java.io.OutputStream out = Files.newOutputStream(target)) {
+            source.transferTo(out);
         }
-        return map(name, mime, parsed);
     }
 
     private static boolean isAudio(String mime) {
@@ -125,15 +143,15 @@ public final class TikaDocumentParser implements DocumentParser {
         }
     }
 
-    private Parsed parse(byte[] bytes) throws Exception {
+    private Parsed parse(Path path) throws Exception {
         EmbeddedImageExtractor extractor = new EmbeddedImageExtractor();
         try {
-            return doParse(bytes, ocrEnabled() ? ocrContext(extractor) : context(extractor), extractor);
+            return doParse(path, ocrEnabled() ? ocrContext(extractor) : context(extractor), extractor);
         } catch (Exception e) {
             // OCR 引擎不可用（宿主机缺 tesseract）时降级：无 OCR 上下文重解析，
             // 保证智能体总能拿到结果（对齐 markitdown 的 OCR 失败不阻塞哲学）
             if (properties.isOcrEnabled()) {
-                return doParse(bytes, context(extractor), extractor);
+                return doParse(path, context(extractor), extractor);
             }
             throw e;
         }
@@ -158,15 +176,56 @@ public final class TikaDocumentParser implements DocumentParser {
         return context;
     }
 
-    private static Parsed doParse(byte[] bytes, ParseContext context, EmbeddedImageExtractor extractor) throws Exception {
+    /** 流式解析：TikaInputStream 按需 spool（大文件落盘临时文件），不整体入内存。 */
+    private static Parsed doParse(Path path, ParseContext context, EmbeddedImageExtractor extractor) throws Exception {
         StringWriter writer = new StringWriter();
         MarkdownStructureHandler structure = new MarkdownStructureHandler();
         TeeContentHandler tee = new TeeContentHandler(new ToMarkdownContentHandler(writer), structure);
-        Metadata metadata = new Metadata();
-        new AutoDetectParser().parse(new ByteArrayInputStream(bytes), tee, metadata, context);
-        List<DocumentImage> images = new ArrayList<>(structure.images());
-        images.addAll(extractor.images());
-        return new Parsed(writer.toString(), structure.sections(), structure.tables(), images, metadata);
+        try (org.apache.tika.io.TikaInputStream stream = org.apache.tika.io.TikaInputStream.get(path)) {
+            Metadata metadata = new Metadata();
+            new AutoDetectParser().parse(stream, tee, metadata, context);
+            List<DocumentImage> images = new ArrayList<>(structure.images());
+            images.addAll(extractor.images());
+            return new Parsed(writer.toString(), structure.sections(), structure.tables(), images, metadata);
+        }
+    }
+
+    /** 限额读流：累计字节超限即抛，避免全量入内存后才拒绝。 */
+    private static final class LimitedInputStream extends FilterInputStream {
+
+        private final long limit;
+        private long read;
+
+        private LimitedInputStream(InputStream in, long limit) {
+            super(in);
+            this.limit = limit;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            int n = super.read(b, off, len);
+            if (n > 0) {
+                read += n;
+                checkLimit();
+            }
+            return n;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int c = super.read();
+            if (c != -1) {
+                read++;
+                checkLimit();
+            }
+            return c;
+        }
+
+        private void checkLimit() {
+            if (read > limit) {
+                throw new DocumentTooLargeException("document exceeds size limit: > " + limit + " bytes");
+            }
+        }
     }
 
     /** 收集容器文档（docx/zip 等）内嵌图片 → base64 data URL（对齐 markitdown 的图片提取）。 */

@@ -46,4 +46,24 @@ public class DocumentProperties {
      * 启用语言检测（Tika LanguageDetector → metadata.language）。
      */
     private boolean enableLanguageDetection = true;
+
+    /**
+     * 文档大小上限（字节），超过直接拒绝（DocumentTooLargeException），防 OOM；{@code <=0} 不限制。
+     */
+    private long maxFileSizeBytes = 104_857_600L;
+
+    /**
+     * 解析超时（毫秒），超时抛 TikaTimeoutException 不重试；{@code <=0} 不限时。
+     */
+    private long parseTimeoutMillis = 60_000L;
+
+    /**
+     * 嵌入图片数量上限，超出丢弃并在 metadata 记 truncated；{@code <=0} 不限制。
+     */
+    private int maxEmbeddedImages = 20;
+
+    /**
+     * 单张嵌入图片大小上限（字节），超图跳过；{@code <=0} 不限制。
+     */
+    private long maxEmbeddedImageBytes = 5_242_880L;
 }
