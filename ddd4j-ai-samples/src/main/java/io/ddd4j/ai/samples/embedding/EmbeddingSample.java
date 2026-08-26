@@ -1,6 +1,6 @@
 package io.ddd4j.ai.samples.embedding;
 
-import io.ddd4j.ai.cmpt.embedding.service.EmbeddingService;
+import io.ddd4j.ai.extension.embedding.service.EmbeddingService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

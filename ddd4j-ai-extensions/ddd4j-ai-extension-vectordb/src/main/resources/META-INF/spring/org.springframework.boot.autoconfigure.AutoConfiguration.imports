@@ -1,1 +1,1 @@
-io.ddd4j.ai.cmpt.vectordb.autoconfigure.VectorDbAutoConfiguration
+io.ddd4j.ai.extension.vectordb.autoconfigure.VectorDbAutoConfiguration

@@ -111,7 +111,7 @@
 ## Task 6: 模块命名规范化（架构定型）
 
 **Files:**
-- Modify: 各 extension 模块包名 `io.ddd4j.ai.cmpt.<domain>` 统一；package-info 模板统一（`@version 1.0.0`）
+- Modify: 各 extension 模块包名 `io.ddd4j.ai.extension.<domain>` 统一；package-info 模板统一（`@version 1.0.0`）
 - Modify: 根 pom `<revision>1.0.0-SNAPSHOT</revision>`
 
 **Interfaces:** Produces 当前架构形态；Consumes —

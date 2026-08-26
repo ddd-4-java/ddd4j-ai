@@ -1,6 +1,6 @@
 package io.ddd4j.ai.samples.memory;
 
-import io.ddd4j.ai.cmpt.memory.service.MemoryService;
+import io.ddd4j.ai.extension.memory.service.MemoryService;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;

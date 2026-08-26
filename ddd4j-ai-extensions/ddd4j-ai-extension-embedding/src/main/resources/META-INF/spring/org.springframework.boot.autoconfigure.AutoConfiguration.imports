@@ -1,1 +1,1 @@
-io.ddd4j.ai.cmpt.embedding.autoconfigure.EmbeddingAutoConfiguration
+io.ddd4j.ai.extension.embedding.autoconfigure.EmbeddingAutoConfiguration

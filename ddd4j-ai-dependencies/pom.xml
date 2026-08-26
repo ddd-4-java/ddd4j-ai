@@ -19,17 +19,12 @@
     </description>
 
     <properties>
-<<<<<<< HEAD
         <ddd4j-boot.version>3.4.x.20260630-SNAPSHOT</ddd4j-boot.version>
         <jackson-bom.version>2.22.1</jackson-bom.version>
-=======
-        <ddd4j-boot.version>4.0.x.20260630-SNAPSHOT</ddd4j-boot.version>
-        <jackson-bom.version>3.2.1</jackson-bom.version>
         <!-- ddd4j-ai-sdk-deps 模块专用 easy4j AI SDK 版本（自 ddd4j 主仓 ddd4j-ai-dependencies 迁入） -->
         <easy4j-claudecode-java-sdk.version>3.0.x.20260630-SNAPSHOT</easy4j-claudecode-java-sdk.version>
         <easy4j-codex-java-sdk.version>3.0.x.20260630-SNAPSHOT</easy4j-codex-java-sdk.version>
         <easy4j-dreamina-java-sdk.version>3.0.x.20260630-SNAPSHOT</easy4j-dreamina-java-sdk.version>
->>>>>>> 677f85e (feat(ai-sdk-deps): 从 ddd4j 主仓迁入 AI SDK 依赖聚合模块)
         <tts-edge-java.version>1.3.3</tts-edge-java.version>
         <protobuf-java.version>4.35.1</protobuf-java.version>
         <google-protos.version>2.74.0</google-protos.version>
@@ -56,6 +51,15 @@
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
                 <version>${jackson-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Boot 3.4 基线显式对齐（与 2.0.x 线同因）：上游传递 BOM 未覆盖 spring-boot-* 管理，
+                 组件依赖 spring-boot-autoconfigure/starter-test 需版本来源 -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>3.4.13</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

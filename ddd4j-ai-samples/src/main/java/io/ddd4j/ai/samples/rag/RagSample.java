@@ -1,6 +1,6 @@
 package io.ddd4j.ai.samples.rag;
 
-import io.ddd4j.ai.cmpt.rag.service.RagService;
+import io.ddd4j.ai.extension.rag.service.RagService;
 import org.springframework.ai.document.Document;
 import org.springframework.stereotype.Component;
 

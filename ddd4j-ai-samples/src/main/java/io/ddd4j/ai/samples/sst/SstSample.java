@@ -1,11 +1,11 @@
 package io.ddd4j.ai.samples.sst;
 
 import com.microsoft.cognitiveservices.speech.SpeechConfig;
-import io.ddd4j.ai.cmpt.sst.service.SpeechService;
-import io.ddd4j.ai.cmpt.sst.service.SpeechServiceText2VoiceCallback;
-import io.ddd4j.ai.cmpt.sst.service.SpeechServiceVoice2TextCallback;
-import io.ddd4j.ai.cmpt.sst.service.impl.FFmpegService;
-import io.ddd4j.ai.cmpt.sst.vo.TTSResultVO;
+import io.ddd4j.ai.extension.sst.service.SpeechService;
+import io.ddd4j.ai.extension.sst.service.SpeechServiceText2VoiceCallback;
+import io.ddd4j.ai.extension.sst.service.SpeechServiceVoice2TextCallback;
+import io.ddd4j.ai.extension.sst.service.impl.FFmpegService;
+import io.ddd4j.ai.extension.sst.vo.TTSResultVO;
 import org.springframework.stereotype.Component;
 
 /**

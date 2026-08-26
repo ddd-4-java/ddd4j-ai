@@ -38,7 +38,7 @@
 | D3 | `AiRequest` / `AiResponse` 使用 **record + 紧凑构造器不可变校验** | 请求/响应天然不可变；`metadata` 缺省 `Map.of()`，非空时 `Map.copyOf` 防御性拷贝 |
 | D4 | 组件以 **COLA 菱形架构** 落点为 Infrastructure 适配器 | AI 组件是 COLA 中的基础设施层，通过端口接口（`service` 包）与领域/应用层解耦 |
 | D5 | BOM **链式 import**：`ddd4j-ai-bom`（组件版本）+ `ddd4j-ai-dependencies`（第三方版本，import boot-dependencies） | 版本治理分层，业务服务继承 `ddd4j-ai-parent` 即获全部版本对齐 |
-| D6 | 子包约定 `cmpt`（component） | 与 Boot 组件范式对齐，AI 能力统一在 `io.ddd4j.ai.cmpt.<domain>` 下 |
+| D6 | 子包约定 `cmpt`（component） | 与 Boot 组件范式对齐，AI 能力统一在 `io.ddd4j.ai.extension.<domain>` 下 |
 
 ## 4. 总体架构
 
