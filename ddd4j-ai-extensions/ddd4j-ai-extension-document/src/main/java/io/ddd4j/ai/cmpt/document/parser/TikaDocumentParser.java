@@ -97,6 +97,15 @@ public final class TikaDocumentParser implements DocumentParser {
                     "document exceeds size limit: " + file.getName() + " > " + limit + " bytes");
         }
         long start = System.nanoTime();
+        long size = Files.size(file.toPath());
+        if (size == 0) {
+            // 空文件短路：返回空文档（比 Tika ZeroByteFileException 对智能体更友好）
+            Document empty = new Document(file.getName(), "application/octet-stream", SourceType.TIKA_FALLBACK,
+                    List.of(), List.of(), List.of(), "", Map.of("source", "tika", "empty", true));
+            log.info("document parsed: file={}, empty=true, tookMs={}",
+                    file.getName(), (System.nanoTime() - start) / 1_000_000);
+            return empty;
+        }
         String mime = TIKA.detect(file.toPath());
         try {
             Document document;
