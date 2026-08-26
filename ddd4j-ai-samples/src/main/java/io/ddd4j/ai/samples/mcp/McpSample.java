@@ -1,7 +1,7 @@
 package io.ddd4j.ai.samples.mcp;
 
-import io.ddd4j.ai.cmpt.mcp.service.McpToolProvider;
-import io.ddd4j.ai.cmpt.mcp.service.ToolDefinition;
+import io.ddd4j.ai.extension.mcp.service.McpToolProvider;
+import io.ddd4j.ai.extension.mcp.service.ToolDefinition;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

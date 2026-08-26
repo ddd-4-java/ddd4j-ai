@@ -129,7 +129,7 @@
 - Test: `src/test/java/io/ddd4j/ai/cmpt/document/parser/TikaAudioTranscriptionTest.java`
 
 **Interfaces:**
-- `TikaDocumentParser` 增加可选 `AsrService`（`io.ddd4j.ai.cmpt.asr.service.AsrService`）构造参数（可 null）
+- `TikaDocumentParser` 增加可选 `AsrService`（`io.ddd4j.ai.extension.asr.service.AsrService`）构造参数（可 null）
 - 音频判定：`TIKA.detect(bytes, name)` 结果以 `audio/` 开头 或 MediaType 为音频扩展（wav/mp3/flac/ogg/m4a）时：
   - 先走 Tika `AudioParser` 元数据（Task 2 已透传）
   - 若 `asrService != null`：`asrService.transcribe(bytes, AudioFormat.wav44100Stereo16())` → 转写文本追加为 `DocumentSection("Transcription", 1, text)`（markdown 全文追加段落）

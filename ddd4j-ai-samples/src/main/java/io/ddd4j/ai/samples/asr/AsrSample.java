@@ -1,7 +1,7 @@
 package io.ddd4j.ai.samples.asr;
 
-import io.ddd4j.ai.cmpt.asr.service.AsrService;
-import io.ddd4j.ai.cmpt.asr.service.AudioFormat;
+import io.ddd4j.ai.extension.asr.service.AsrService;
+import io.ddd4j.ai.extension.asr.service.AudioFormat;
 import org.springframework.stereotype.Component;
 
 import java.io.File;

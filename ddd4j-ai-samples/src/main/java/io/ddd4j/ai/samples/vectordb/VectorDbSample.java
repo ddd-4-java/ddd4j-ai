@@ -1,6 +1,6 @@
 package io.ddd4j.ai.samples.vectordb;
 
-import io.ddd4j.ai.cmpt.vectordb.service.VectorDbService;
+import io.ddd4j.ai.extension.vectordb.service.VectorDbService;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import org.springframework.stereotype.Component;

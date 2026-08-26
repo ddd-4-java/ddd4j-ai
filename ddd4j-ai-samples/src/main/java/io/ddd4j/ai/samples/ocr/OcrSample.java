@@ -1,6 +1,6 @@
 package io.ddd4j.ai.samples.ocr;
 
-import io.ddd4j.ai.cmpt.ocr.service.OcrService;
+import io.ddd4j.ai.extension.ocr.service.OcrService;
 import org.springframework.ai.document.Document;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;

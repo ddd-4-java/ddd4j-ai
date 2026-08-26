@@ -1,9 +1,9 @@
 package io.ddd4j.ai.samples.agent;
 
-import io.ddd4j.ai.cmpt.agent.service.AgentResult;
-import io.ddd4j.ai.cmpt.agent.service.AgentService;
-import io.ddd4j.ai.cmpt.agent.service.AgentStep;
-import io.ddd4j.ai.cmpt.agent.service.AgentTask;
+import io.ddd4j.ai.extension.agent.service.AgentResult;
+import io.ddd4j.ai.extension.agent.service.AgentService;
+import io.ddd4j.ai.extension.agent.service.AgentStep;
+import io.ddd4j.ai.extension.agent.service.AgentTask;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 

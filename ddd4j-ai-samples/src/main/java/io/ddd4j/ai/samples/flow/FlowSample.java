@@ -1,8 +1,8 @@
 package io.ddd4j.ai.samples.flow;
 
 import com.alibaba.cloud.ai.graph.CompiledGraph;
-import io.ddd4j.ai.cmpt.flow.service.FlowDefinition;
-import io.ddd4j.ai.cmpt.flow.service.FlowService;
+import io.ddd4j.ai.extension.flow.service.FlowDefinition;
+import io.ddd4j.ai.extension.flow.service.FlowService;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;

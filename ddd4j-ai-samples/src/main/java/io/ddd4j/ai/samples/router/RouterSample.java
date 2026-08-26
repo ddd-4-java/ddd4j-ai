@@ -1,6 +1,6 @@
 package io.ddd4j.ai.samples.router;
 
-import io.ddd4j.ai.cmpt.router.service.ChatRouter;
+import io.ddd4j.ai.extension.router.service.ChatRouter;
 import io.ddd4j.ai.core.AiRequest;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;

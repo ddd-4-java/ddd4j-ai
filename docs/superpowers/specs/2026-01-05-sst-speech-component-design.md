@@ -58,7 +58,7 @@ properties/AzureSpeechProperties     ← 配置（azure.speech.*）
 
 ### 5.1 SpeechService<T>（端口）
 
-包 `io.ddd4j.ai.cmpt.sst.service`：
+包 `io.ddd4j.ai.extension.sst.service`：
 
 ```java
 public interface SpeechService<T> {
@@ -81,7 +81,7 @@ public interface SpeechService<T> {
 
 ### 5.2 AzureSpeechService（实现）
 
-包 `io.ddd4j.ai.cmpt.sst.service.impl`：
+包 `io.ddd4j.ai.extension.sst.service.impl`：
 
 ```java
 @Slf4j @Component
@@ -99,7 +99,7 @@ public class AzureSpeechService implements SpeechService<SpeechConfig>, Initiali
 
 ### 5.3 FFmpegService
 
-包 `io.ddd4j.ai.cmpt.sst.service.impl`，`@Service`：
+包 `io.ddd4j.ai.extension.sst.service.impl`，`@Service`：
 
 ```java
 public class FFmpegService {
@@ -117,7 +117,7 @@ public class FFmpegService {
 
 ### 5.4 AzureSpeechProperties（配置）
 
-包 `io.ddd4j.ai.cmpt.sst.properties`：
+包 `io.ddd4j.ai.extension.sst.properties`：
 
 ```java
 @ConfigurationProperties(prefix = "azure.speech")
@@ -144,7 +144,7 @@ azure:
 
 ## 6. 数据模型（dto / vo / enums）
 
-包 `io.ddd4j.ai.cmpt.sst`：
+包 `io.ddd4j.ai.extension.sst`：
 
 | 类型 | 类名 | 说明 |
 |------|------|------|

@@ -1,6 +1,6 @@
 package io.ddd4j.ai.sample.web;
 
-import io.ddd4j.ai.cmpt.chat.service.ChatService;
+import io.ddd4j.ai.extension.chat.service.ChatService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;

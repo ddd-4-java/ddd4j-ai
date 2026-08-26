@@ -1,7 +1,7 @@
 package io.ddd4j.ai.sample;
 
-import io.ddd4j.ai.cmpt.chat.service.ChatService;
-import io.ddd4j.ai.cmpt.rag.service.RagService;
+import io.ddd4j.ai.extension.chat.service.ChatService;
+import io.ddd4j.ai.extension.rag.service.RagService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -58,7 +58,7 @@ class SampleAppOllamaSmokeTest {
     RagService ragService;
 
     @Autowired
-    io.ddd4j.ai.cmpt.memory.service.MemoryService memoryService;
+    io.ddd4j.ai.extension.memory.service.MemoryService memoryService;
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)

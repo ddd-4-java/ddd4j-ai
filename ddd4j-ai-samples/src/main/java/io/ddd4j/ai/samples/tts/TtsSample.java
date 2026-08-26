@@ -1,6 +1,6 @@
 package io.ddd4j.ai.samples.tts;
 
-import io.ddd4j.ai.cmpt.tts.service.TtsService;
+import io.ddd4j.ai.extension.tts.service.TtsService;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 

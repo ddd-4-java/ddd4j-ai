@@ -1,6 +1,6 @@
 package io.ddd4j.ai.sample.web;
 
-import io.ddd4j.ai.cmpt.rag.service.RagService;
+import io.ddd4j.ai.extension.rag.service.RagService;
 import org.springframework.ai.document.Document;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;

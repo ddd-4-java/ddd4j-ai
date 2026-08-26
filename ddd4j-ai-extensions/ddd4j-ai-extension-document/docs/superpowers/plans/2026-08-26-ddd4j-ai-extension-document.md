@@ -29,7 +29,7 @@
 
 ## Global Constraints
 
-- 模块坐标：`io.ddd4j.ai:ddd4j-ai-extension-document:${revision}`，包 `io.ddd4j.ai.cmpt.document`
+- 模块坐标：`io.ddd4j.ai:ddd4j-ai-extension-document:${revision}`，包 `io.ddd4j.ai.extension.document`
 - **Java 17+ 语法**（ddd4j 整体目标；可用 `var`/record/sealed）
 - 引入依赖：`io.gitlab.ade90036:markitdown-core:1.0.0` + `io.gitlab.ade90036:converter-pdf:1.0.0` + `io.gitlab.ade90036:converter-docx:1.0.0` + `io.gitlab.ade90036:converter-xlsx:1.0.0` + `io.gitlab.ade90036:converter-csv:1.0.0` + `io.gitlab.ade90036:converter-html:1.0.0` + `io.gitlab.ade90036:converter-pptx:1.0.0` + `io.gitlab.ade90036:converter-plaintext:1.0.0` + `io.gitlab.ade90036:converter-epub:1.0.0` + `io.gitlab.ade90036:converter-ipynb:1.0.0` + `io.gitlab.ade90036:converter-rss:1.0.0` + `io.gitlab.ade90036:converter-wikipedia:1.0.0` + `io.gitlab.ade90036:converter-zip:1.0.0`（13 个 + core，共 14 个 MIT artifact）
 - **避免** `io.gitlab.ade90036:markitdown:0.0.1`（AGPL 协议）——改用全 MIT 套件
@@ -72,7 +72,7 @@
 
 `DocumentTest.java`：
 ```java
-package io.ddd4j.ai.cmpt.document;
+package io.ddd4j.ai.extension.document;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -191,7 +191,7 @@ git commit -m "feat(extension): add ddd4j-ai-extension-document module with Docu
 
 `Markitdown4jAdapterTest.java`：
 ```java
-package io.ddd4j.ai.cmpt.document.parser;
+package io.ddd4j.ai.extension.document.parser;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -204,9 +204,9 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import io.ddd4j.ai.cmpt.document.Document;
-import io.ddd4j.ai.cmpt.document.MediaType;
-import io.ddd4j.ai.cmpt.document.SourceType;
+import io.ddd4j.ai.extension.document.Document;
+import io.ddd4j.ai.extension.document.MediaType;
+import io.ddd4j.ai.extension.document.SourceType;
 
 class Markitdown4jAdapterTest {
 
@@ -243,7 +243,7 @@ Run: `./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=Markitdown4jAdapter
 
 `DocumentParser.java`：
 ```java
-package io.ddd4j.ai.cmpt.document;
+package io.ddd4j.ai.extension.document;
 import java.io.File; import java.io.InputStream;
 public interface DocumentParser {
     MediaType supports();
@@ -255,7 +255,7 @@ public interface DocumentParser {
 
 `Markitdown4jAdapter.java`：
 ```java
-package io.ddd4j.ai.cmpt.document.parser;
+package io.ddd4j.ai.extension.document.parser;
 
 import java.io.File;
 import java.io.InputStream;
@@ -265,12 +265,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import io.ddd4j.ai.cmpt.document.Document;
-import io.ddd4j.ai.cmpt.document.DocumentImage;
-import io.ddd4j.ai.cmpt.document.DocumentSection;
-import io.ddd4j.ai.cmpt.document.DocumentTable;
-import io.ddd4j.ai.cmpt.document.MediaType;
-import io.ddd4j.ai.cmpt.document.SourceType;
+import io.ddd4j.ai.extension.document.Document;
+import io.ddd4j.ai.extension.document.DocumentImage;
+import io.ddd4j.ai.extension.document.DocumentSection;
+import io.ddd4j.ai.extension.document.DocumentTable;
+import io.ddd4j.ai.extension.document.MediaType;
+import io.ddd4j.ai.extension.document.SourceType;
 import io.gitlab.ade90036.markitdown.core.DocumentConverterResult;
 import io.gitlab.ade90036.markitdown.core.MarkItDown;
 import io.gitlab.ade90036.markitdown.converters.csv.CsvConverter;
@@ -391,7 +391,7 @@ git commit -m "feat(extension): add Markitdown4jAdapter bridging 14 converters t
 - [x] **Step 1: 写契约测试（以 EasypdfDocumentParser 为代表）**
 
 ```java
-package io.ddd4j.ai.cmpt.document.parser;
+package io.ddd4j.ai.extension.document.parser;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -400,7 +400,7 @@ import java.io.File;
 
 import org.junit.jupiter.api.Test;
 
-import io.ddd4j.ai.cmpt.document.MediaType;
+import io.ddd4j.ai.extension.document.MediaType;
 
 class EasypdfDocumentParserTest {
 
@@ -425,10 +425,10 @@ class EasypdfDocumentParserTest {
 
 ```java
 // EasypdfDocumentParser.java
-package io.ddd4j.ai.cmpt.document.parser;
+package io.ddd4j.ai.extension.document.parser;
 
 import java.io.File; import java.io.InputStream; import java.util.Objects;
-import io.ddd4j.ai.cmpt.document.Document; import io.ddd4j.ai.cmpt.document.MediaType;
+import io.ddd4j.ai.extension.document.Document; import io.ddd4j.ai.extension.document.MediaType;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 
 @ConditionalOnClass(name = "io.github.easy4j.pdf.core.convert.HtmlPdfConverter")
@@ -572,7 +572,7 @@ public class DocumentAutoConfiguration {
 
 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`：
 ```
-io.ddd4j.ai.cmpt.document.autoconfigure.DocumentAutoConfiguration
+io.ddd4j.ai.extension.document.autoconfigure.DocumentAutoConfiguration
 ```
 
 - [x] **Step 3: 验证 + Commit**

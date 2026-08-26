@@ -98,7 +98,7 @@ azure:
     recognition-language: zh-CN        # STT 识别语言
 ```
 
-配置类：`io.ddd4j.ai.cmpt.sst.properties.AzureSpeechProperties`（前缀 `azure.speech`）。
+配置类：`io.ddd4j.ai.extension.sst.properties.AzureSpeechProperties`（前缀 `azure.speech`）。
 
 > 第三方依赖版本（Spring AI / Alibaba / MCP / LangChain4j / AgentScope / 语音 SDK 等）统一由 `ddd4j-ai-dependencies` 管理，详见架构设计文档第 9 节。
 
@@ -140,7 +140,7 @@ curl -N "http://localhost:8080/chat/stream?q=讲个笑话"   # SSE 流式
 
 #### 3. 注入并使用 SpeechService
 
-核心接口：`io.ddd4j.ai.cmpt.sst.service.SpeechService`
+核心接口：`io.ddd4j.ai.extension.sst.service.SpeechService`
 
 ```java
 @Autowired

@@ -1,6 +1,6 @@
 package io.ddd4j.ai.samples.chat;
 
-import io.ddd4j.ai.cmpt.chat.service.ChatService;
+import io.ddd4j.ai.extension.chat.service.ChatService;
 import org.springframework.stereotype.Component;
 
 /**
