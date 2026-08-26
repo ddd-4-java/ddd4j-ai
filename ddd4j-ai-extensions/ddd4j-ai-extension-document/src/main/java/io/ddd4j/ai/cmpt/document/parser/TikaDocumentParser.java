@@ -2,15 +2,20 @@ package io.ddd4j.ai.cmpt.document.parser;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import org.apache.tika.Tika;
+import org.apache.tika.extractor.EmbeddedDocumentExtractor;
+import org.apache.tika.metadata.HttpHeaders;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
@@ -18,6 +23,8 @@ import org.apache.tika.parser.ocr.TesseractOCRConfig;
 import org.apache.tika.parser.ocr.TesseractOCRParser;
 import org.apache.tika.sax.TeeContentHandler;
 import org.apache.tika.sax.ToMarkdownContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.ContentHandler;
 
 import io.ddd4j.ai.cmpt.asr.service.AsrService;
 import io.ddd4j.ai.cmpt.asr.service.AudioFormat;
@@ -119,13 +126,14 @@ public final class TikaDocumentParser implements DocumentParser {
     }
 
     private Parsed parse(byte[] bytes) throws Exception {
+        EmbeddedImageExtractor extractor = new EmbeddedImageExtractor();
         try {
-            return doParse(bytes, ocrEnabled() ? ocrContext() : null);
+            return doParse(bytes, ocrEnabled() ? ocrContext(extractor) : context(extractor), extractor);
         } catch (Exception e) {
             // OCR 引擎不可用（宿主机缺 tesseract）时降级：无 OCR 上下文重解析，
             // 保证智能体总能拿到结果（对齐 markitdown 的 OCR 失败不阻塞哲学）
             if (properties.isOcrEnabled()) {
-                return doParse(bytes, null);
+                return doParse(bytes, context(extractor), extractor);
             }
             throw e;
         }
@@ -135,8 +143,14 @@ public final class TikaDocumentParser implements DocumentParser {
         return properties.isOcrEnabled();
     }
 
-    private static ParseContext ocrContext() {
+    private static ParseContext context(EmbeddedImageExtractor extractor) {
         ParseContext context = new ParseContext();
+        context.set(EmbeddedDocumentExtractor.class, extractor);
+        return context;
+    }
+
+    private static ParseContext ocrContext(EmbeddedImageExtractor extractor) {
+        ParseContext context = context(extractor);
         TesseractOCRConfig config = new TesseractOCRConfig();
         config.setOutputType(TesseractOCRConfig.OUTPUT_TYPE.TXT);
         context.set(TesseractOCRConfig.class, config);
@@ -144,14 +158,48 @@ public final class TikaDocumentParser implements DocumentParser {
         return context;
     }
 
-    private static Parsed doParse(byte[] bytes, ParseContext context) throws Exception {
+    private static Parsed doParse(byte[] bytes, ParseContext context, EmbeddedImageExtractor extractor) throws Exception {
         StringWriter writer = new StringWriter();
         MarkdownStructureHandler structure = new MarkdownStructureHandler();
         TeeContentHandler tee = new TeeContentHandler(new ToMarkdownContentHandler(writer), structure);
-        ParseContext effective = context == null ? new ParseContext() : context;
         Metadata metadata = new Metadata();
-        new AutoDetectParser().parse(new ByteArrayInputStream(bytes), tee, metadata, effective);
-        return new Parsed(writer.toString(), structure.sections(), structure.tables(), structure.images(), metadata);
+        new AutoDetectParser().parse(new ByteArrayInputStream(bytes), tee, metadata, context);
+        List<DocumentImage> images = new ArrayList<>(structure.images());
+        images.addAll(extractor.images());
+        return new Parsed(writer.toString(), structure.sections(), structure.tables(), images, metadata);
+    }
+
+    /** 收集容器文档（docx/zip 等）内嵌图片 → base64 data URL（对齐 markitdown 的图片提取）。 */
+    private static final class EmbeddedImageExtractor implements EmbeddedDocumentExtractor {
+
+        private final List<DocumentImage> images = new ArrayList<>();
+
+        List<DocumentImage> images() {
+            return images;
+        }
+
+        @Override
+        public boolean shouldParseEmbedded(Metadata metadata) {
+            return true;
+        }
+
+        @Override
+        public void parseEmbedded(InputStream stream, ContentHandler handler, Metadata metadata,
+                                  boolean outputHtml) throws SAXException, IOException {
+            byte[] data = stream.readAllBytes();
+            String contentType = metadata.get(HttpHeaders.CONTENT_TYPE);
+            if (contentType == null || !contentType.startsWith("image/")) {
+                // POI/OOXML 路径可能不设 CONTENT_TYPE：按内容嗅探补判
+                String detected = TIKA.detect(data, metadata.get("resourceName"));
+                if (detected.startsWith("image/")) {
+                    contentType = detected;
+                }
+            }
+            if (contentType != null && contentType.startsWith("image/")) {
+                String src = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(data);
+                images.add(new DocumentImage(metadata.get("resourceName"), src));
+            }
+        }
     }
 
     private Document map(String name, String mime, Parsed parsed) {
