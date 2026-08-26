@@ -137,14 +137,15 @@ public final class TikaDocumentParser implements DocumentParser {
             String markdown = parsed.markdown() == null || parsed.markdown().isBlank()
                     ? text
                     : parsed.markdown() + "\n\n## Transcription\n\n" + text;
-            return new Parsed(markdown, sections, parsed.tables(), parsed.images(), parsed.tikaMetadata());
+            return new Parsed(markdown, sections, parsed.tables(), parsed.images(),
+                    parsed.tikaMetadata(), parsed.droppedImages());
         } catch (Exception e) {
             return parsed; // 转写失败不中断（对齐 markitdown 的音频转写失败不阻塞哲学）
         }
     }
 
     private Parsed parse(Path path) throws Exception {
-        EmbeddedImageExtractor extractor = new EmbeddedImageExtractor();
+        EmbeddedImageExtractor extractor = new EmbeddedImageExtractor(properties);
         try {
             return doParse(path, withTimeout(ocrEnabled() ? ocrContext(extractor) : context(extractor)), extractor);
         } catch (Exception e) {
@@ -186,17 +187,20 @@ public final class TikaDocumentParser implements DocumentParser {
         return context;
     }
 
-    /** 流式解析：TikaInputStream 按需 spool（大文件落盘临时文件），不整体入内存。 */
+    /** 流式解析：TikaInputStream 按需 spool（大文件落盘临时文件），SecureContentHandler 限制
+     *  SAX 实体数与输出量（zip 炸弹/高压缩比攻击面防护），不整体入内存。 */
     private static Parsed doParse(Path path, ParseContext context, EmbeddedImageExtractor extractor) throws Exception {
         StringWriter writer = new StringWriter();
         MarkdownStructureHandler structure = new MarkdownStructureHandler();
         TeeContentHandler tee = new TeeContentHandler(new ToMarkdownContentHandler(writer), structure);
         try (org.apache.tika.io.TikaInputStream stream = org.apache.tika.io.TikaInputStream.get(path)) {
+            org.apache.tika.sax.SecureContentHandler secure = new org.apache.tika.sax.SecureContentHandler(tee, stream);
             Metadata metadata = new Metadata();
-            new AutoDetectParser().parse(stream, tee, metadata, context);
+            new AutoDetectParser().parse(stream, secure, metadata, context);
             List<DocumentImage> images = new ArrayList<>(structure.images());
             images.addAll(extractor.images());
-            return new Parsed(writer.toString(), structure.sections(), structure.tables(), images, metadata);
+            return new Parsed(writer.toString(), structure.sections(), structure.tables(), images,
+                    metadata, extractor.dropped());
         }
     }
 
@@ -238,18 +242,31 @@ public final class TikaDocumentParser implements DocumentParser {
         }
     }
 
-    /** 收集容器文档（docx/zip 等）内嵌图片 → base64 data URL（对齐 markitdown 的图片提取）。 */
+    /** 收集容器文档（docx/zip 等）内嵌图片 → base64 data URL（对齐 markitdown 的图片提取），
+     *  受数量与单图大小双限额约束（图片轰炸防护），丢弃计数透出至 metadata。 */
     private static final class EmbeddedImageExtractor implements EmbeddedDocumentExtractor {
 
+        private final int maxImages;
+        private final long maxImageBytes;
         private final List<DocumentImage> images = new ArrayList<>();
+        private int dropped;
+
+        private EmbeddedImageExtractor(DocumentProperties properties) {
+            this.maxImages = properties.getMaxEmbeddedImages();
+            this.maxImageBytes = properties.getMaxEmbeddedImageBytes();
+        }
 
         List<DocumentImage> images() {
             return images;
         }
 
+        int dropped() {
+            return dropped;
+        }
+
         @Override
         public boolean shouldParseEmbedded(Metadata metadata) {
-            return true;
+            return true; // 始终接收，数量限额在 parseEmbedded 内计数（接口无拒绝回调）
         }
 
         @Override
@@ -264,10 +281,19 @@ public final class TikaDocumentParser implements DocumentParser {
                     contentType = detected;
                 }
             }
-            if (contentType != null && contentType.startsWith("image/")) {
-                String src = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(data);
-                images.add(new DocumentImage(metadata.get("resourceName"), src));
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return;
             }
+            if (maxImages > 0 && images.size() >= maxImages) {
+                dropped++; // 数量超限：丢弃多余图片
+                return;
+            }
+            if (maxImageBytes > 0 && data.length > maxImageBytes) {
+                dropped++; // 单图超限：跳过收集，主文档不受影响
+                return;
+            }
+            String src = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(data);
+            images.add(new DocumentImage(metadata.get("resourceName"), src));
         }
     }
 
@@ -284,6 +310,9 @@ public final class TikaDocumentParser implements DocumentParser {
         putIfAbsent(metadata, "pageCount", first(parsed.tikaMetadata(), "xmpTPg:NPages"));
         if (properties.isEnableLanguageDetection()) {
             putIfAbsent(metadata, "language", detectLanguage(markdown));
+        }
+        if (parsed.droppedImages() > 0) {
+            metadata.put("embeddedImagesTruncated", true);
         }
         metadata.put("source", "tika");
         metadata.put("detectedMime", mime);
@@ -334,6 +363,7 @@ public final class TikaDocumentParser implements DocumentParser {
                           List<DocumentSection> sections,
                           List<DocumentTable> tables,
                           List<DocumentImage> images,
-                          Metadata tikaMetadata) {
+                          Metadata tikaMetadata,
+                          int droppedImages) {
     }
 }
