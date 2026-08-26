@@ -146,12 +146,12 @@ public final class TikaDocumentParser implements DocumentParser {
     private Parsed parse(Path path) throws Exception {
         EmbeddedImageExtractor extractor = new EmbeddedImageExtractor();
         try {
-            return doParse(path, ocrEnabled() ? ocrContext(extractor) : context(extractor), extractor);
+            return doParse(path, withTimeout(ocrEnabled() ? ocrContext(extractor) : context(extractor)), extractor);
         } catch (Exception e) {
             // OCR 引擎不可用（宿主机缺 tesseract）时降级：无 OCR 上下文重解析，
             // 保证智能体总能拿到结果（对齐 markitdown 的 OCR 失败不阻塞哲学）
-            if (properties.isOcrEnabled()) {
-                return doParse(path, context(extractor), extractor);
+            if (properties.isOcrEnabled() && !(e instanceof org.apache.tika.exception.TikaTimeoutException)) {
+                return doParse(path, withTimeout(context(extractor)), extractor);
             }
             throw e;
         }
@@ -164,6 +164,16 @@ public final class TikaDocumentParser implements DocumentParser {
     private static ParseContext context(EmbeddedImageExtractor extractor) {
         ParseContext context = new ParseContext();
         context.set(EmbeddedDocumentExtractor.class, extractor);
+        return context;
+    }
+
+    /** 注入解析超时：病态文档超时抛 TikaTimeoutException，不降级重试（重试只会再挂一次）。 */
+    private ParseContext withTimeout(ParseContext context) {
+        long timeout = properties.getParseTimeoutMillis();
+        if (timeout > 0) {
+            context.set(org.apache.tika.config.TikaTaskTimeout.class,
+                    new org.apache.tika.config.TikaTaskTimeout(timeout));
+        }
         return context;
     }
 
