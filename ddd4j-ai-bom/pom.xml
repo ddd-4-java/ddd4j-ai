@@ -90,6 +90,11 @@
             </dependency>
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
+                <artifactId>ddd4j-ai-extension-document</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.ddd4j.ai</groupId>
                 <artifactId>ddd4j-ai-extension-sst</artifactId>
                 <version>${revision}</version>
             </dependency>

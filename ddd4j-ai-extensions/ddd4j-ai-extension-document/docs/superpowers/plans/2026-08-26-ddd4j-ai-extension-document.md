@@ -1,6 +1,6 @@
 # ddd4j-ai-extension-document 实现计划（智能体文档统一读取门面 —— markitdown4j 深度集成 + 4 组件委托）
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 新增 `ddd4j-ai-extension-document` 模块，作为智能体文档读取的统一门面。**深度集成** `io.gitlab.ade90036:markitdown-core:1.0.0` + **14 个 converter 子模块**（MIT 协议）作为 PDF/DOCX/XLSX/PPTX/CSV/HTML/IPYNB/EPUB/RSS/ZIP/PlainText/Wikipedia 的"通用基础实现"；同时**委托** 4 组件仓库（easypdf/easydoc/easyexcel/easyodf）以获得**深度结构还原**（1:1 保真），两套并行：用户可配置"高质量优先"（委托组件）或"通用优先"（markitdown4j 兜底）。
 
@@ -8,6 +8,13 @@
 - ddd4j-ai-extension-document **不是兜底**，而是 markitdown4j 的**主要使用者**（14 个 converter 全部依赖进来）
 - 4 组件仓库**不是 markitdown 的复刻**，而是各自基于自有生态（iText7/docx4j/POI/ofdrw）实现**完美 1:1 结构还原**（可达 95%+ 还原度，markitdown 是参考但非依赖）
 - 两套输出**统一为 ddd4j 的 `Document` POJO**（智能体调用单点）
+
+> **实施偏差记录（2026-08-26）**：markitdown4j 1.0.0 为 Maven Central 唯一版本，但其 class 文件为
+> **Java 25 字节码（version 69）**，项目 target Java 17（version 65）无法加载且无低版本可退。
+> 按本计划预留的 `SourceType.TIKA_FALLBACK` 角色，通用基础实现改用 **Apache Tika 3.3.2**
+> （已在依赖治理、Java 17 兼容、覆盖 PDF/Office/HTML/CSV 等全格式），
+> 其余架构（DocumentParser SPI / DocumentReader 门面 / 4 组件委托 / SourceType 追踪）完全不变；
+> 若后续 markitdown4j 发布 Java 17 兼容版本，可无缝替换回（仅改 `TikaDocumentParser` 一个适配器）。
 
 **Architecture:**
 - 主门面 `DocumentReader.read(File/InputStream/Path/URL) → Document` —— 智能体入口
@@ -54,14 +61,14 @@
   - `public enum MediaType { PDF, DOCX, XLSX, PPTX, CSV, HTML, IPYNB, EPUB, RSS, WIKIPEDIA, ZIP, PLAINTEXT, MD, IMAGE, UNKNOWN }` + `public static MediaType fromFilename(String)`
   - `public enum SourceType { MARKITDOWN4J, EASYPDF, EASYDOC, EASYEXCEL, EASYODF, TIKA_FALLBACK }` —— **追踪输出来源**（智能体/审计关键需求）
 
-- [ ] **Step 1: 添加子模块声明**
+- [x] **Step 1: 添加子模块声明**
 
 修改 `ddd4j-ai-extensions/pom.xml`：
 ```xml
 <subproject>ddd4j-ai-extension-document</subproject>
 ```
 
-- [ ] **Step 2: 写失败测试**
+- [x] **Step 2: 写失败测试**
 
 `DocumentTest.java`：
 ```java
@@ -100,11 +107,11 @@ class DocumentTest {
 }
 ```
 
-- [ ] **Step 3: 运行测试确认失败**
+- [x] **Step 3: 运行测试确认失败**
 
 Run: `cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai/ddd4j-ai-extensions && ./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=DocumentTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "BUILD|ERROR" | head -3`
 
-- [ ] **Step 4: 创建 pom.xml（14 个 markitdown4j 依赖 + Tika + Spring AI）+ 7 个 model 文件**
+- [x] **Step 4: 创建 pom.xml（14 个 markitdown4j 依赖 + Tika + Spring AI）+ 7 个 model 文件**
 
 `pom.xml`（节选关键依赖）：
 ```xml
@@ -152,12 +159,12 @@ Run: `cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai/d
 
 7 个 model 文件按 record 风格生成（详见 plan 完整版 Task 1 Step 4）。
 
-- [ ] **Step 5: 运行测试确认通过**
+- [x] **Step 5: 运行测试确认通过**
 
 Run: `./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=DocumentTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "Tests run:|BUILD" | tail -3`
 Expected: PASS（2 tests）
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
@@ -180,7 +187,7 @@ git commit -m "feat(extension): add ddd4j-ai-extension-document module with Docu
   - `Markitdown4jAdapter implements DocumentParser` — 内部用 `MarkItDown.builder().registerConverter(new PdfConverter()).registerConverter(new DocxConverter())...build().convert(Path)` 获取 `DocumentConverterResult`，映射为 `Document` (source=`MARKITDOWN4J`)
   - `order() = 0`（**最低优先级**）—— 作为通用兜底，让 4 组件委托 parser 优先
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
 `Markitdown4jAdapterTest.java`：
 ```java
@@ -228,11 +235,11 @@ class Markitdown4jAdapterTest {
 }
 ```
 
-- [ ] **Step 2: 运行测试确认失败**
+- [x] **Step 2: 运行测试确认失败**
 
 Run: `./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=Markitdown4jAdapterTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "BUILD|ERROR" | head -3`
 
-- [ ] **Step 3: 实现 DocumentParser + Markitdown4jAdapter**
+- [x] **Step 3: 实现 DocumentParser + Markitdown4jAdapter**
 
 `DocumentParser.java`：
 ```java
@@ -353,12 +360,12 @@ public final class Markitdown4jAdapter implements DocumentParser {
 }
 ```
 
-- [ ] **Step 4: 验证通过 + Commit**
+- [x] **Step 4: 验证通过 + Commit**
 
 Run: `./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=Markitdown4jAdapterTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "Tests run:|BUILD" | tail -3`
 Expected: PASS（3 tests）
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add ddd4j-ai-extensions/ddd4j-ai-extension-document/
@@ -381,7 +388,7 @@ git commit -m "feat(extension): add Markitdown4jAdapter bridging 14 converters t
   - 4 个 `*Parser implements DocumentParser` —— 内部**当前为契约占位**（标 `@ConditionalOnClass`），各组件 JAR 发布后激活
   - `order() = 10`（**高于** markitdown4j 兜底的 0）—— 高质量优先
 
-- [ ] **Step 1: 写契约测试（以 EasypdfDocumentParser 为代表）**
+- [x] **Step 1: 写契约测试（以 EasypdfDocumentParser 为代表）**
 
 ```java
 package io.ddd4j.ai.cmpt.document.parser;
@@ -412,9 +419,9 @@ class EasypdfDocumentParserTest {
 }
 ```
 
-- [ ] **Step 2: 运行测试确认失败**
+- [x] **Step 2: 运行测试确认失败**
 
-- [ ] **Step 3: 实现 4 个 Parser（契约占位：`@ConditionalOnClass(name = "io.github.easy4j.pdf.core.convert.HtmlPdfConverter")` 等）**
+- [x] **Step 3: 实现 4 个 Parser（契约占位：`@ConditionalOnClass(name = "io.github.easy4j.pdf.core.convert.HtmlPdfConverter")` 等）**
 
 ```java
 // EasypdfDocumentParser.java
@@ -453,7 +460,7 @@ public class EasypdfDocumentParser implements DocumentParser {
 
 EasydocDocumentParser / EasyexcelDocumentParser / EasyodfDocumentParser 同构，分别用 `@ConditionalOnClass("io.github.easy4j.doc.xhtml.markdown.DocxToMarkdownConverter")` 等。
 
-- [ ] **Step 4: 验证 4 个测试 + Commit**
+- [x] **Step 4: 验证 4 个测试 + Commit**
 
 Run: `./mvnw -pl ddd4j-ai-extension-document -am test -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "Tests run:|BUILD" | tail -3`
 Expected: PASS（≥12 tests）
@@ -481,7 +488,7 @@ git commit -m "feat(extension): add 4 high-priority component-delegation parsers
   - `DocumentProperties`（`@ConfigurationProperties("ddd4j.ai.document")`）：开关、缓存、并发等
   - `DocumentAutoConfiguration`：注册 `DocumentReader` + 5 个 Parser Bean（4 个委托 + 1 个 markitdown4j 兜底），`@ConditionalOnProperty` 控制
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
 `DocumentReaderTest.java`：
 ```java
@@ -496,7 +503,7 @@ class DocumentReaderTest {
 }
 ```
 
-- [ ] **Step 2: 实现 4 个文件 + SPI 元数据**
+- [x] **Step 2: 实现 4 个文件 + SPI 元数据**
 
 ```java
 // DocumentReader.java
@@ -568,7 +575,7 @@ public class DocumentAutoConfiguration {
 io.ddd4j.ai.cmpt.document.autoconfigure.DocumentAutoConfiguration
 ```
 
-- [ ] **Step 3: 验证 + Commit**
+- [x] **Step 3: 验证 + Commit**
 
 Run: `./mvnw -pl ddd4j-ai-extension-document -am test -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "Tests run:|BUILD" | tail -3`
 
@@ -585,7 +592,7 @@ git commit -m "feat(extension): add DocumentReader facade and Spring Boot autoco
 - Create: `src/test/java/io/ddd4j/ai/cmpt/document/DocumentReaderIntegrationTest.java`
 - Create: `src/test/resources/sample.pdf`（从上游 markitdown-java 项目或本地 PDF 测试样本）
 
-- [ ] **Step 1: 写集成测试**
+- [x] **Step 1: 写集成测试**
 
 ```java
 @SpringBootTest(classes = DocumentAutoConfiguration.class)
@@ -603,7 +610,7 @@ class DocumentReaderIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 验证 + Commit**
+- [x] **Step 2: 验证 + Commit**
 
 Run: `./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=DocumentReaderIntegrationTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "Tests run:|BUILD" | tail -3`
 Expected: PASS
@@ -617,7 +624,7 @@ git commit -m "test(extension): add integration test verifying markitdown4j end-
 
 ### Task 6: 计划勾选 + 推送
 
-- [ ] **Step 1: 勾选本计划**
+- [x] **Step 1: 勾选本计划**
 
 ```bash
 sed -i '' 's/- \[ \]/- [x]/g' ddd4j-ai-extensions/ddd4j-ai-extension-document/docs/superpowers/plans/2026-08-26-ddd4j-ai-extension-document.md
@@ -625,7 +632,7 @@ git add ddd4j-ai-extensions/ddd4j-ai-extension-document/docs/superpowers/plans/
 git commit -m "docs: mark ddd4j-ai-extension-document plan complete"
 ```
 
-- [ ] **Step 2: 推送到 origin**
+- [x] **Step 2: 推送到 origin**
 
 ```bash
 git push origin $(git rev-parse --abbrev-ref HEAD)
