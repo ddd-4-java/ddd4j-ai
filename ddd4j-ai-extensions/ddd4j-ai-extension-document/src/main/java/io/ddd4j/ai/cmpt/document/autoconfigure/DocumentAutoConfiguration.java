@@ -1,5 +1,6 @@
 package io.ddd4j.ai.cmpt.document.autoconfigure;
 
+import io.ddd4j.ai.cmpt.asr.service.AsrService;
 import io.ddd4j.ai.cmpt.document.DocumentParser;
 import io.ddd4j.ai.cmpt.document.DocumentReader;
 import io.ddd4j.ai.cmpt.document.parser.EasydocDocumentParser;
@@ -8,6 +9,7 @@ import io.ddd4j.ai.cmpt.document.parser.EasyodfDocumentParser;
 import io.ddd4j.ai.cmpt.document.parser.EasypdfDocumentParser;
 import io.ddd4j.ai.cmpt.document.parser.TikaDocumentParser;
 import io.ddd4j.ai.cmpt.document.properties.DocumentProperties;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -36,8 +38,9 @@ public class DocumentAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(name = "ddd4j.ai.document.enable-tika-fallback", havingValue = "true", matchIfMissing = true)
-    public TikaDocumentParser tikaDocumentParser(DocumentProperties properties) {
-        return new TikaDocumentParser(properties);
+    public TikaDocumentParser tikaDocumentParser(DocumentProperties properties,
+                                                 ObjectProvider<AsrService> asrService) {
+        return new TikaDocumentParser(properties, asrService.getIfAvailable());
     }
 
     @Bean

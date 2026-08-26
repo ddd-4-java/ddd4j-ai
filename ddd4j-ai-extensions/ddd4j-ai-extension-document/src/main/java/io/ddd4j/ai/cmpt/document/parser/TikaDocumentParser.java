@@ -19,6 +19,8 @@ import org.apache.tika.parser.ocr.TesseractOCRParser;
 import org.apache.tika.sax.TeeContentHandler;
 import org.apache.tika.sax.ToMarkdownContentHandler;
 
+import io.ddd4j.ai.cmpt.asr.service.AsrService;
+import io.ddd4j.ai.cmpt.asr.service.AudioFormat;
 import io.ddd4j.ai.cmpt.document.Document;
 import io.ddd4j.ai.cmpt.document.DocumentImage;
 import io.ddd4j.ai.cmpt.document.DocumentParser;
@@ -46,13 +48,19 @@ public final class TikaDocumentParser implements DocumentParser {
     private static final Tika TIKA = new Tika();
 
     private final DocumentProperties properties;
+    private final AsrService asrService;
 
     public TikaDocumentParser() {
-        this(new DocumentProperties());
+        this(new DocumentProperties(), null);
     }
 
     public TikaDocumentParser(DocumentProperties properties) {
+        this(properties, null);
+    }
+
+    public TikaDocumentParser(DocumentProperties properties, AsrService asrService) {
         this.properties = properties;
+        this.asrService = asrService;
     }
 
     @Override
@@ -70,7 +78,7 @@ public final class TikaDocumentParser implements DocumentParser {
         Objects.requireNonNull(file, "file must not be null");
         byte[] bytes = Files.readAllBytes(file.toPath());
         String mime = TIKA.detect(bytes, file.getName());
-        return map(file.getName(), mime, parse(bytes));
+        return toDocument(file.getName(), mime, bytes, parse(bytes));
     }
 
     @Override
@@ -78,7 +86,36 @@ public final class TikaDocumentParser implements DocumentParser {
         Objects.requireNonNull(in, "in must not be null");
         byte[] bytes = in.readAllBytes();
         String mime = TIKA.detect(bytes, filename);
-        return map(filename, mime, parse(bytes));
+        return toDocument(filename, mime, bytes, parse(bytes));
+    }
+
+    private Document toDocument(String name, String mime, byte[] bytes, Parsed parsed) throws Exception {
+        if (isAudio(mime) && asrService != null) {
+            return map(name, mime, appendTranscription(parsed, bytes));
+        }
+        return map(name, mime, parsed);
+    }
+
+    private static boolean isAudio(String mime) {
+        return mime != null && mime.startsWith("audio/");
+    }
+
+    private Parsed appendTranscription(Parsed parsed, byte[] bytes) {
+        try {
+            String text = asrService.transcribe(bytes, AudioFormat.wav44100Stereo16());
+            if (text == null || text.isBlank()) {
+                return parsed;
+            }
+            List<DocumentSection> sections = new java.util.ArrayList<>(parsed.sections());
+            sections.add(new DocumentSection("Transcription", 1, text.strip(),
+                    java.util.List.of(), java.util.List.of(), java.util.List.of()));
+            String markdown = parsed.markdown() == null || parsed.markdown().isBlank()
+                    ? text
+                    : parsed.markdown() + "\n\n## Transcription\n\n" + text;
+            return new Parsed(markdown, sections, parsed.tables(), parsed.images(), parsed.tikaMetadata());
+        } catch (Exception e) {
+            return parsed; // 转写失败不中断（对齐 markitdown 的音频转写失败不阻塞哲学）
+        }
     }
 
     private Parsed parse(byte[] bytes) throws Exception {
