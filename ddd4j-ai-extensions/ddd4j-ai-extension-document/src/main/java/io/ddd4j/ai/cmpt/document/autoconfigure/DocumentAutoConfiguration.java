@@ -36,8 +36,8 @@ public class DocumentAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(name = "ddd4j.ai.document.enable-tika-fallback", havingValue = "true", matchIfMissing = true)
-    public TikaDocumentParser tikaDocumentParser() {
-        return new TikaDocumentParser();
+    public TikaDocumentParser tikaDocumentParser(DocumentProperties properties) {
+        return new TikaDocumentParser(properties);
     }
 
     @Bean

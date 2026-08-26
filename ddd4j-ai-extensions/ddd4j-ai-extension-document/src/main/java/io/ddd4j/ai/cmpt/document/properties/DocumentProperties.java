@@ -30,4 +30,20 @@ public class DocumentProperties {
      * 通用兜底：启用 Tika 基础解析器。
      */
     private boolean enableTikaFallback = true;
+
+    /**
+     * 启用 Tesseract OCR：扫描 PDF / 图片文字识别。宿主机需安装 tesseract 可执行文件，
+     * 未安装时自动降级为无 OCR 解析（不中断）。
+     */
+    private boolean ocrEnabled = false;
+
+    /**
+     * OCR 语言（tesseract language pack，如 eng / chi_sim）。
+     */
+    private String ocrLanguage = "eng";
+
+    /**
+     * 启用语言检测（Tika LanguageDetector → metadata.language）。
+     */
+    private boolean enableLanguageDetection = true;
 }

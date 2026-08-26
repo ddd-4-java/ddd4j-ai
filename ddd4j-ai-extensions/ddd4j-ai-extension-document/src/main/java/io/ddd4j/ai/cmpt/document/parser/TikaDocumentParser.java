@@ -13,6 +13,10 @@ import java.util.Objects;
 import org.apache.tika.Tika;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.ocr.TesseractOCRConfig;
+import org.apache.tika.parser.ocr.TesseractOCRParser;
+import org.apache.tika.sax.TeeContentHandler;
 import org.apache.tika.sax.ToMarkdownContentHandler;
 
 import io.ddd4j.ai.cmpt.document.Document;
@@ -22,6 +26,7 @@ import io.ddd4j.ai.cmpt.document.DocumentSection;
 import io.ddd4j.ai.cmpt.document.DocumentTable;
 import io.ddd4j.ai.cmpt.document.MediaType;
 import io.ddd4j.ai.cmpt.document.SourceType;
+import io.ddd4j.ai.cmpt.document.properties.DocumentProperties;
 
 /**
  * Tika 通用解析适配器：AutoDetectParser 覆盖 PDF / Office / HTML / CSV / 纯文本等全格式，
@@ -39,6 +44,16 @@ import io.ddd4j.ai.cmpt.document.SourceType;
 public final class TikaDocumentParser implements DocumentParser {
 
     private static final Tika TIKA = new Tika();
+
+    private final DocumentProperties properties;
+
+    public TikaDocumentParser() {
+        this(new DocumentProperties());
+    }
+
+    public TikaDocumentParser(DocumentProperties properties) {
+        this.properties = properties;
+    }
 
     @Override
     public MediaType supports() {
@@ -66,12 +81,38 @@ public final class TikaDocumentParser implements DocumentParser {
         return map(filename, mime, parse(bytes));
     }
 
-    private static Parsed parse(byte[] bytes) throws Exception {
+    private Parsed parse(byte[] bytes) throws Exception {
+        try {
+            return doParse(bytes, ocrEnabled() ? ocrContext() : null);
+        } catch (Exception e) {
+            // OCR 引擎不可用（宿主机缺 tesseract）时降级：无 OCR 上下文重解析，
+            // 保证智能体总能拿到结果（对齐 markitdown 的 OCR 失败不阻塞哲学）
+            if (properties.isOcrEnabled()) {
+                return doParse(bytes, null);
+            }
+            throw e;
+        }
+    }
+
+    private boolean ocrEnabled() {
+        return properties.isOcrEnabled();
+    }
+
+    private static ParseContext ocrContext() {
+        ParseContext context = new ParseContext();
+        TesseractOCRConfig config = new TesseractOCRConfig();
+        config.setOutputType(TesseractOCRConfig.OUTPUT_TYPE.TXT);
+        context.set(TesseractOCRConfig.class, config);
+        context.set(TesseractOCRParser.class, new TesseractOCRParser());
+        return context;
+    }
+
+    private static Parsed doParse(byte[] bytes, ParseContext context) throws Exception {
         StringWriter writer = new StringWriter();
         MarkdownStructureHandler structure = new MarkdownStructureHandler();
-        org.apache.tika.sax.TeeContentHandler tee = new org.apache.tika.sax.TeeContentHandler(
-                new ToMarkdownContentHandler(writer), structure);
-        new AutoDetectParser().parse(new ByteArrayInputStream(bytes), tee, new Metadata());
+        TeeContentHandler tee = new TeeContentHandler(new ToMarkdownContentHandler(writer), structure);
+        ParseContext effective = context == null ? new ParseContext() : context;
+        new AutoDetectParser().parse(new ByteArrayInputStream(bytes), tee, new Metadata(), effective);
         return new Parsed(writer.toString(), structure.sections(), structure.tables(), structure.images());
     }
 
