@@ -57,6 +57,9 @@ public final class TikaDocumentParser implements DocumentParser {
 
     private static final Tika TIKA = new Tika();
 
+    private static final org.slf4j.Logger log =
+            org.slf4j.LoggerFactory.getLogger(TikaDocumentParser.class);
+
     private final DocumentProperties properties;
     private final AsrService asrService;
 
@@ -88,16 +91,32 @@ public final class TikaDocumentParser implements DocumentParser {
         Objects.requireNonNull(file, "file must not be null");
         long limit = properties.getMaxFileSizeBytes();
         if (limit > 0 && Files.size(file.toPath()) > limit) {
+            log.warn("document rejected, exceeds size limit: file={}, size={}, limit={}",
+                    file.getName(), Files.size(file.toPath()), limit);
             throw new DocumentTooLargeException(
                     "document exceeds size limit: " + file.getName() + " > " + limit + " bytes");
         }
+        long start = System.nanoTime();
         String mime = TIKA.detect(file.toPath());
-        if (isAudio(mime) && asrService != null) {
-            // 音频转写需完整字节（asr 端口契约），受同一大小上限保护
-            byte[] bytes = Files.readAllBytes(file.toPath());
-            return map(file.getName(), mime, appendTranscription(parse(file.toPath()), bytes));
+        try {
+            Document document;
+            if (isAudio(mime) && asrService != null) {
+                // 音频转写需完整字节（asr 端口契约），受同一大小上限保护
+                byte[] bytes = Files.readAllBytes(file.toPath());
+                document = map(file.getName(), mime, appendTranscription(parse(file.toPath()), bytes));
+            } else {
+                document = map(file.getName(), mime, parse(file.toPath()));
+            }
+            log.info("document parsed: file={}, mime={}, source={}, sections={}, tables={}, images={}, tookMs={}",
+                    file.getName(), document.mime(), document.source(),
+                    document.sections().size(), document.tables().size(), document.images().size(),
+                    (System.nanoTime() - start) / 1_000_000);
+            return document;
+        } catch (org.apache.tika.exception.TikaTimeoutException e) {
+            log.warn("document parse timed out: file={}, mime={}, timeoutMs={}",
+                    file.getName(), mime, properties.getParseTimeoutMillis());
+            throw e;
         }
-        return map(file.getName(), mime, parse(file.toPath()));
     }
 
     @Override
@@ -140,6 +159,7 @@ public final class TikaDocumentParser implements DocumentParser {
             return new Parsed(markdown, sections, parsed.tables(), parsed.images(),
                     parsed.tikaMetadata(), parsed.droppedImages());
         } catch (Exception e) {
+            log.warn("asr transcription failed, metadata only: {}", String.valueOf(e.getMessage()));
             return parsed; // 转写失败不中断（对齐 markitdown 的音频转写失败不阻塞哲学）
         }
     }
@@ -152,6 +172,7 @@ public final class TikaDocumentParser implements DocumentParser {
             // OCR 引擎不可用（宿主机缺 tesseract）时降级：无 OCR 上下文重解析，
             // 保证智能体总能拿到结果（对齐 markitdown 的 OCR 失败不阻塞哲学）
             if (properties.isOcrEnabled() && !(e instanceof org.apache.tika.exception.TikaTimeoutException)) {
+                log.warn("ocr unavailable, falling back to plain parse: {}", String.valueOf(e.getMessage()));
                 return doParse(path, withTimeout(context(extractor)), extractor);
             }
             throw e;
@@ -237,6 +258,7 @@ public final class TikaDocumentParser implements DocumentParser {
 
         private void checkLimit() {
             if (read > limit) {
+                log.warn("document rejected, exceeds size limit: > {} bytes (stream)", limit);
                 throw new DocumentTooLargeException("document exceeds size limit: > " + limit + " bytes");
             }
         }
@@ -313,6 +335,8 @@ public final class TikaDocumentParser implements DocumentParser {
         }
         if (parsed.droppedImages() > 0) {
             metadata.put("embeddedImagesTruncated", true);
+            log.warn("embedded images truncated: kept={}, dropped={}",
+                    parsed.images().size(), parsed.droppedImages());
         }
         metadata.put("source", "tika");
         metadata.put("detectedMime", mime);
