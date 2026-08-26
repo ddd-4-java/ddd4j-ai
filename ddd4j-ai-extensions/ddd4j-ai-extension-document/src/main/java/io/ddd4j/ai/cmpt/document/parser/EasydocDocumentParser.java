@@ -40,12 +40,8 @@ public class EasydocDocumentParser implements DocumentParser {
     @Override
     public Document parse(InputStream in, String filename) throws Exception {
         Objects.requireNonNull(in, "in must not be null");
-        File tmp = File.createTempFile("dai-esd-", "-" + (filename == null ? ".docx" : filename));
-        try {
-            Files.copy(in, tmp.toPath());
-            return parse(tmp);
-        } finally {
-            tmp.delete();
-        }
+        // 占位阶段不消费输入流：直接抛未就位，门面可重放到通用兜底
+        throw new UnsupportedOperationException(
+                "delegation pending; component jar not yet published");
     }
 }
