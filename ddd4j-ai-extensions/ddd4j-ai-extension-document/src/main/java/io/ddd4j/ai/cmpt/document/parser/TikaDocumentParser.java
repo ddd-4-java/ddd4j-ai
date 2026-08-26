@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,8 +16,10 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.sax.ToMarkdownContentHandler;
 
 import io.ddd4j.ai.cmpt.document.Document;
+import io.ddd4j.ai.cmpt.document.DocumentImage;
 import io.ddd4j.ai.cmpt.document.DocumentParser;
 import io.ddd4j.ai.cmpt.document.DocumentSection;
+import io.ddd4j.ai.cmpt.document.DocumentTable;
 import io.ddd4j.ai.cmpt.document.MediaType;
 import io.ddd4j.ai.cmpt.document.SourceType;
 
@@ -54,7 +55,7 @@ public final class TikaDocumentParser implements DocumentParser {
         Objects.requireNonNull(file, "file must not be null");
         byte[] bytes = Files.readAllBytes(file.toPath());
         String mime = TIKA.detect(bytes, file.getName());
-        return map(extractMarkdown(new ByteArrayInputStream(bytes)), file.getName(), mime);
+        return map(file.getName(), mime, parse(bytes));
     }
 
     @Override
@@ -62,22 +63,20 @@ public final class TikaDocumentParser implements DocumentParser {
         Objects.requireNonNull(in, "in must not be null");
         byte[] bytes = in.readAllBytes();
         String mime = TIKA.detect(bytes, filename);
-        return map(extractMarkdown(new ByteArrayInputStream(bytes)), filename, mime);
+        return map(filename, mime, parse(bytes));
     }
 
-    private static String extractMarkdown(InputStream in) throws Exception {
-        try (in) {
-            StringWriter writer = new StringWriter();
-            new AutoDetectParser().parse(in, new ToMarkdownContentHandler(writer), new Metadata());
-            return writer.toString();
-        }
+    private static Parsed parse(byte[] bytes) throws Exception {
+        StringWriter writer = new StringWriter();
+        MarkdownStructureHandler structure = new MarkdownStructureHandler();
+        org.apache.tika.sax.TeeContentHandler tee = new org.apache.tika.sax.TeeContentHandler(
+                new ToMarkdownContentHandler(writer), structure);
+        new AutoDetectParser().parse(new ByteArrayInputStream(bytes), tee, new Metadata());
+        return new Parsed(writer.toString(), structure.sections(), structure.tables(), structure.images());
     }
 
-    private static Document map(String markdown, String name, String mime) {
-        String text = markdown == null ? "" : markdown.strip();
-        List<DocumentSection> sections = new ArrayList<>();
-        sections.add(new DocumentSection(name == null ? "Document" : name, 1, text,
-                List.of(), List.of(), List.of()));
+    private static Document map(String name, String mime, Parsed parsed) {
+        String markdown = parsed.markdown() == null ? "" : parsed.markdown().strip();
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("source", "tika");
         metadata.put("detectedMime", mime);
@@ -85,10 +84,17 @@ public final class TikaDocumentParser implements DocumentParser {
                 name == null ? "Document" : name,
                 mime,
                 SourceType.TIKA_FALLBACK,
-                sections,
-                List.of(),
-                List.of(),
-                text,
+                parsed.sections(),
+                parsed.tables(),
+                parsed.images(),
+                markdown,
                 metadata);
+    }
+
+    /** Tika 解析产物：Markdown 全文 + 结构化字段。 */
+    private record Parsed(String markdown,
+                          List<DocumentSection> sections,
+                          List<DocumentTable> tables,
+                          List<DocumentImage> images) {
     }
 }

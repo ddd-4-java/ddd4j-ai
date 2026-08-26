@@ -57,6 +57,41 @@ class TikaDocumentParserTest {
     }
 
     @Test
+    void parseStructuredHtml_extractsSectionsTablesImages(@TempDir Path tmp) throws Exception {
+        File file = tmp.resolve("report.html").toFile();
+        Files.writeString(file.toPath(), """
+                <html><body>
+                  <h1>Report</h1>
+                  <p>Intro paragraph</p>
+                  <h2>Sales</h2>
+                  <table>
+                    <thead><tr><th>Region</th><th>Amount</th></tr></thead>
+                    <tbody><tr><td>East</td><td>100</td></tr></tbody>
+                  </table>
+                  <img src="chart.png" alt="sales chart"/>
+                </body></html>""");
+        Document document = new TikaDocumentParser().parse(file);
+
+        // 章节树：Report(1) → Sales(2)
+        assertThat(document.sections()).hasSize(1);
+        assertThat(document.sections().get(0).title()).isEqualTo("Report");
+        assertThat(document.sections().get(0).level()).isEqualTo(1);
+        assertThat(document.sections().get(0).children()).hasSize(1);
+        assertThat(document.sections().get(0).children().get(0).title()).isEqualTo("Sales");
+        assertThat(document.sections().get(0).content()).contains("Intro paragraph");
+
+        // 表格：表头 + 数据行
+        assertThat(document.tables()).hasSize(1);
+        assertThat(document.tables().get(0).headers().get(0)).containsExactly("Region", "Amount");
+        assertThat(document.tables().get(0).rows().get(0)).containsExactly("East", "100");
+
+        // 图片
+        assertThat(document.images()).hasSize(1);
+        assertThat(document.images().get(0).src()).isEqualTo("chart.png");
+        assertThat(document.images().get(0).alt()).isEqualTo("sales chart");
+    }
+
+    @Test
     void parseFileWithoutExtension_detectsByContent(@TempDir Path tmp) throws Exception {
         File file = tmp.resolve("unknown").toFile();
         Files.writeString(file.toPath(), "<html><body><p>sniffed</p></body></html>");
