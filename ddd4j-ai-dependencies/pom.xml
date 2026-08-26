@@ -43,7 +43,6 @@
         <whispercpp.version>1.4.0</whispercpp.version>
         <pdfbox.version>3.0.8</pdfbox.version>
         <tika.version>3.3.2</tika.version>
-        <markitdown4j.version>1.0.0</markitdown4j.version>
     </properties>
 
     <dependencyManagement>
@@ -253,73 +252,6 @@
                 <version>${tika.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
-            </dependency>
-            <!-- markitdown4j 全 MIT 文档转换套件（core + 13 converters，供 document 组件统一读取门面） -->
-            <!-- https://mvnrepository.com/artifact/io.gitlab.ade90036/markitdown-core -->
-            <dependency>
-                <groupId>io.gitlab.ade90036</groupId>
-                <artifactId>markitdown-core</artifactId>
-                <version>${markitdown4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gitlab.ade90036</groupId>
-                <artifactId>converter-pdf</artifactId>
-                <version>${markitdown4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gitlab.ade90036</groupId>
-                <artifactId>converter-docx</artifactId>
-                <version>${markitdown4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gitlab.ade90036</groupId>
-                <artifactId>converter-xlsx</artifactId>
-                <version>${markitdown4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gitlab.ade90036</groupId>
-                <artifactId>converter-csv</artifactId>
-                <version>${markitdown4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gitlab.ade90036</groupId>
-                <artifactId>converter-html</artifactId>
-                <version>${markitdown4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gitlab.ade90036</groupId>
-                <artifactId>converter-pptx</artifactId>
-                <version>${markitdown4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gitlab.ade90036</groupId>
-                <artifactId>converter-plaintext</artifactId>
-                <version>${markitdown4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gitlab.ade90036</groupId>
-                <artifactId>converter-epub</artifactId>
-                <version>${markitdown4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gitlab.ade90036</groupId>
-                <artifactId>converter-ipynb</artifactId>
-                <version>${markitdown4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gitlab.ade90036</groupId>
-                <artifactId>converter-rss</artifactId>
-                <version>${markitdown4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gitlab.ade90036</groupId>
-                <artifactId>converter-wikipedia</artifactId>
-                <version>${markitdown4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.gitlab.ade90036</groupId>
-                <artifactId>converter-zip</artifactId>
-                <version>${markitdown4j.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

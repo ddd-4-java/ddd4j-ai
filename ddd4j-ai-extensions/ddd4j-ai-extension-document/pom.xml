@@ -15,60 +15,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>io.gitlab.ade90036</groupId>
-            <artifactId>markitdown-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.gitlab.ade90036</groupId>
-            <artifactId>converter-pdf</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.gitlab.ade90036</groupId>
-            <artifactId>converter-docx</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.gitlab.ade90036</groupId>
-            <artifactId>converter-xlsx</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.gitlab.ade90036</groupId>
-            <artifactId>converter-csv</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.gitlab.ade90036</groupId>
-            <artifactId>converter-html</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.gitlab.ade90036</groupId>
-            <artifactId>converter-pptx</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.gitlab.ade90036</groupId>
-            <artifactId>converter-plaintext</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.gitlab.ade90036</groupId>
-            <artifactId>converter-epub</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.gitlab.ade90036</groupId>
-            <artifactId>converter-ipynb</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.gitlab.ade90036</groupId>
-            <artifactId>converter-rss</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.gitlab.ade90036</groupId>
-            <artifactId>converter-wikipedia</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.gitlab.ade90036</groupId>
-            <artifactId>converter-zip</artifactId>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.tika</groupId>
-            <artifactId>tika-core</artifactId>
+            <artifactId>tika-parsers-standard-package</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.ai</groupId>
