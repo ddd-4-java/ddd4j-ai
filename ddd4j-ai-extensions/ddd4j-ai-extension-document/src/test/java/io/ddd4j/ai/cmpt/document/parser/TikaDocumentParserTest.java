@@ -41,6 +41,7 @@ class TikaDocumentParserTest {
         Document document = new TikaDocumentParser().parse(file);
         assertThat(document.source()).isEqualTo(SourceType.TIKA_FALLBACK);
         assertThat(document.fullMarkdown()).contains("Hello World").contains("Line 2");
+        assertThat(document.mime()).isEqualTo("text/plain"); // Tika 检测（内容+文件名）
     }
 
     @Test
@@ -50,6 +51,16 @@ class TikaDocumentParserTest {
         Document document = new TikaDocumentParser().parse(file);
         assertThat(document.source()).isEqualTo(SourceType.TIKA_FALLBACK);
         assertThat(document.fullMarkdown()).contains("Title").contains("Body text");
+        assertThat(document.mime()).isEqualTo("text/html");
+    }
+
+    @Test
+    void parseFileWithoutExtension_detectsByContent(@TempDir Path tmp) throws Exception {
+        File file = tmp.resolve("unknown").toFile();
+        Files.writeString(file.toPath(), "<html><body><p>sniffed</p></body></html>");
+        Document document = new TikaDocumentParser().parse(file);
+        // 无扩展名：Tika 按内容嗅探识别为 HTML
+        assertThat(document.mime()).isEqualTo("text/html");
     }
 
     @Test
