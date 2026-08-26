@@ -6,6 +6,7 @@ import io.ddd4j.ai.core.AiRequest;
 import org.springframework.ai.chat.client.ChatClient;
 import reactor.core.publisher.Flux;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,7 +27,7 @@ public class MultiModelChatRouter implements ChatRouter {
         if (clients == null || clients.isEmpty()) {
             throw new IllegalArgumentException("clients must not be empty");
         }
-        this.clients = Map.copyOf(clients);
+        this.clients = Collections.unmodifiableMap(new java.util.LinkedHashMap<>(clients));
         this.strategy = Objects.requireNonNull(strategy, "strategy");
     }
 
