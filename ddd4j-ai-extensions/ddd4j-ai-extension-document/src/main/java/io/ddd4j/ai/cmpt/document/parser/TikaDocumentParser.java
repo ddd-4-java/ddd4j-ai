@@ -112,13 +112,25 @@ public final class TikaDocumentParser implements DocumentParser {
         MarkdownStructureHandler structure = new MarkdownStructureHandler();
         TeeContentHandler tee = new TeeContentHandler(new ToMarkdownContentHandler(writer), structure);
         ParseContext effective = context == null ? new ParseContext() : context;
-        new AutoDetectParser().parse(new ByteArrayInputStream(bytes), tee, new Metadata(), effective);
-        return new Parsed(writer.toString(), structure.sections(), structure.tables(), structure.images());
+        Metadata metadata = new Metadata();
+        new AutoDetectParser().parse(new ByteArrayInputStream(bytes), tee, metadata, effective);
+        return new Parsed(writer.toString(), structure.sections(), structure.tables(), structure.images(), metadata);
     }
 
-    private static Document map(String name, String mime, Parsed parsed) {
+    private Document map(String name, String mime, Parsed parsed) {
         String markdown = parsed.markdown() == null ? "" : parsed.markdown().strip();
         Map<String, Object> metadata = new HashMap<>();
+        // 全量透传 Tika 元数据（EXIF / 音频 / 办公作者时间页数等，markitdown 无此能力）
+        for (String key : parsed.tikaMetadata().names()) {
+            metadata.put(key, parsed.tikaMetadata().get(key));
+        }
+        // 规范化精选键（对 RAG 溯源友好）
+        putIfAbsent(metadata, "author", first(parsed.tikaMetadata(), "dc:creator", "Author"));
+        putIfAbsent(metadata, "created", first(parsed.tikaMetadata(), "dcterms:created", "Creation-Date"));
+        putIfAbsent(metadata, "pageCount", first(parsed.tikaMetadata(), "xmpTPg:NPages"));
+        if (properties.isEnableLanguageDetection()) {
+            putIfAbsent(metadata, "language", detectLanguage(markdown));
+        }
         metadata.put("source", "tika");
         metadata.put("detectedMime", mime);
         return new Document(
@@ -132,10 +144,42 @@ public final class TikaDocumentParser implements DocumentParser {
                 metadata);
     }
 
-    /** Tika 解析产物：Markdown 全文 + 结构化字段。 */
+    private static void putIfAbsent(Map<String, Object> target, String key, Object value) {
+        if (value != null && !String.valueOf(value).isBlank() && !target.containsKey(key)) {
+            target.put(key, value);
+        }
+    }
+
+    private static String first(Metadata metadata, String... keys) {
+        for (String key : keys) {
+            String value = metadata.get(key);
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private static String detectLanguage(String text) {
+        try {
+            if (text == null || text.isBlank()) {
+                return null;
+            }
+            org.apache.tika.language.detect.LanguageResult result =
+                    org.apache.tika.language.detect.LanguageDetector.getDefaultLanguageDetector()
+                            .detect(text.length() > 2000 ? text.substring(0, 2000) : text);
+            String language = result.getLanguage();
+            return language == null || language.isBlank() || "unknown".equals(language) ? null : language;
+        } catch (Exception e) {
+            return null; // 语言检测不可用（无模型）不阻塞解析
+        }
+    }
+
+    /** Tika 解析产物：Markdown 全文 + 结构化字段 + 原始元数据。 */
     private record Parsed(String markdown,
                           List<DocumentSection> sections,
                           List<DocumentTable> tables,
-                          List<DocumentImage> images) {
+                          List<DocumentImage> images,
+                          Metadata tikaMetadata) {
     }
 }
