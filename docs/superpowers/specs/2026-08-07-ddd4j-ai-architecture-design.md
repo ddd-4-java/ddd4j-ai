@@ -117,6 +117,7 @@
 | ddd4j-ai-extension-mcp | Model Context Protocol 工具与资源接入 | **已实现**（2026-08-25） | 端口+Spring AI 客户端适配 |
 | ddd4j-ai-extension-ocr | 文档/图像 OCR，对接 PDFBox、Tika | **已实现**（2026-08-25） | PDFBox 直提+Tika 多格式 |
 | ddd4j-ai-extension-router | 多模型智能路由与负载策略 | **已实现**（2026-08-25） | 轮询/权重/延迟策略 |
+| ddd4j-ai-extension-document | 智能体文档统一读取门面（Tika 底座，markitdown 全能力对齐） | **已实现 + 生产加固**（2026-08-27） | 结构化 Markdown/章节树/表格/图片/OCR/音频转写/嵌入资源；流式解析+限额+超时+SecureContentHandler+SLF4J 可观测 |
 | ddd4j-ai-samples | 示例工程 | **已实现**（13 组件示例） | 13 示例类 |
 
 > 已实现组件统一遵循 COLA 分层（service 端口 + impl + properties）与标准 Spring Boot `@AutoConfiguration`（`AutoConfiguration.imports`）；sst 为历史实现（组件扫描装配），保持存量不动。实现将随版本迭代逐步补齐，演进路线见 `docs/superpowers/plans/`。

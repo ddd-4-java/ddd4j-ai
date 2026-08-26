@@ -1,6 +1,13 @@
 # ddd4j-ai-extension-document 生产加固计划（流式 / 限额超时 / 防护 / 可观测）
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **实施记录（2026-08-27，全部 6 Task 完成，document 模块 68 测试全绿）**：
+> - 流式+限额（Task 1）：`TikaInputStream.get(Path)` 流式 spool；File 入口 `Files.size` 前置拒绝，Stream 入口 `LimitedInputStream` 流式计数拒绝；默认 100MB
+> - 超时（Task 2）：`TikaTaskTimeout` 注入 ParseContext（默认 60s），超时不降级重试直接上抛
+> - 防护（Task 3）：`SecureContentHandler` 包裹 handler 链（SAX 实体/输出量限额）+ 嵌入图数量（默认 20）/单图大小（默认 5MB）双限额，丢弃计数 → `metadata.embeddedImagesTruncated`
+> - 可观测（Task 4）：SLF4J——INFO 每次解析（file/mime/source/sections/tables/images/tookMs），WARN 四类事件（OCR 降级/转写失败/超限拒绝/图片截断）
+> - 对抗样本（Task 5）：空文件（短路返回空 Document + `metadata.empty=true`，比 ZeroByteFileException 更智能体友好）/截断 PDF/损坏 zip/15 层嵌套/110MB 压缩炸弹/空表格 HTML，全部 60s 超时断言内受控返回
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 修复「生产就绪评估」识别的 4 项硬缺口，使 document 模块达到 v1 生产标准：
 1. **内存风险**：`parse()` 全量 `readAllBytes()` 入内存 → 流式 spool + 文件大小上限
@@ -50,14 +57,14 @@
 - `parse(InputStream, filename)`：经 `org.apache.tika.io.BoundedInputStream`（若 core 无此公开类则自实现等价物：包裹读计数，超限抛 `DocumentTooLargeException`）复制到临时文件后走 `parse(File)`（保留现有临时文件模式，明确关闭流）
 - `doParse(byte[])` 内部重构：仅音频转写分支保留 byte[]；通用解析改 `TikaInputStream.get(path/临时文件, tmp, metadata)` —— **不再对文档整体 readAllBytes**
 
-- [ ] **Step 1: 写失败测试** `SizeLimitTest`：
+- [x] **Step 1: 写失败测试** `SizeLimitTest`：
   - `fileExceedsLimit_throwsDocumentTooLarge`：properties.maxFileSizeBytes=10；写 11 字节 txt → 抛 `DocumentTooLargeException`
   - `streamExceedsLimit_throwsDocumentTooLarge`：同限额，ByteArrayInputStream 20 字节 → 抛 `DocumentTooLargeException`
   - `limitDisabled_acceptsAnySize`：maxFileSizeBytes=0；正常 txt 解析成功（回归）
   - `normalSizedFile_unchangedBehavior`：默认限额 + 普通 txt → 既有行为（内容/来源断言）
-- [ ] **Step 2: 运行确认失败**（异常类/限额不存在）
-- [ ] **Step 3: 实现**：异常类 + properties 字段 + File/Stream 两入口限额 + TikaInputStream 流式 `doParse`
-- [ ] **Step 4: 全模块测试通过（46+4）+ Commit**
+- [x] **Step 2: 运行确认失败**（异常类/限额不存在）
+- [x] **Step 3: 实现**：异常类 + properties 字段 + File/Stream 两入口限额 + TikaInputStream 流式 `doParse`
+- [x] **Step 4: 全模块测试通过（46+4）+ Commit**
   - `git commit -m "feat(document): streaming parse via TikaInputStream with configurable file size limit"`
 
 ---
@@ -74,13 +81,13 @@
 - `doParse`：`parseContext.set(TikaTaskTimeout.class, new TikaTaskTimeout(properties.getParseTimeoutMillis()))`
 - 超时触发时 Tika 抛 `TikaTimeoutException` → 不吞、不降级重试（超时说明文档病态，重试只会再挂一次），直接上抛并在外层记 WARN 日志（Task 4 接入）
 
-- [ ] **Step 1: 写测试** `TimeoutTest`：
+- [x] **Step 1: 写测试** `TimeoutTest`：
   - `timeoutConfigured_contextInjected`：properties.parseTimeoutMillis=5000 → 解析成功（正常小文档不受影响，回归语义）
   - `timeoutDisabled_defaultStillWorks`：parseTimeoutMillis=0 → 解析成功
   - `timeoutProperty_bound`：默认值断言 60_000（防误改默认）
   - （真实超时用病态样本触发不稳定，不做强制断言；靠上下文注入语义 + 默认值锁定）
-- [ ] **Step 2: 运行确认失败**（properties 无该字段）
-- [ ] **Step 3: 实现** + Step 4: 通过 + Commit
+- [x] **Step 2: 运行确认失败**（properties 无该字段）
+- [x] **Step 3: 实现** + Step 4: 通过 + Commit
   - `git commit -m "feat(document): parse timeout via TikaTaskTimeout in ParseContext"`
 
 ---
@@ -100,13 +107,13 @@
 - `EmbeddedImageExtractor` 构造接收两限额，达到数量上限后 `shouldParseEmbedded` 返回 false
 - 大小上限超限的嵌入图：跳过收集、计数 `truncatedImages`（metadata 透传）
 
-- [ ] **Step 1: 写测试** `SecurityLimitsTest`：
+- [x] **Step 1: 写测试** `SecurityLimitsTest`：
   - `deeplyNestedZip_parsesOrFailsGracefully`：构造 10 层嵌套 zip（每层含下一层）→ 不挂死、60s 内返回（解析成功或受控异常均可，断言「方法在期限内返回」）
   - `embeddedImages_cappedAtLimit`：构造含 3 图的 docx，maxEmbeddedImages=2 → images 含 ≤2 个 data URL 图且 `metadata.embeddedImagesTruncated=true`
   - `oversizedEmbeddedImage_skipped`：单图 6MB（maxEmbeddedImageBytes=5MB）→ 该图跳过、解析成功、metadata 记 truncated
-- [ ] **Step 2: 运行确认失败**
-- [ ] **Step 3: 实现**（SecureContentHandler 包裹 + extractor 限额）
-- [ ] **Step 4: 通过 + Commit**
+- [x] **Step 2: 运行确认失败**
+- [x] **Step 3: 实现**（SecureContentHandler 包裹 + extractor 限额）
+- [x] **Step 4: 通过 + Commit**
   - `git commit -m "feat(document): SecureContentHandler + embedded resource caps (zip bomb / image flood protection)"`
 
 ---
@@ -127,11 +134,11 @@
   - 嵌入图截断：`embedded images truncated: kept={}, dropped={}`
 - 测试用 `ListAppender`（logback 经 spring-boot-starter-test 在 test classpath）捕获断言 INFO/WARN 内容
 
-- [ ] **Step 1: 写测试** `LoggingTest`：
+- [x] **Step 1: 写测试** `LoggingTest`：
   - `successfulParse_logsInfoWithMetrics`：解析 txt → 捕获 1 条 INFO 含 `tookMs` 与 `mime=text/plain`
   - `sizeRejection_logsWarn`：超限 → WARN 含 `exceeds size limit`
   - `truncation_logsWarn`：嵌入图截断 → WARN 含 `truncated`
-- [ ] **Step 2: 确认失败**（无日志）→ **Step 3: 实现埋点** → **Step 4: 通过 + Commit**
+- [x] **Step 2: 确认失败**（无日志）→ **Step 3: 实现埋点** → **Step 4: 通过 + Commit**
   - `git commit -m "feat(document): structured SLF4J observability (parse metrics + degradation events)"`
 
 ---
@@ -151,20 +158,20 @@
 | 高压缩比 zip 炸弹 | 小 zip 解压后 100MB 重复字节（受 maxFileSize 保护） | DocumentTooLargeException 或受控 |
 | 空表格 HTML | `<table><tr></tr></table>` | sections/tables 空集合不 NPE |
 
-- [ ] **Step 1: 写 6 个样本测试**（对现有实现跑，暴露问题）
-- [ ] **Step 2: 修正实现直至全绿**（预期前 5 项可能暴露需修的点，第 6 项回归）
-- [ ] **Step 3: Commit**
+- [x] **Step 1: 写 6 个样本测试**（对现有实现跑，暴露问题）
+- [x] **Step 2: 修正实现直至全绿**（预期前 5 项可能暴露需修的点，第 6 项回归）
+- [x] **Step 3: Commit**
   - `git commit -m "test(document): adversarial samples regression (empty/truncated/corrupt/nested/bomb)"`
 
 ---
 
 ### Task 6: 文档回写 + 全量验证 + 发布推送
 
-- [ ] **Step 1: 计划勾选**（sed 全勾）+ 在本计划头部追加实施记录（含默认限额表）
-- [ ] **Step 2: README/架构 spec 更新**：document 行补「生产加固：流式/限额/超时/防护/可观测」
-- [ ] **Step 3: 全量 reactor 验证**
+- [x] **Step 1: 计划勾选**（sed 全勾）+ 在本计划头部追加实施记录（含默认限额表）
+- [x] **Step 2: README/架构 spec 更新**：document 行补「生产加固：流式/限额/超时/防护/可观测」
+- [x] **Step 3: 全量 reactor 验证**
   - `./mvnw -U -Denforcer.skip=true -B -DskipTests=false clean test` 23 模块 BUILD SUCCESS
-- [ ] **Step 4: deploy document 模块到私仓 + 推送双远程**
+- [x] **Step 4: deploy document 模块到私仓 + 推送双远程**
   - `./mvnw -pl ddd4j-ai-extensions/ddd4j-ai-extension-document -am deploy`（snapshot 通道已打通）
   - `git push github feature/2.0.x && git push origin feature/2.0.x`
 
