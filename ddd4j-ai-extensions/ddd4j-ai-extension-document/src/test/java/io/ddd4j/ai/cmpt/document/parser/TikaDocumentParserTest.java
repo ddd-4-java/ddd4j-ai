@@ -51,7 +51,9 @@ class TikaDocumentParserTest {
         Document document = new TikaDocumentParser().parse(file);
         assertThat(document.source()).isEqualTo(SourceType.TIKA_FALLBACK);
         assertThat(document.fullMarkdown()).contains("Title").contains("Body text");
+        assertThat(document.fullMarkdown()).contains("# Title"); // Tika 将 h1 转为结构化 markdown 标题
         assertThat(document.mime()).isEqualTo("text/html");
+        assertThat(document.metadata()).containsEntry("source", "tika");
     }
 
     @Test
