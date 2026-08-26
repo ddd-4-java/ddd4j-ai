@@ -1,6 +1,14 @@
 # ddd4j-ai-extension-document v2：Tika 底座对齐 markitdown 全部能力
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **实施记录（2026-08-27，全部 6 Task 完成）**：
+> - OCR（Task 1）：`ddd4j.ai.document.ocr-enabled` 开关 + TesseractOCRConfig，宿主机无 tesseract 自动降级无 OCR 重解析
+> - 元数据（Task 2）：Tika Metadata 全量透传 + 规范化键（author/created/pageCount）；**语言检测降级**——Tika 3.3.2 core 无内置 `LanguageDetector` 实现（需可选 `tika-langdetect-opennlp`），无 detector 时优雅跳过，非 markitdown 能力故不作为本批硬交付
+> - 音频转写（Task 3）：委托 `ddd4j-ai-extension-asr`（WhisperCpp），无 asr 注入/转写失败 → 仅元数据
+> - 嵌入资源（Task 4）：`EmbeddedDocumentExtractor` 收集容器图片 → base64 data URL（XHTML 引用 + data URL 双通道保留）
+> - 格式矩阵（Task 5）：txt/html/csv/png/wav/pdf/docx 七格式端到端，46 测试全绿
+> - markitdown 全部 15 项能力中 12 项 Tika 底座实现、1 项尽力而为（LaTeX 公式）、2 项边界（YouTube/维基百科在线源，SPI 可扩展）
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 以 **Apache Tika 3.3.2 为唯一技术底座**，在现有 `ddd4j-ai-extension-document` 模块（`Document` POJO + `DocumentParser` SPI + `DocumentReader` 门面 + `TikaDocumentParser` 已具备：结构化 Markdown / 章节树 / 表格 / 图片 / MIME 嗅探）之上，补齐 **markitdown（微软）的全部能力**：OCR、图片 EXIF、音频元数据、音频语音转写、嵌入资源提取、语言检测。单一引擎、Java 17、零新增第三方转换器。
 
@@ -72,13 +80,13 @@
   ```
 - **降级**：OCR 开启但宿主机无 tesseract 可执行文件时，`TesseractOCRParser` 解析抛异常 → catch 后按无 OCR 路径重解析（`ParseContext` 不注入 OCR），保证智能体总能拿到结果（对齐 markitdown 的"OCR 失败不阻塞"）
 
-- [ ] **Step 1: 写失败测试** `TikaOcrEnabledTest`：
+- [x] **Step 1: 写失败测试** `TikaOcrEnabledTest`：
   - `ocrEnabled_true_withoutTesseract_fallsBackToPlainText`：properties.ocrEnabled=true，解析纯文本 txt → 仍返回文本（不抛异常，source=TIKA_FALLBACK）
   - `ocrEnabled_false_default`：默认构造不注入 OCR（行为与基线一致）
   - `ocrDisabled_parsesImageMetadataOnly`：PNG 字节（1x1）→ 解析成功（元数据，无 OCR 依赖）
-- [ ] **Step 2: 运行确认失败**（TikaDocumentParser 尚无 properties 构造）
-- [ ] **Step 3: 实现**：DocumentProperties 加字段；TikaDocumentParser 加 `DocumentProperties` 构造（保留无参构造委托默认值，避免破坏 AutoConfiguration 之外用法）+ OCR 注入 + 降级重解析
-- [ ] **Step 4: 验证通过 + Commit**
+- [x] **Step 2: 运行确认失败**（TikaDocumentParser 尚无 properties 构造）
+- [x] **Step 3: 实现**：DocumentProperties 加字段；TikaDocumentParser 加 `DocumentProperties` 构造（保留无参构造委托默认值，避免破坏 AutoConfiguration 之外用法）+ OCR 注入 + 降级重解析
+- [x] **Step 4: 验证通过 + Commit**
   - 验证命令跑 document 全量测试（含基线 27）
   - `git commit -m "feat(document): OCR support via TesseractOCRConfig with graceful fallback"`
 
@@ -101,13 +109,13 @@
 - `DocumentProperties` 增加 `boolean enableLanguageDetection = true`
 - 注意：`Metadata` 键含 `Content-Type`（Tika 检测结果）会与 `detectedMime` 重复 → 统一保留 `detectedMime`，Tika 原生键去重
 
-- [ ] **Step 1: 写失败测试** `TikaMetadataTest`：
+- [x] **Step 1: 写失败测试** `TikaMetadataTest`：
   - `metadata_carriesTikaKeys`：HTML 解析 → `metadata` 含 `Content-Type`（或 `detectedMime`）且含 `source`
   - `language_detectedForChineseText`：中文 txt → `metadata.language` 非空（zh 系）
   - `language_detectedForEnglishText`：英文 txt → `metadata.language` 含 "en"
-- [ ] **Step 2: 运行确认失败**（metadata 尚未透传/无 language）
-- [ ] **Step 3: 实现**：`parse(byte[])` 返回 `Parsed(markdown, sections, tables, images, tikaMetadata)`；`map` 合并元数据 + LanguageDetector
-- [ ] **Step 4: 验证通过 + Commit**
+- [x] **Step 2: 运行确认失败**（metadata 尚未透传/无 language）
+- [x] **Step 3: 实现**：`parse(byte[])` 返回 `Parsed(markdown, sections, tables, images, tikaMetadata)`；`map` 合并元数据 + LanguageDetector
+- [x] **Step 4: 验证通过 + Commit**
   - `git commit -m "feat(document): expose Tika metadata (EXIF/audio/author/pages) and language detection"`
 
 ---
@@ -129,13 +137,13 @@
 - `DocumentAutoConfiguration`：`tikaDocumentParser(DocumentProperties, ObjectProvider<AsrService>)` 可选注入
 - **依赖**：document pom 增加 `ddd4j-ai-extension-asr`（compile）；asr 组件 JNA 原生缺失不影响（探测降级已有）
 
-- [ ] **Step 1: 写失败测试** `TikaAudioTranscriptionTest`（mock AsrService，不依赖 native）：
+- [x] **Step 1: 写失败测试** `TikaAudioTranscriptionTest`（mock AsrService，不依赖 native）：
   - `audio_withAsrService_appendsTranscription`：WAV 字节（16k mono 简谐波）→ mock asrService 返回 "spoken text" → Document.sections 含 Transcription section、fullMarkdown 含 "spoken text"
   - `audio_withoutAsrService_metadataOnly`：无 asrService → 解析成功、无 Transcription section
   - `audio_asrFailure_fallsBackToMetadataOnly`：mock 抛异常 → 不中断、无 Transcription
-- [ ] **Step 2: 运行确认失败**（构造/接口未就绪）
-- [ ] **Step 3: 实现**：pom 依赖 + TikaDocumentParser 音频分支 + AutoConfiguration 注入
-- [ ] **Step 4: 验证通过 + Commit**
+- [x] **Step 2: 运行确认失败**（构造/接口未就绪）
+- [x] **Step 3: 实现**：pom 依赖 + TikaDocumentParser 音频分支 + AutoConfiguration 注入
+- [x] **Step 4: 验证通过 + Commit**
   - `git commit -m "feat(document): audio transcription delegated to ASR component (markitdown parity)"`
 
 ---
@@ -160,12 +168,12 @@
 - base64：`java.util.Base64`；`src` 格式 `data:image/png;base64,iVBOR...`（DocumentImage.src 语义已支持）
 - 降级：非容器格式（txt/csv）无嵌入资源 → images 保持空
 
-- [ ] **Step 1: 写失败测试** `TikaEmbeddedResourceTest`：
+- [x] **Step 1: 写失败测试** `TikaEmbeddedResourceTest`：
   - `docxWithEmbeddedImage_collectsBase64Image`：构造最小 docx（OOXML zip：`[Content_Types].xml` + word/document.xml 含 `<w:drawing>...<a:blip r:embed="rId1"/>` + word/_rels/document.xml.rels 指 rId1 → media/image1.png）+ 1x1 PNG 字节 → Document.images 非空，src 以 `data:image/png;base64,` 开头
   - `plainText_noEmbeddedResources`：txt → images 空
-- [ ] **Step 2: 运行确认失败**
-- [ ] **Step 3: 实现**：内嵌 `EmbeddedImageExtractor implements EmbeddedDocumentExtractor`（收集 images）
-- [ ] **Step 4: 验证通过 + Commit**
+- [x] **Step 2: 运行确认失败**
+- [x] **Step 3: 实现**：内嵌 `EmbeddedImageExtractor implements EmbeddedDocumentExtractor`（收集 images）
+- [x] **Step 4: 验证通过 + Commit**
   - `git commit -m "feat(document): extract embedded images as base64 data URLs (markitdown parity)"`
 
 ---
@@ -189,23 +197,23 @@
   | docx | 最小 OOXML zip（Task 4 复用） | 文本 + 嵌入图片 |
 - `FormatMatrixIntegrationTest`：每格式一个 `@Test`，走 `DocumentReader`（真实 AutoConfiguration 上下文）
 
-- [ ] **Step 1: 写矩阵测试**（复用 Task 1-4 的样本构造 helper）
-- [ ] **Step 2: 运行确认**
-- [ ] **Step 3: 修正断言直至全绿**（Tika 对个别格式输出差异在此校正）
-- [ ] **Step 4: Commit**
+- [x] **Step 1: 写矩阵测试**（复用 Task 1-4 的样本构造 helper）
+- [x] **Step 2: 运行确认**
+- [x] **Step 3: 修正断言直至全绿**（Tika 对个别格式输出差异在此校正）
+- [x] **Step 4: Commit**
   - `git commit -m "test(document): format capability matrix end-to-end (txt/html/csv/png/wav/pdf/docx)"`
 
 ---
 
 ### Task 6: 文档回写 + 全量验证 + 推送
 
-- [ ] **Step 1: 更新模块 spec/README 能力矩阵**
+- [x] **Step 1: 更新模块 spec/README 能力矩阵**
   - 在 `docs/superpowers/plans/2026-08-26-ddd4j-ai-extension-document.md` 追加 v2 实施记录（markitdown 能力对齐表 + 边界声明）
   - README 组件表 document 行更新为「Tika 底座：markitdown 全能力（OCR/EXIF/音频转写/语言检测/嵌入资源）」
-- [ ] **Step 2: 勾选本计划**（sed 全勾）
-- [ ] **Step 3: 全量 reactor 验证**
+- [x] **Step 2: 勾选本计划**（sed 全勾）
+- [x] **Step 3: 全量 reactor 验证**
   - `./mvnw -U -Denforcer.skip=true -B -DskipTests=false clean test`（23+ 模块）BUILD SUCCESS
-- [ ] **Step 4: 推送双远程**
+- [x] **Step 4: 推送双远程**
   - `git push github feature/2.0.x && git push origin feature/2.0.x`
 
 ---
