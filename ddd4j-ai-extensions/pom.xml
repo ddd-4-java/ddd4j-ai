@@ -25,6 +25,7 @@
         <module>ddd4j-ai-extension-flow</module>
         <module>ddd4j-ai-extension-rag</module>
         <module>ddd4j-ai-extension-asr</module>
+        <module>ddd4j-ai-extension-document</module>
         <module>ddd4j-ai-extension-tts</module>
         <module>ddd4j-ai-extension-sst</module>
         <module>ddd4j-ai-extension-mcp</module>
