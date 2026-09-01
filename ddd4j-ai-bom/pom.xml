@@ -68,29 +68,27 @@
                 <artifactId>ddd4j-ai-extension-asr</artifactId>
                 <version>${revision}</version>
             </dependency>
-            <dependency>
-                <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-extension-document</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
+<dependency>
                 <groupId>io.ddd4j.ai</groupId>
                 <artifactId>ddd4j-ai-extension-tts</artifactId>
                 <version>${revision}</version>
             </dependency>
-            <dependency>
+
+<dependency>
                 <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-extension-mcp</artifactId>
+                <artifactId>ddd4j-ai-extension-router</artifactId>
                 <version>${revision}</version>
             </dependency>
-            <dependency>
+
+<dependency>
                 <groupId>io.ddd4j.ai</groupId>
                 <artifactId>ddd4j-ai-extension-ocr</artifactId>
                 <version>${revision}</version>
             </dependency>
+
             <dependency>
                 <groupId>io.ddd4j.ai</groupId>
-                <artifactId>ddd4j-ai-extension-router</artifactId>
+                <artifactId>ddd4j-ai-extension-mcp</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
