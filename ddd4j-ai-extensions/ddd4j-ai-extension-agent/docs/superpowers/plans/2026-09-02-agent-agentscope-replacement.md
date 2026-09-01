@@ -1,6 +1,17 @@
 # ddd4j-ai-extension-agent v2.1：替换为 Agentscope 域模型（修正版，按 cloud-agents 实际 API）
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **实施记录（2026-09-02，全部 7 Task 完成）**：
+> - Task 1（fc45fc4）：agentscope-core/harness/extensions-model-openai 提升 compile scope
+> - Task 2（1610314）：`AgentScopeAgentAdapter implements AgentService`（薄包装 HarnessAgent：`call→Mono<Msg>` / `stream→Flux<Event>`，Event 类型 REASONING/TOOL_RESULT/AGENT_RESULT 映射为 thought/observation/result），7 测试全绿
+> - Task 3（388a123）：`SpringAiToolkitBuilder`（Spring AI ToolCallback → Agentscope AgentTool，Mono 全程包装异常为 ToolResultBlock.error），4 测试全绿
+> - Task 4（25abc2e）：`AgentAutoConfiguration` 暴露 HarnessAgent + Toolkit + Model（OpenAIChatModel）Bean；victools 钉 4.38.0（Jackson 2 兼容，修 NoSuchMethodError）；无 api-key 时回退不装配；6 测试全绿
+> - Task 5（d954118）：删除自实现 ReActAgent/PlanExecuteAgent 及内部测试（9 个），SPI 加迁移注释
+> - Task 6（dcf14ed）：AgentSample 重写为 HarnessAgent 直接注入调用
+> - Task 7：全量 22 模块验证 + 双分支推送
+> **关键排障**：victools jsonschema-generator 5.0.0 迁 Jackson 3 → agentscope-core 2.0.0 编译期 Jackson 2 冲突，钉 4.38.0 解决；`ToolCallParam.builder()` 是私有构造的静态工厂；`Toolkit.registerAgentTool`（非 registerTool）
+
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **修订背景（2026-09-02 关键发现）**：plan 初稿基于错误的 Agentscope API 假设（`Model.reply()`/`Msg.builder().textContent()`/`TextContent.of()`），实际 agentscope-core 2.0.0 jar 中这些 API 形态完全不同。本计划按 cloud-agents 真实代码路径修订：
 
@@ -92,15 +103,15 @@ agentscope-core/harness/extensions-model-openai 已 compile；17 既有测试保
 - 错误：`Mono`/`Flux` 抛异常 → 包 `AgentExecutionException extends RuntimeException`
 - **不**实现 `Model` 接口（cloud-agents 也不实现）——直接用 `HarnessAgent.Builder` 在 AutoConfiguration 中装配
 
-- [ ] **Step 1: 写失败测试** `AgentScopeAgentAdapterTest`（5 个）：
+- [x] **Step 1: 写失败测试** `AgentScopeAgentAdapterTest`（5 个）：
   - `execute_returnsAgentResultFromAssistantMessage`
   - `execute_toolCallEmittedAsObservationStep`
   - `execute_harnessCallFails_throwsAgentExecution`
   - `stream_emitsEventsAsSteps`
   - `constructor_nullHarness_throws`
-- [ ] **Step 2: 运行确认失败**
-- [ ] **Step 3: 实现 `AgentScopeAgentAdapter`**
-- [ ] **Step 4: 验证 5 测试通过 + Commit** `feat(agent): add AgentScopeAgentAdapter wrapping HarnessAgent for AgentService SPI`
+- [x] **Step 2: 运行确认失败**
+- [x] **Step 3: 实现 `AgentScopeAgentAdapter`**
+- [x] **Step 4: 验证 5 测试通过 + Commit** `feat(agent): add AgentScopeAgentAdapter wrapping HarnessAgent for AgentService SPI`
 
 ---
 
@@ -120,14 +131,14 @@ agentscope-core/harness/extensions-model-openai 已 compile；17 既有测试保
   - `callAsync(ToolCallParam param)` → `Mono<ToolResultBlock>` 包装 `callback.call(input)`，失败 → `ToolResultBlock.error(msg)`
 - 降级：单个工具注册失败 → 记录 WARN 跳过（不中断整个 Toolkit 装配）
 
-- [ ] **Step 1: 写失败测试** `SpringAiToolkitBuilderTest`（4 个）：
+- [x] **Step 1: 写失败测试** `SpringAiToolkitBuilderTest`（4 个）：
   - `register_invokesCallback`
   - `register_callbackError_returnsErrorBlock`
   - `register_emptyList_returnsEmptyBuilder`
   - `register_brokenTool_doesNotThrow`
-- [ ] **Step 2: 运行确认失败**
-- [ ] **Step 3: 实现**
-- [ ] **Step 4: 验证 + Commit** `feat(agent): register Spring AI ToolCallback as Agentscope AgentTool`
+- [x] **Step 2: 运行确认失败**
+- [x] **Step 3: 实现**
+- [x] **Step 4: 验证 + Commit** `feat(agent): register Spring AI ToolCallback as Agentscope AgentTool`
 
 ---
 
@@ -160,13 +171,13 @@ agentscope-core/harness/extensions-model-openai 已 compile；17 既有测试保
 - 装配顺序：`@AutoConfiguration(afterName = ChatAutoConfiguration)` 不变
 - 保留 `AgentProperties` + 新增字段：`name`（默认 `"default-agent"`）、`modelName`（默认 `"gpt-4o-mini"`）
 
-- [ ] **Step 1: 写失败测试** `AgentAutoConfigurationTest`（4 个）：
+- [x] **Step 1: 写失败测试** `AgentAutoConfigurationTest`（4 个）：
   - `defaultContext_exposesHarnessAgentBean`
   - `defaultContext_exposesAgentService`
   - `toolCallbacksInjected_registeredAsAgentscopeTools`
   - `userProvidedHarnessAgent_backsOff`
-- [ ] **Step 2: 实现 `AgentAutoConfiguration`**
-- [ ] **Step 3: 验证 + Commit** `feat(agent): AutoConfiguration exposes HarnessAgent + Toolkit (Spring AI ToolCallback compat)`
+- [x] **Step 2: 实现 `AgentAutoConfiguration`**
+- [x] **Step 3: 验证 + Commit** `feat(agent): AutoConfiguration exposes HarnessAgent + Toolkit (Spring AI ToolCallback compat)`
 
 ---
 
@@ -179,9 +190,9 @@ agentscope-core/harness/extensions-model-openai 已 compile；17 既有测试保
 - Delete: `src/test/java/io/ddd4j/ai/extension/agent/service/impl/PlanExecuteAgentTest.java`
 - Modify: `src/main/java/io/ddd4j/ai/extension/agent/service/AgentService.java`（加 @Deprecated 注释说明迁移到 Agentscope 实现）
 
-- [ ] **Step 1: 删除 4 文件**
-- [ ] **Step 2: 运行 `AgentServiceContractTest` + `AgentAutoConfigurationTest` 验证（应仍 13 个测试，删除内部测试后净减 9 → 13 测试全绿）**
-- [ ] **Step 3: Commit** `refactor(agent): remove self-implemented ReAct/Plan-Execute (replaced by Agentscope HarnessAgent)`
+- [x] **Step 1: 删除 4 文件**
+- [x] **Step 2: 运行 `AgentServiceContractTest` + `AgentAutoConfigurationTest` 验证（应仍 13 个测试，删除内部测试后净减 9 → 13 测试全绿）**
+- [x] **Step 3: Commit** `refactor(agent): remove self-implemented ReAct/Plan-Execute (replaced by Agentscope HarnessAgent)`
 
 ---
 
@@ -194,21 +205,21 @@ agentscope-core/harness/extensions-model-openai 已 compile；17 既有测试保
 - 演示用 `HarnessAgent.Builder` 直接构造 + `OpenAIChatModel.builder()...build()` 装配 Model + `Toolkit.registerTool()` 演示工具
 - 不再依赖 `AgentService`（改用 Agentscope 原生调用）
 
-- [ ] **Step 1: 重写 `AgentSample.java`**
-- [ ] **Step 2: 全量编译**（`./mvnw -pl ddd4j-ai-samples compile`）
-- [ ] **Step 3: Commit** `refactor(samples): rewrite AgentSample with HarnessAgent.Builder + OpenAIChatModel`
+- [x] **Step 1: 重写 `AgentSample.java`**
+- [x] **Step 2: 全量编译**（`./mvnw -pl ddd4j-ai-samples compile`）
+- [x] **Step 3: Commit** `refactor(samples): rewrite AgentSample with HarnessAgent.Builder + OpenAIChatModel`
 
 ---
 
 ### Task 7: 全量验证 + docs 回写 + 双分支推送
 
-- [ ] **Step 1: 全量 reactor 验证**
+- [x] **Step 1: 全量 reactor 验证**
   - `./mvnw -U -Denforcer.skip=true -B -DskipTests=false clean test` 23 模块 BUILD SUCCESS
-- [ ] **Step 2: docs 回写**
+- [x] **Step 2: docs 回写**
   - `docs/superpowers/specs/2026-08-12-agent-component-design.md` 状态：`待实施` → `已实现（Agentscope 2.0.0）`
   - 本 plan 头部加「实施记录」+ 「修订记录（v2.1）」说明 API 校正过程
-- [ ] **Step 3: 推送双远程**（feature/2.0.x → github + codeup origin）
-- [ ] **Step 4: cherry-pick 到 feature/1.0.x**（包名 `extension`；pom 模型 4.0.0；冲突手动解决）
+- [x] **Step 3: 推送双远程**（feature/2.0.x → github + codeup origin）
+- [x] **Step 4: cherry-pick 到 feature/1.0.x**（包名 `extension`；pom 模型 4.0.0；冲突手动解决）
 
 ---
 
