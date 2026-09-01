@@ -43,6 +43,10 @@ public final class SpringAiToolkitBuilder {
         Objects.requireNonNull(toolkit, "toolkit");
         for (ToolCallback callback : callbacks) {
             try {
+                if (callback.getToolDefinition() == null) {
+                    log.warn("register tool failed, skip: callback has no tool definition");
+                    continue;
+                }
                 toolkit.registerAgentTool(new SpringAiAgentTool(callback));
             } catch (RuntimeException e) {
                 log.warn("register tool failed, skip: name={}, error={}",

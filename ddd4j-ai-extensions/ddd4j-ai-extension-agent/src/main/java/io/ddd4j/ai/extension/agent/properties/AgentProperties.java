@@ -30,4 +30,24 @@ public class AgentProperties {
      * Plan-Execute 最大计划执行步数。
      */
     private int maxPlanSteps = 5;
+
+    /**
+     * 智能体名称（Agentscope HarnessAgent 标识）。
+     */
+    private String name = "default-agent";
+
+    /**
+     * 模型名称（OpenAI 兼容协议，如 gpt-4o-mini / qwen-plus / ollama 模型名）。
+     */
+    private String modelName = "gpt-4o-mini";
+
+    /**
+     * OpenAI 兼容模型 API Key；为空时不装配 HarnessAgent（需业务注入 Model Bean 兜底）。
+     */
+    private String apiKey;
+
+    /**
+     * OpenAI 兼容模型 Base URL（如 https://api.deepseek.com / Ollama 本地地址）。
+     */
+    private String baseUrl;
 }
