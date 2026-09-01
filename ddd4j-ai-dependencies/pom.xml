@@ -43,6 +43,9 @@
         <whispercpp.version>1.4.0</whispercpp.version>
         <pdfbox.version>3.0.8</pdfbox.version>
         <tika.version>3.3.2</tika.version>
+        <!-- Agentscope 2.0.0 与 Jackson 3 不兼容（victools 5.0.0 返回 tools.jackson ObjectNode，
+             agentscope-core 编译期绑定 com.fasterxml ObjectNode）→ 钉 victools 4.38.0（Jackson 2 系最后版本） -->
+        <victools-jsonschema.version>4.38.0</victools-jsonschema.version>
     </properties>
 
     <dependencyManagement>
@@ -120,6 +123,23 @@
                 <version>${langchain4j.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!-- Agentscope 的 Jackson 2 依赖链兼容（victools 5.0.0 已迁 Jackson 3，导致
+                 agentscope-core 的 SchemaGenerator.generateSchema 返回类型不匹配 NoSuchMethodError） -->
+            <dependency>
+                <groupId>com.github.victools</groupId>
+                <artifactId>jsonschema-generator</artifactId>
+                <version>${victools-jsonschema.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.victools</groupId>
+                <artifactId>jsonschema-module-jackson</artifactId>
+                <version>${victools-jsonschema.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.victools</groupId>
+                <artifactId>jsonschema-module-swagger-2</artifactId>
+                <version>${victools-jsonschema.version}</version>
             </dependency>
             <!-- https://central.sonatype.com/artifact/io.agentscope/agentscope-bom -->
             <dependency>
