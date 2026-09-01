@@ -1,37 +1,37 @@
 package io.ddd4j.ai.samples.agent;
 
-import io.ddd4j.ai.extension.agent.service.AgentResult;
-import io.ddd4j.ai.extension.agent.service.AgentService;
-import io.ddd4j.ai.extension.agent.service.AgentStep;
-import io.ddd4j.ai.extension.agent.service.AgentTask;
+import io.agentscope.core.message.UserMessage;
+import io.agentscope.harness.agent.HarnessAgent;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
- * agent 智能体编排组件使用示例：ReAct 工具调用循环 / 流式步骤。
+ * agent 智能体组件使用示例（Agentscope 域模型）：装配好的 HarnessAgent 可直接注入，
+ * 也可由业务自行用 {@code HarnessAgent.builder()} 构造定制智能体。
  *
- * <p>前提：引入 {@code ddd4j-ai-extension-agent}，并依赖 chat 组件（模型 starter）；
- * 工具回调由业务侧注册 {@code ToolCallback} bean 注入（如 Spring AI 的
- * {@code MethodToolCallbackProvider}）。
+ * <p>前提：业务服务引入 {@code ddd4j-ai-extension-agent}，并配置
+ * {@code ddd4j.ai.agent.api-key} + {@code ddd4j.ai.agent.model-name}（OpenAI 兼容协议，
+ * 或业务侧注入 {@code io.agentscope.core.model.Model} Bean）。
  *
  * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
  */
 @Component
 public class AgentSample {
 
-    private final AgentService agentService;
+    private final HarnessAgent harnessAgent;
 
-    public AgentSample(AgentService agentService) {
-        this.agentService = agentService;
+    public AgentSample(HarnessAgent harnessAgent) {
+        this.harnessAgent = harnessAgent;
     }
 
-    /** 一次性执行：返回最终答案与完整思考/动作轨迹。 */
-    public AgentResult run(String instruction) throws Exception {
-        return agentService.execute(AgentTask.of(instruction));
+    /** 同步执行：返回最终回答文本。 */
+    public String run(String instruction) {
+        return harnessAgent.call(new UserMessage(instruction)).block().getTextContent();
     }
 
-    /** 流式执行：逐步消费 thought / observation / result 步骤。 */
-    public Flux<AgentStep> stream(String instruction) {
-        return agentService.stream(AgentTask.of(instruction));
+    /** 异步执行：返回响应式回答。 */
+    public Mono<String> runAsync(String instruction) {
+        return harnessAgent.call(new UserMessage(instruction))
+                .map(message -> message.getTextContent());
     }
 }
