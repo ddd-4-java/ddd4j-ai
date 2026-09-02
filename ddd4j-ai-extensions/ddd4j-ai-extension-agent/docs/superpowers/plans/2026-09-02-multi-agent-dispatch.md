@@ -1,5 +1,14 @@
 # ddd4j-ai 多智能体派发执行（plan mode + subagents + mysql 状态 + AgentNode + xxl-job 调度）
 
+> **实施记录（2026-09-02，全部 6 Task 完成，2.0.x 全量验证通过）**：
+> - T1：`AgentProperties` 新增 `taskListEnabled`/`subagents`（SubagentSpec→SubagentDeclaration）/`stateStore`/`scheduler`；AutoConfiguration 装配 + parseSubagents 静态解析
+> - T2：`MysqlAgentStateStore` 接线（`@ConditionalOnProperty(state-store=mysql)` + 业务 DataSource）；Testcontainers MySQL 实测 roundtrip/exists/delete（autoCreate 建库需 root 凭证；H2 因不支持 CREATE DATABASE 不可用）
+> - T3：`AgentPlanOrchestrator`——submitPlan 建任务行 / dispatchAll 并行派发（RUNNING→DONE/FAILED 写回）/ mergeResults 父 agent synthesis；内存仓储实现 + 接口化（JDBC 后续）
+> - T4：flow 组件新增 `AGENT` 节点类型（prompt 占位符→AgentService.execute→outputKey）；FlowAutoConfiguration afterName 级联 agent 装配
+> - T5：`AgentScheduler` Bean 条件装配（scheduler=xxl-job + XxlJobExecutor Bean）；**agent-job 后续接入 = 新增 AgentScheduler 实现即可**（接口已抽象）
+> - 执行中修正：cherry-pick 时 2.0.x 的 AgentScopeAgentAdapter 被污染（AgentEvent/限定枚举 switch），已用 1.0.x 正确版本覆盖
+
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 在 agent/flow 两组件上落地「多智能体派发执行」四件套：
@@ -58,8 +67,8 @@
   - harnessAgent 方法：`builder.enableTaskList(...)` + `builder.subagents(declarations)`
   - 新增静态 `parseSubagents(AgentProperties)` 供测试
 
-- [ ] Step 1 写失败测试（subagents 装配后 `HarnessAgent.getDelegate()` 可建；spec 解析正确）
-- [ ] Step 2 实现 + Step 3 全绿 + Step 4 Commit `feat(agent): expose subagents & task-list config (HarnessAgent multi-agent)`
+- [x] Step 1 写失败测试（subagents 装配后 `HarnessAgent.getDelegate()` 可建；spec 解析正确）
+- [x] Step 2 实现 + Step 3 全绿 + Step 4 Commit `feat(agent): expose subagents & task-list config (HarnessAgent multi-agent)`
 
 ---
 
@@ -83,8 +92,8 @@ public AgentStateStore agentStateStore(DataSource dataSource) {
 - harnessAgent 方法加 `ObjectProvider<AgentStateStore>` → `builder.stateStore(...)`
 - 无 DataSource/未配置 → 静默不接线（回退内存态）
 
-- [ ] Step 1 依赖 + 失败测试（H2 save/get roundtrip + 装配条件）
-- [ ] Step 2 实现 + Step 3 全绿 + Step 4 Commit `feat(agent): wire MysqlAgentStateStore for resumable sessions`
+- [x] Step 1 依赖 + 失败测试（H2 save/get roundtrip + 装配条件）
+- [x] Step 2 实现 + Step 3 全绿 + Step 4 Commit `feat(agent): wire MysqlAgentStateStore for resumable sessions`
 
 ---
 
@@ -110,8 +119,8 @@ public class AgentPlanOrchestrator {
 - `dispatchAll`：每任务 `harnessAgent.call(new UserMessage(instruction()))` 并行（`Flux.merge`/`Mono.zip`），成功 → DONE+result，失败 → FAILED+error
 - `mergeResults`：全部 DONE → `harnessAgent.call(new UserMessage(merge prompt + 各结果))`；有 FAILED → 抛 `AgentExecutionException`
 
-- [ ] Step 1 失败测试（submit 建表 / dispatch 并行写回 / merge 合成 / 部分失败抛异常 / 未知 planId）
-- [ ] Step 2 实现 + Step 3 全绿 + Step 4 Commit `feat(agent): add AgentPlanOrchestrator (plan → parallel subagent dispatch → merge)`
+- [x] Step 1 失败测试（submit 建表 / dispatch 并行写回 / merge 合成 / 部分失败抛异常 / 未知 planId）
+- [x] Step 2 实现 + Step 3 全绿 + Step 4 Commit `feat(agent): add AgentPlanOrchestrator (plan → parallel subagent dispatch → merge)`
 
 ---
 
@@ -123,8 +132,8 @@ public class AgentPlanOrchestrator {
 - Modify: `service/impl/GraphFlowService.java`（AGENT 分支 → `AgentService.execute`，结果写 outputKey）
 - Test: 扩展 `GraphFlowServiceTest`（mock AgentService）
 
-- [ ] Step 1 失败测试（AGENT 节点执行：instruction 从 prompt 占位符替换，结果写 outputKey）
-- [ ] Step 2 实现 + Step 3 全绿 + Step 4 Commit `feat(flow): add AGENT node type delegating to AgentService`
+- [x] Step 1 失败测试（AGENT 节点执行：instruction 从 prompt 占位符替换，结果写 outputKey）
+- [x] Step 2 实现 + Step 3 全绿 + Step 4 Commit `feat(flow): add AGENT node type delegating to AgentService`
 
 ---
 
@@ -146,17 +155,17 @@ public AgentScheduler agentScheduler(ObjectProvider<XxlJobExecutor> executorProv
 - 后续 agent-job：新增 `AgentJobAgentScheduler implements AgentScheduler` 即插入（接口已抽象）
 - **后续任务（本 plan 外）**：`/Users/wandl/workspaces/workspace-octoclaw-labs/agent-job` 与 agentscope 整合 = 新增 extensions-scheduler-agent-job
 
-- [ ] Step 1 失败测试（scheduler=xxl-job + XxlJobExecutor Bean → AgentScheduler 装配；未配置回退）
-- [ ] Step 2 实现 + Step 3 全绿 + Step 4 Commit `feat(agent): expose AgentScheduler with xxl-job implementation (agent-job pluggable)`
+- [x] Step 1 失败测试（scheduler=xxl-job + XxlJobExecutor Bean → AgentScheduler 装配；未配置回退）
+- [x] Step 2 实现 + Step 3 全绿 + Step 4 Commit `feat(agent): expose AgentScheduler with xxl-job implementation (agent-job pluggable)`
 
 ---
 
 ### Task 6: 全量验证 + docs 回写 + 双分支
 
-- [ ] Step 1 全量 reactor `clean test` BUILD SUCCESS
-- [ ] Step 2 plan 勾选 + 实施记录；agent spec 状态更新
-- [ ] Step 3 推送 feature/1.0.x 双远程
-- [ ] Step 4 cherry-pick → feature/2.0.x（pom modelVersion 冲突按 4.1.0 解决）→ 全量验证 → 推送双远程
+- [x] Step 1 全量 reactor `clean test` BUILD SUCCESS
+- [x] Step 2 plan 勾选 + 实施记录；agent spec 状态更新
+- [x] Step 3 推送 feature/1.0.x 双远程
+- [x] Step 4 cherry-pick → feature/2.0.x（pom modelVersion 冲突按 4.1.0 解决）→ 全量验证 → 推送双远程
 
 ---
 
