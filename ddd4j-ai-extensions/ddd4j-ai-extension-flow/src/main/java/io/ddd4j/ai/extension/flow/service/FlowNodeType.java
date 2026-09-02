@@ -16,5 +16,8 @@ public enum FlowNodeType {
     TOOL,
 
     /** 分支节点：按 inputKey 的 state 值经 branches 映射路由到下一节点。 */
-    BRANCH
+    BRANCH,
+
+    /** 智能体节点：prompt（可含 {stateKey} 占位符）作为指令调 AgentService，最终回答写 outputKey。 */
+    AGENT
 }

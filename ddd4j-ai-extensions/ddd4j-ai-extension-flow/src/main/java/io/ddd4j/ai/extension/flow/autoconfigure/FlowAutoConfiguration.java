@@ -22,7 +22,9 @@ import java.util.List;
  *
  * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
  */
-@AutoConfiguration(afterName = "io.ddd4j.ai.extension.chat.autoconfigure.ChatAutoConfiguration")
+@AutoConfiguration(afterName = {
+        "io.ddd4j.ai.extension.chat.autoconfigure.ChatAutoConfiguration",
+        "io.ddd4j.ai.extension.agent.autoconfigure.AgentAutoConfiguration"})
 @ConditionalOnClass(StateGraph.class)
 @ConditionalOnBean(ChatService.class)
 @ConditionalOnProperty(name = "ddd4j.ai.flow.enabled", havingValue = "true", matchIfMissing = true)
@@ -32,7 +34,9 @@ public class FlowAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(FlowService.class)
     public FlowService flowService(ChatService chatService,
-                                   ObjectProvider<List<ToolCallback>> toolCallbacks) {
-        return new GraphFlowService(chatService, toolCallbacks.getIfAvailable(List::of));
+                                   ObjectProvider<List<ToolCallback>> toolCallbacks,
+                                   ObjectProvider<io.ddd4j.ai.extension.agent.service.AgentService> agentService) {
+        return new GraphFlowService(chatService, toolCallbacks.getIfAvailable(List::of),
+                agentService.getIfAvailable());
     }
 }
