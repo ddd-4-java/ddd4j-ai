@@ -133,6 +133,30 @@ class GraphFlowServiceTest {
     }
 
     @Test
+    void agentNode_executesAgentService() throws Exception {
+        io.ddd4j.ai.extension.agent.service.AgentService agentService =
+                org.mockito.Mockito.mock(io.ddd4j.ai.extension.agent.service.AgentService.class);
+        org.mockito.Mockito.when(agentService.execute(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(new io.ddd4j.ai.extension.agent.service.AgentResult(
+                        "agent final answer", List.of(), null));
+        GraphFlowService service = new GraphFlowService(chatService, List.of(), agentService);
+
+        FlowDefinition definition = FlowDefinition.builder()
+                .name("agent-flow")
+                .node(FlowNodeSpec.builder()
+                        .id("a").type(FlowNodeType.AGENT)
+                        .prompt("研究 {topic}").outputKey("agent_out")
+                        .build())
+                .edge(new FlowEdge("START", "a"))
+                .edge(new FlowEdge("a", "END"))
+                .build();
+
+        Map<String, Object> state = service.run(service.compile(definition), Map.of("topic", "AI"));
+
+        assertThat(state).containsEntry("agent_out", "agent final answer");
+    }
+
+    @Test
     void branchNode_unknownValueFails() throws Exception {
         when(chatService.chat(anyString(), isNull())).thenReturn("probe");
         FlowDefinition definition = FlowDefinition.builder()

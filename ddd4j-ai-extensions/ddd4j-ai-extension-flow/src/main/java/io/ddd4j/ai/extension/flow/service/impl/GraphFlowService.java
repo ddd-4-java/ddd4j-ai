@@ -34,10 +34,17 @@ public class GraphFlowService implements FlowService {
 
     private final ChatService chatService;
     private final List<ToolCallback> toolCallbacks;
+    private final io.ddd4j.ai.extension.agent.service.AgentService agentService;
 
     public GraphFlowService(ChatService chatService, List<ToolCallback> toolCallbacks) {
+        this(chatService, toolCallbacks, null);
+    }
+
+    public GraphFlowService(ChatService chatService, List<ToolCallback> toolCallbacks,
+                            io.ddd4j.ai.extension.agent.service.AgentService agentService) {
         this.chatService = chatService;
         this.toolCallbacks = toolCallbacks == null ? List.of() : List.copyOf(toolCallbacks);
+        this.agentService = agentService;
     }
 
     @Override
@@ -47,6 +54,7 @@ public class GraphFlowService implements FlowService {
             graph.addNode(spec.id(), switch (spec.type()) {
                 case LLM -> llmAction(spec);
                 case TOOL -> toolAction(spec);
+                case AGENT -> agentAction(spec);
                 case BRANCH -> noopAction();
             });
         }
@@ -105,6 +113,23 @@ public class GraphFlowService implements FlowService {
                     .orElseThrow(() -> new IllegalStateException("未知工具: " + spec.toolName()));
             String input = state.value(spec.inputKey()).map(Object::toString).orElse("{}");
             return CompletableFuture.completedFuture(Map.of(spec.outputKey(), callback.call(input)));
+        };
+    }
+
+    /** AGENT 节点：prompt 作指令调 AgentService（Agentscope HarnessAgent），最终回答写 outputKey。 */
+    private AsyncNodeAction agentAction(FlowNodeSpec spec) {
+        return state -> {
+            if (agentService == null) {
+                return CompletableFuture.failedFuture(
+                        new IllegalStateException("AgentService 未装配（AGENT 节点不可用）: " + spec.id()));
+            }
+            String instruction = buildPrompt(spec, state);
+            try {
+                var result = agentService.execute(io.ddd4j.ai.extension.agent.service.AgentTask.of(instruction));
+                return CompletableFuture.completedFuture(Map.of(spec.outputKey(), result.output()));
+            } catch (Exception e) {
+                return CompletableFuture.failedFuture(e);
+            }
         };
     }
 
