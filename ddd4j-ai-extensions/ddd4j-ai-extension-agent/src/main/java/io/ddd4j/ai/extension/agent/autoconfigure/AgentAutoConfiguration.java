@@ -148,4 +148,22 @@ public class AgentAutoConfiguration {
             io.ddd4j.ai.extension.agent.dispatch.AgentDispatchTaskRepository repository) {
         return new io.ddd4j.ai.extension.agent.dispatch.AgentPlanOrchestrator(harnessAgent, repository);
     }
+
+    /**
+     * Agentscope 调度器（xxl-job 实现）：定时触发智能体任务（长目标续跑）。
+     * 需业务装配 {@code com.xxl.job.core.executor.XxlJobExecutor} 并开启
+     * {@code ddd4j.ai.agent.scheduler=xxl-job}；后续 agent-job 调度器以同样方式插入。
+     */
+    @Bean
+    @ConditionalOnMissingBean(io.agentscope.extensions.scheduler.AgentScheduler.class)
+    @ConditionalOnProperty(name = "ddd4j.ai.agent.scheduler", havingValue = "xxl-job")
+    public io.agentscope.extensions.scheduler.AgentScheduler agentScheduler(
+            ObjectProvider<com.xxl.job.core.executor.XxlJobExecutor> executorProvider) {
+        com.xxl.job.core.executor.XxlJobExecutor executor = executorProvider.getIfAvailable();
+        if (executor == null) {
+            throw new IllegalStateException(
+                    "ddd4j.ai.agent.scheduler=xxl-job 需要业务装配 XxlJobExecutor Bean");
+        }
+        return new io.agentscope.extensions.scheduler.xxljob.XxlJobAgentScheduler(executor);
+    }
 }
