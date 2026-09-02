@@ -71,6 +71,10 @@
             <groupId>io.ddd4j.ai</groupId>
             <artifactId>ddd4j-ai-extension-tts</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.ddd4j.ai</groupId>
+            <artifactId>ddd4j-ai-extension-document</artifactId>
+        </dependency>
     </dependencies>
 
 </project>
