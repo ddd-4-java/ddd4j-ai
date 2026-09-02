@@ -1,8 +1,10 @@
 package io.ddd4j.ai.extension.agent.autoconfigure;
 
 import io.agentscope.core.model.Model;
+import io.agentscope.core.state.AgentStateStore;
 import io.agentscope.core.tool.Toolkit;
 import io.agentscope.extensions.model.openai.OpenAIChatModel;
+import io.agentscope.extensions.mysql.state.MysqlAgentStateStore;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.ddd4j.ai.extension.agent.agent.AgentScopeAgentAdapter;
 import io.ddd4j.ai.extension.agent.agent.SpringAiToolkitBuilder;
@@ -62,16 +64,28 @@ public class AgentAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(AgentStateStore.class)
+    @ConditionalOnProperty(name = "ddd4j.ai.agent.state-store", havingValue = "mysql")
+    public AgentStateStore agentStateStore(javax.sql.DataSource dataSource) {
+        return new MysqlAgentStateStore(dataSource);
+    }
+
+    @Bean
     @ConditionalOnMissingBean(HarnessAgent.class)
     @ConditionalOnBean(Model.class)
     public HarnessAgent harnessAgent(AgentProperties properties,
                                      ObjectProvider<Model> modelProvider,
-                                     Toolkit toolkit) {
+                                     Toolkit toolkit,
+                                     ObjectProvider<AgentStateStore> stateStoreProvider) {
         HarnessAgent.Builder builder = HarnessAgent.builder()
                 .name(properties.getName())
                 .maxIters(properties.getMaxIterations())
                 .toolkit(toolkit)
                 .enableTaskList(properties.isTaskListEnabled());
+        AgentStateStore stateStore = stateStoreProvider.getIfAvailable();
+        if (stateStore != null) {
+            builder.stateStore(stateStore);
+        }
         List<io.agentscope.harness.agent.subagent.SubagentDeclaration> subagents = parseSubagents(properties);
         if (!subagents.isEmpty()) {
             builder.subagents(subagents);
