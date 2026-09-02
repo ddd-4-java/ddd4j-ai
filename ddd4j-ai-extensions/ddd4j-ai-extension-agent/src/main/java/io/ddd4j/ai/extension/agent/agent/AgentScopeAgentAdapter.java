@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import io.agentscope.core.agent.EventType;
+import io.agentscope.core.agent.Event;
 import io.agentscope.core.agent.StreamOptions;
-import io.agentscope.core.event.AgentEvent;
 import io.agentscope.core.message.AssistantMessage;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.UserMessage;
@@ -18,7 +17,7 @@ import io.ddd4j.ai.extension.agent.service.AgentTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
-
+import reactor.core.publisher.Mono;
 
 /**
  * ddd4j-ai-extension-agent 的 {@link AgentService} SPI 实现：把 Agentscope {@link HarnessAgent}
@@ -46,11 +45,11 @@ public final class AgentScopeAgentAdapter implements AgentService {
         try {
             Msg response = harnessAgent.call(new UserMessage(task.instruction())).block();
             if (response instanceof AssistantMessage assistant) {
-                steps.add(new AgentStep("result", extractText(assistant), 0));
+                steps.add(new AgentStep("result", extractText(assistant), steps.size()));
                 return new AgentResult(extractText(assistant), steps, task.conversationId());
             }
             String fallback = response == null ? "" : response.getClass().getSimpleName();
-            steps.add(new AgentStep("result", fallback, 0));
+            steps.add(new AgentStep("result", fallback, steps.size()));
             return new AgentResult(fallback, steps, task.conversationId());
         } catch (RuntimeException e) {
             log.warn("agentscope execute failed: {}", e.getMessage());
@@ -69,13 +68,13 @@ public final class AgentScopeAgentAdapter implements AgentService {
                 });
     }
 
-    private AgentStep toStep(AgentEvent event) {
+    private AgentStep toStep(Event event) {
         String type = switch (event.getType()) {
-            case EventType.REASONING -> "thought";
-            case EventType.TOOL_RESULT -> "observation";
-            case EventType.HINT -> "hint";
+            case REASONING -> "thought";
+            case TOOL_RESULT -> "observation";
+            case HINT -> "hint";
             case AGENT_RESULT -> "result";
-            case EventType.SUMMARY -> "summary";
+            case SUMMARY -> "summary";
             default -> "event";
         };
         String content = event.getMessage() == null ? "" : event.getMessage().getTextContent();

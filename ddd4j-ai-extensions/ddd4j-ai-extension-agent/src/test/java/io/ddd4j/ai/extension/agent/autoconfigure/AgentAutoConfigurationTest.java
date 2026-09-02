@@ -77,6 +77,37 @@ class AgentAutoConfigurationTest {
                 .run(context -> assertThat(context).hasSingleBean(Toolkit.class));
     }
 
+    @Test
+    void parseSubagents_mapsSpecsToDeclarations() {
+        io.ddd4j.ai.extension.agent.properties.AgentProperties properties =
+                new io.ddd4j.ai.extension.agent.properties.AgentProperties();
+        io.ddd4j.ai.extension.agent.properties.AgentProperties.SubagentSpec spec =
+                new io.ddd4j.ai.extension.agent.properties.AgentProperties.SubagentSpec();
+        spec.setName("researcher");
+        spec.setDescription("does research");
+        spec.setInlineAgentsBody("You are a researcher.");
+        spec.setMaxIters(3);
+        properties.getSubagents().add(spec);
+
+        var declarations = AgentAutoConfiguration.parseSubagents(properties);
+
+        assertThat(declarations).hasSize(1);
+        assertThat(declarations.get(0).getName()).isEqualTo("researcher");
+        assertThat(declarations.get(0).getDescription()).isEqualTo("does research");
+        assertThat(declarations.get(0).getMaxIters()).isEqualTo(3);
+    }
+
+    @Test
+    void parseSubagents_skipsBlankNames() {
+        io.ddd4j.ai.extension.agent.properties.AgentProperties properties =
+                new io.ddd4j.ai.extension.agent.properties.AgentProperties();
+        io.ddd4j.ai.extension.agent.properties.AgentProperties.SubagentSpec blank =
+                new io.ddd4j.ai.extension.agent.properties.AgentProperties.SubagentSpec();
+        properties.getSubagents().add(blank);
+
+        assertThat(AgentAutoConfiguration.parseSubagents(properties)).isEmpty();
+    }
+
     private static ToolCallback stubCallback() {
         ToolCallback callback = mock(ToolCallback.class);
         org.springframework.ai.tool.definition.ToolDefinition def =
