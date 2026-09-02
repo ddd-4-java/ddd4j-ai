@@ -133,4 +133,19 @@ public class AgentAutoConfiguration {
     public AgentService agentService(HarnessAgent harnessAgent) {
         return new AgentScopeAgentAdapter(harnessAgent);
     }
+
+    @Bean
+    @ConditionalOnMissingBean(io.ddd4j.ai.extension.agent.dispatch.AgentDispatchTaskRepository.class)
+    public io.ddd4j.ai.extension.agent.dispatch.AgentDispatchTaskRepository agentDispatchTaskRepository() {
+        return new io.ddd4j.ai.extension.agent.dispatch.InMemoryAgentDispatchTaskRepository();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(io.ddd4j.ai.extension.agent.dispatch.AgentPlanOrchestrator.class)
+    @ConditionalOnBean(HarnessAgent.class)
+    public io.ddd4j.ai.extension.agent.dispatch.AgentPlanOrchestrator agentPlanOrchestrator(
+            HarnessAgent harnessAgent,
+            io.ddd4j.ai.extension.agent.dispatch.AgentDispatchTaskRepository repository) {
+        return new io.ddd4j.ai.extension.agent.dispatch.AgentPlanOrchestrator(harnessAgent, repository);
+    }
 }
