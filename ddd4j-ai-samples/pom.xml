@@ -47,6 +47,26 @@
             <groupId>io.ddd4j.ai</groupId>
             <artifactId>ddd4j-ai-extension-agent</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.ddd4j.ai</groupId>
+            <artifactId>ddd4j-ai-extension-flow</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.ddd4j.ai</groupId>
+            <artifactId>ddd4j-ai-extension-router</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.ddd4j.ai</groupId>
+            <artifactId>ddd4j-ai-extension-asr</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.ddd4j.ai</groupId>
+            <artifactId>ddd4j-ai-extension-tts</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.ddd4j.ai</groupId>
+            <artifactId>ddd4j-ai-extension-document</artifactId>
+        </dependency>
     </dependencies>
 
 </project>
