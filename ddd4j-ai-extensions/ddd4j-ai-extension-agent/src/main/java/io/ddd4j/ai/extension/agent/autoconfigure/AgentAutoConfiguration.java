@@ -70,12 +70,46 @@ public class AgentAutoConfiguration {
         HarnessAgent.Builder builder = HarnessAgent.builder()
                 .name(properties.getName())
                 .maxIters(properties.getMaxIterations())
-                .toolkit(toolkit);
+                .toolkit(toolkit)
+                .enableTaskList(properties.isTaskListEnabled());
+        List<io.agentscope.harness.agent.subagent.SubagentDeclaration> subagents = parseSubagents(properties);
+        if (!subagents.isEmpty()) {
+            builder.subagents(subagents);
+        }
         Model model = modelProvider.getIfAvailable();
         if (model != null) {
             builder.model(model);
         }
         return builder.build();
+    }
+
+    /** AgentProperties.subagents → Agentscope SubagentDeclaration 列表（静态供测试）。 */
+    public static List<io.agentscope.harness.agent.subagent.SubagentDeclaration> parseSubagents(
+            AgentProperties properties) {
+        if (properties.getSubagents() == null || properties.getSubagents().isEmpty()) {
+            return List.of();
+        }
+        return properties.getSubagents().stream()
+                .filter(spec -> spec.getName() != null && !spec.getName().isBlank())
+                .map(spec -> {
+                    io.agentscope.harness.agent.subagent.SubagentDeclaration.Builder sub =
+                            io.agentscope.harness.agent.subagent.SubagentDeclaration.builder()
+                                    .name(spec.getName());
+                    if (spec.getDescription() != null) {
+                        sub.description(spec.getDescription());
+                    }
+                    if (spec.getInlineAgentsBody() != null) {
+                        sub.inlineAgentsBody(spec.getInlineAgentsBody());
+                    }
+                    if (spec.getModel() != null) {
+                        sub.model(spec.getModel());
+                    }
+                    if (spec.getMaxIters() != null) {
+                        sub.maxIters(spec.getMaxIters());
+                    }
+                    return sub.build();
+                })
+                .toList();
     }
 
     @Bean
