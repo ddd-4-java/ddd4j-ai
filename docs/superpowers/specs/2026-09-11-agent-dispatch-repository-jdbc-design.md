@@ -230,3 +230,48 @@ Redis、MongoDB 后端各自独立模块，复用 §7 的共享契约基类；Ra
 ## 10. 前置残留项
 
 1.0.x 线在本机**仍无法构建**（与第 1、2 项同一阻塞）：该分支 `ddd4j-ai-samples/pom.xml:66` 与 `ddd4j-ai-sdk-deps/pom.xml:20/25/30` 存在依赖缺 version 的既有缺陷，且本机 `~/.m2` 无 1.0.x 产物。**修这些 POM 需单独授权**——注意本项自身**必然**要改 pom（新增模块），但改的是**聚合器与 BOM 的登记条目**，与"修 1.0.x 既有缺陷 pom"是两件不同的事，后者仍需授权。
+
+---
+
+## 11. 实施记录（2026-09-11）
+
+### 已完成（feature/2.0.x）
+
+| Task | 提交 | 验证 |
+|------|------|------|
+| 1 共享契约基类 + 内存实现契约测试 | `36e62df` | `InMemoryAgentDispatchTaskRepositoryTest` 7/7 |
+| 2 新模块骨架 + 聚合器/BOM 登记 | `85be59d` | `-pl` 可定位，`install` 成功；test-jar 经 `unzip -l` 确认含 `AgentDispatchTaskRepositoryContract.class` |
+| 3 方言 + 实现 + 装配 + H2 契约测试 | `3847c6f` | H2 契约 8/8、方言 5/5 |
+| 4 装配测试 + MySQL/PG 容器契约测试 + 方言修复 | `e384eb4` | 模块 **32/32**；agent 模块 **57/57** 零回归 |
+
+**核心成果**：同一套 7 条契约断言现在在 **内存 / H2 / MySQL / PostgreSQL 四个实现**上全部通过——"一份契约、四份实现"由结构保证，而非人工同步。
+
+### 容器测试抓到一个真缺陷（本项最重要的发现）
+
+**MySQL 容器测试一跑就 7/7 全红**，而 H2 与 PostgreSQL 全绿。根因两处方言误判：
+
+1. **MySQL 不支持 `CLOB`**（那是 Oracle/DB2/标准 SQL 的类型），报 `SQLSyntaxErrorException near 'CLOB NOT NULL'`。MySQL 的大文本是 `TEXT` / `MEDIUMTEXT` / `LONGTEXT`。
+2. **MySQL 不支持 `CREATE INDEX IF NOT EXISTS`**（那是 MariaDB 语法），只是被问题 1 掩盖了。
+
+**关键在于：我的 `JdbcDialectTest` 里写着 `assertThat(...).contains("CLOB")`——单元测试与代码编造了同一个错误假设，所以它一直是绿的。** 单元测试只能证明"代码与本测试的期望一致"，**不能证明与真库兼容**。只有真 MySQL 能证伪。
+
+这条经验已写进 `JdbcDialectTest` 的类注释，作为对该测试效力边界的显式声明。
+
+**修复**：MySQL 改用 `MEDIUMTEXT`（16MB 余量）并把索引**内联进建表语句**；PostgreSQL / H2 保持 `TEXT` + 独立 `CREATE INDEX`。因此方言接口从两个方法改为 `ddlStatements()` 返回**语句列表**（MySQL 一条、其余两条）——这个签名变化是被真库证据逼出来的，比原先的"两个固定方法"更诚实。
+
+### 实施中的其他事实
+
+- **test-jar 机制按设计生效**：`maven-jar-plugin` 的 `test-jar` goal 产出 `...-tests.jar`，新模块以 `<type>test-jar</type>` 成功复用契约基类。spec §7 预判的"测试类默认不发布"问题确实存在，不处理会直接编译失败。
+- **H2 主路径的价值兑现**：即使没有 Docker，核心的 7 条契约断言仍真实执行（H2 8/8）；容器只做跨库补充。若把契约只压在容器上，无 Docker 环境会静默跳过。
+- **上游依赖可用性**（实测无需任何版本号，均由 BOM 管理）：`com.h2database:h2`、`org.testcontainers:postgresql`、`org.postgresql:postgresql` 全部解析成功。agent 扩展**本就有** `h2` 与 `testcontainers:junit-jupiter` 的 test 依赖，新模块沿用同一套。
+- **本项改动了 pom**（与第 1、2 项不同）：新模块 pom、`ddd4j-ai-extensions` 聚合器 `<subproject>`、`ddd4j-ai-bom` 条目、agent 扩展的 test-jar 插件配置，共 4 处。
+
+### 环境提示
+
+- 磁盘跑容器前为 87%（57Gi 可用），两镜像（`mysql:8.0`、`postgres:16-alpine`）均已在本地。**容器测试失败先查磁盘**。
+- 本模块测试耗时：H2 契约 ~0.5s、MySQL 契约 ~14s、PostgreSQL 契约 ~3.5s、方言 ~0.006s、装配 ~0.35s；模块合计约 20s。
+
+### 未完成
+
+- **1.0.x 移植**：同第 1、2 项阻塞（需授权修该分支既有 POM 缺陷）。
+- Redis / MongoDB 后端、RabbitMQ / RocketMQ 队列端口：按 §9 作为后续独立批次。
