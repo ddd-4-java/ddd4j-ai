@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -110,5 +111,71 @@ class AgentScopeAgentAdapterTest {
         assertThatThrownBy(() -> adapter.stream(io.ddd4j.ai.extension.agent.service.AgentTask.of("hi"))
                 .collectList().block())
                 .isInstanceOf(AgentExecutionException.class);
+    }
+
+    // ---- streamEvents：细粒度事件流（io.agentscope.core.event.AgentEvent）----
+    // 注意：本文件已 import 粗粒度的 io.agentscope.core.agent.Event（简单名 Event），
+    // 与细粒度的 io.agentscope.core.event.AgentEvent 是 Agentscope 的两套并行抽象，
+    // 简单名不同故不冲突，此处用全限定名以免读者混淆。
+
+    @Test
+    void streamEvents_delegatesToHarnessAgent() {
+        HarnessAgent harness = mock(HarnessAgent.class);
+        var delta = new io.agentscope.core.event.TextBlockDeltaEvent("r1", "b1", "你好");
+        when(harness.streamEvents(any(Msg.class)))
+                .thenReturn(Flux.<io.agentscope.core.event.AgentEvent>just(delta));
+
+        AgentScopeAgentAdapter adapter = new AgentScopeAgentAdapter(harness);
+        List<io.agentscope.core.event.AgentEvent> events =
+                adapter.streamEvents(io.ddd4j.ai.extension.agent.service.AgentTask.of("hi"))
+                        .collectList().block();
+
+        assertThat(events).hasSize(1);
+        assertThat(((io.agentscope.core.event.TextBlockDeltaEvent) events.get(0)).getDelta())
+                .isEqualTo("你好");
+        verify(harness).streamEvents(any(Msg.class));
+    }
+
+    @Test
+    void streamEvents_preservesOrderAndFidelity() {
+        HarnessAgent harness = mock(HarnessAgent.class);
+        var e1 = new io.agentscope.core.event.TextBlockDeltaEvent("r1", "b1", "你");
+        var e2 = new io.agentscope.core.event.TextBlockDeltaEvent("r1", "b1", "好");
+        var e3 = new io.agentscope.core.event.TextBlockDeltaEvent("r1", "b1", "！");
+        when(harness.streamEvents(any(Msg.class)))
+                .thenReturn(Flux.<io.agentscope.core.event.AgentEvent>just(e1, e2, e3));
+
+        AgentScopeAgentAdapter adapter = new AgentScopeAgentAdapter(harness);
+        List<io.agentscope.core.event.AgentEvent> events =
+                adapter.streamEvents(io.ddd4j.ai.extension.agent.service.AgentTask.of("hi"))
+                        .collectList().block();
+
+        // 方案 B 的核心断言：零映射、顺序与实例完全保真
+        assertThat(events).containsExactly(e1, e2, e3);
+    }
+
+    @Test
+    void streamEvents_mapsErrorToAgentExecutionException() {
+        HarnessAgent harness = mock(HarnessAgent.class);
+        when(harness.streamEvents(any(Msg.class)))
+                .thenReturn(Flux.<io.agentscope.core.event.AgentEvent>error(
+                        new IllegalStateException("streamEvents down")));
+
+        AgentScopeAgentAdapter adapter = new AgentScopeAgentAdapter(harness);
+
+        assertThatThrownBy(() -> adapter.streamEvents(
+                        io.ddd4j.ai.extension.agent.service.AgentTask.of("hi"))
+                .collectList().block())
+                .isInstanceOf(AgentExecutionException.class)
+                .hasMessageContaining("streamEvents down");
+    }
+
+    @Test
+    void streamEvents_nullTask_throwsNpe() {
+        AgentScopeAgentAdapter adapter =
+                new AgentScopeAgentAdapter(mock(HarnessAgent.class));
+
+        assertThatThrownBy(() -> adapter.streamEvents(null))
+                .isInstanceOf(NullPointerException.class);
     }
 }
