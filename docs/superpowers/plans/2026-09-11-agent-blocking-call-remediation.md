@@ -16,6 +16,8 @@
 - **构建**：`feature/2.0.x` 用 `/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn`（`modelVersion 4.1.0`，Maven 3 报 `Malformed POM`）；`feature/1.0.x` 用 Maven 3。
 - **JAVA_HOME 必须为 JDK 17**：`/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home`。
 - **不引入 `spring-webflux`**（spec §3 非目标）：本项只需 `reactor-core` 的 `Schedulers`，已在依赖中。验证非阻塞行为用 `Schedulers.parallel()` 订阅即可。
+- **测试断言统一用 `.block()` / `.blockLast()` + AssertJ，不用 `StepVerifier`**：实测依赖树显示 agent 与 flow 模块只有 `reactor-core`、**无 `reactor-test`**。为避免为测试新增依赖，本项所有用例改用等价的阻塞断言（`assertThatThrownBy` 等）。计划正文示例若出现 `StepVerifier`，以本约束为准改写。
+- **`thenReturn` 必须加类型见证**：`Mono.just(new AssistantMessage(...))` 会推断为 `Mono<AssistantMessage>`，而 Mockito 的 `thenReturn` 形参是 `Mono<Msg>` → **编译失败**。统一写成 `Mono.<Msg>just(...)`（`delayElement` 会保留类型参数）。Task 3/4/5 的示例均需如此。
 - **既有 4 个同步签名行为不变**：`AgentService.execute` / `stream`、`AgentPlanOrchestrator.dispatchAll` / `mergeResults`、`FlowService.run` / `stream`。只**新增** reactive 方法 + 加守卫。
 - **禁止 `git add -A` / `git add .`**：只显式 stage 本任务列出的路径。
 - **磁盘**：本机曾因磁盘满导致容器测试 `ContainerLaunchException`，现已清理（84%）。若再遇容器类测试失败，先查磁盘而非怀疑代码。

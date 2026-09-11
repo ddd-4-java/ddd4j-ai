@@ -238,3 +238,51 @@ cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
 4. TTS / ASR 双 Router 收敛
 5. Micrometer 可观测性专项
 6. 工程卫生批次
+
+---
+
+## 11. 实施记录（2026-09-11）
+
+### 已完成（feature/2.0.x，已推 GitHub + Codeup）
+
+| Task | 提交 | 验证 |
+|------|------|------|
+| 1 `BlockingCallGuard` | `c71fd3d` | `BlockingCallGuardTest` 3/3 |
+| 2 `AgentService.executeAsync` default | `2b3b642` | `AgentServiceContractTest` 7/7 |
+| 3 `AgentScopeAgentAdapter` 零阻塞覆写 + 守卫 + `toResult` | `fe7ea4c` | `AgentScopeAgentAdapterTest` 13/13 |
+| 4 `AgentPlanOrchestrator` reactive 化 | `82c4ae0` | `AgentPlanOrchestratorTest` 9/9 |
+| 5 `GraphFlowService` AGENT 节点改 reactive | `28dde96` | `GraphFlowServiceTest` 7/7 |
+
+回归：agent 模块 **50/50**、flow 模块 **15/15**，含上游全 reactor（core/memory/chat/agent/flow）`BUILD SUCCESS`。
+
+### 核心证据（缺陷被复现然后修好）
+
+Task 5 的锚点测试 `agentNode_withBlockingAgentService_subscribedOnNonBlockingThread_succeeds` 精确复现了 §2 F2 的失败条件（真实 adapter + 200ms 延迟 + `parallel()` 订阅）：
+
+- **修复前**（但 Task 3 的守卫已生效）：抛出
+  `IllegalStateException: 当前线程 parallel-1 是 Reactor 非阻塞线程，不可调用阻塞 API（Reactor 会抛 block() is blocking）。请改用 executeAsync(task)…`
+  —— 注意此时已是**守卫的可读信息**而非 Reactor 原生报错，守卫的价值在此可见。
+- **修复后**：测试通过（`agent_out=flow answer`）。
+
+顺带验证：`GraphFlowService.run` 的守卫按设计只在非阻塞线程触发；既有 6 个在 main 线程运行的用例零回归。
+
+### 实施中发现的三处非预期事实（值得记录）
+
+1. **flow 模块编译时解析的是 `~/.m2` 里已安装的 agent 扩展 jar，而非 reactor 源码**。首次跑 Task 5 的 Step 2 时，报错是 Reactor 原生 `block()` 信息而非 Task 3 新加的守卫——说明 flow 看到的是**旧版 adapter**。加 `-am`（`mvn -pl <flow> -am`）后才从源码构建。**凡改动 agent 扩展再跑 flow 测试，必须带 `-am`，否则测试对着旧 jar 跑，结论无效。**
+2. **Mockito mock 不执行接口 default 方法**。既有用例 `agentNode_executesAgentService` 用 `mock(AgentService.class)` 且只 stub 了 `execute`；改用 `executeAsync` 后该方法返回 `null`（而非命中接口 default），导致 `NullPointerException`。已在用例中一并 stub `executeAsync`。**这是消费方/测试的通用注意点**：mock `AgentService` 时必须显式 stub `executeAsync`。生产实现（真实对象）不受影响，Java 会正常调用 default 方法。
+3. **`thenReturn` 需类型见证**：`Mono.just(new AssistantMessage(...))` 推断为 `Mono<AssistantMessage>` 而形参是 `Mono<Msg>` → 编译失败，须写 `Mono.<Msg>just(...)`（`delayElement` 保留类型参数）。与第 1 项同类问题。
+
+### 计划的两处系统性偏差（已记入计划 Global Constraints）
+
+- **不用 `StepVerifier`**：实测 agent/flow 模块 classpath **无 `reactor-test`**（只有 `reactor-core`）。为避免为测试新增依赖，全部改用 `.block()` / `.blockLast()` + AssertJ。
+- **不新增任何依赖**（含 `spring-webflux`）：本项仅用 `reactor-core` 的 `Schedulers`。
+
+### Task 6 未完成：1.0.x 移植仍受阻
+
+与第 1 项同一阻塞：1.0.x 分支的 `ddd4j-ai-samples/pom.xml:66` 与 `ddd4j-ai-sdk-deps/pom.xml:20/25/30` 有依赖缺 version 的既有缺陷，且本机 `~/.m2` 无 1.0.x 产物（只有失败下载残留），需从零构建整条 reactor。**修这些 POM 需单独授权**（本项改动不涉及 pom，该授权是范围外的）。因此本次仅交付 2.0.x，1.0.x 待授权后按第 1 项同样方式移植。
+
+### 环境提示
+
+- 磁盘已清理至 84%（曾因 97% 导致 `MysqlStateStoreWiringTest` 容器 `exit 1`，清理后 2/2 通过）。
+- 构建命令注意：surefire 的跳过标志是 `-Dsurefire.failIfNoSpecifiedTests=false`（不是 `-DfailIfNoSpecifiedTests`），写错会让上游无匹配测试的模块直接失败。
+- `ddd4j-ai-extension-chat` 模块测试耗时约 8 分钟（本次全 reactor 构建中观察），单独调试时建议用 `-pl` 限定范围。
