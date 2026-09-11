@@ -41,8 +41,10 @@ public class JdbcAgentDispatchTaskRepository implements AgentDispatchTaskReposit
         this.dialect = Objects.requireNonNull(dialect, "dialect");
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         if (autoDdl) {
-            this.jdbcTemplate.execute(dialect.createTableSql());
-            this.jdbcTemplate.execute(dialect.createIndexSql());
+            // 方言差异由 JdbcDialect 以语句列表暴露：MySQL 一条（内联索引），PostgreSQL / H2 两条
+            for (String statement : dialect.ddlStatements()) {
+                this.jdbcTemplate.execute(statement);
+            }
         }
     }
 
