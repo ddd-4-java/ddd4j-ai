@@ -86,4 +86,29 @@ class AgentServiceContractTest {
                 .isInstanceOf(UnsupportedOperationException.class)
                 .hasMessageContaining("streamEvents 未实现");
     }
+
+    @Test
+    void executeAsync_runsExecuteOnBoundedElasticThread() {
+        java.util.concurrent.atomic.AtomicReference<String> threadName =
+                new java.util.concurrent.atomic.AtomicReference<>();
+        AgentService service = new AgentService() {
+            @Override
+            public AgentResult execute(AgentTask task) {
+                threadName.set(Thread.currentThread().getName());
+                return new AgentResult("done", List.of(), task.conversationId());
+            }
+
+            @Override
+            public Flux<AgentStep> stream(AgentTask task) {
+                return Flux.empty();
+            }
+        };
+
+        AgentResult result = service.executeAsync(AgentTask.of("task")).block();
+
+        assertThat(result).isNotNull();
+        assertThat(result.output()).isEqualTo("done");
+        // 关键：default 实现必须把阻塞的 execute 卸载到 boundedElastic，而非调用方线程
+        assertThat(threadName.get()).startsWith("boundedElastic");
+    }
 }
