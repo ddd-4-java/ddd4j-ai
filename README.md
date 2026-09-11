@@ -9,9 +9,9 @@
 - **1. 模块化 AI 组件**：覆盖对话（Chat）、记忆（Memory）、嵌入（Embedding）、向量库（VectorDB）、智能体（Agent）、工作流（Flow）、RAG、ASR/TTS/SST、MCP、OCR、智能路由等能力域
 - **2. Spring AI 生态集成**：统一管理 Spring AI BOM（2.0.0）、Spring AI Alibaba、Spring AI Community（Moonshot、千帆等）及扩展包版本
 - **3. MCP 协议支持**：通过 `mcp-bom` 管理 Model Context Protocol SDK，为 Agent 工具调用提供标准化接入
-- **4. 多模态能力**：依赖管理中已纳入 WhisperCpp、Edge TTS、Microsoft Speech SDK、PDFBox、Apache Tika 等，支撑语音与文档识别场景
+- **4. 多模态能力**：依赖管理中已纳入 WhisperCpp、Edge TTS、DashScope Qwen3-TTS Realtime（TTFA ~97ms）、Microsoft Speech SDK、PDFBox、Apache Tika 等，支撑语音与文档识别场景
 - **5. 与 Ddd4j Boot 无缝集成**：业务服务继承 `ddd4j-ai-parent` 或引入 `ddd4j-ai-bom`，即可在现有 DDD 分层项目中叠加 AI 能力
-- **6. 组件全部落地**：`ddd4j-ai-core` 通用 AI 契约；sst（Azure Speech TTS/STT）、chat/memory/embedding/vectordb/rag、agent（ReAct/Plan-Execute）、flow（Graph 编排）、router（多模型路由）、mcp（工具调用）、ocr（PDFBox+Tika）、asr（WhisperCpp）、tts（Edge TTS）、document（Tika 底座统一文档读取：markitdown 全能力对齐 + 生产加固——流式解析/限额超时/zip 炸弹防护/可观测）
+- **6. 组件全部落地**：`ddd4j-ai-core` 通用 AI 契约；sst（Azure Speech TTS/STT）、chat/memory/embedding/vectordb/rag、agent（ReAct/Plan-Execute）、flow（Graph 编排）、router（多模型路由）、mcp（工具调用）、ocr（PDFBox+Tika）、asr（WhisperCpp）、tts（流式 TTS：Edge TTS 兜底 + DashScope Qwen3-TTS Realtime 高性能后端 + FallbackTtsRouter 降级路由 + TextChunker 标点切分 + TextDeltaTtsBridge Agent 直连，借鉴 agentscope-cpp StreamFirstChunkMiddleware 设计）、document（Tika 底座统一文档读取：markitdown 全能力对齐 + 生产加固——流式解析/限额超时/zip 炸弹防护/可观测）
 
 ### 📦 项目定位
 

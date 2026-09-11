@@ -11,12 +11,27 @@
     </parent>
 
     <artifactId>ddd4j-ai-extension-tts</artifactId>
-    <description>文本转语音组件：Microsoft Edge TTS 免费在线合成（mp3 流，无需密钥）</description>
+    <description>
+        流式 TTS 组件：Edge TTS 免费兜底 + DashScope Qwen3-TTS Realtime 高性能后端（TTFA ~97ms），
+        通过 TtsRouter 降级路由自动切换，借鉴自 agentscope-cpp 的 StreamFirstChunkMiddleware 设计哲学。
+    </description>
 
     <dependencies>
+        <!-- Edge TTS 客户端：whitemagic tts-edge-java（mp3 整段合成）-->
         <dependency>
             <groupId>io.github.whitemagic2014</groupId>
             <artifactId>tts-edge-java</artifactId>
+        </dependency>
+        <!-- DashScope Qwen3-TTS Realtime WebSocket 客户端 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dashscope-sdk-java</artifactId>
+        </dependency>
+        <!-- Agentscope 事件类型（TextBlockDeltaEvent 等），编译期引用；运行时由业务方引入 ddd4j-ai-extension-agent -->
+        <dependency>
+            <groupId>io.agentscope</groupId>
+            <artifactId>agentscope-core</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.projectreactor</groupId>
@@ -29,6 +44,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
