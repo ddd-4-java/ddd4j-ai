@@ -6,6 +6,7 @@ import java.util.Objects;
 
 import io.agentscope.core.agent.Event;
 import io.agentscope.core.agent.StreamOptions;
+import io.agentscope.core.event.AgentEvent;
 import io.agentscope.core.message.AssistantMessage;
 import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.UserMessage;
@@ -87,5 +88,23 @@ public final class AgentScopeAgentAdapter implements AgentService {
         }
         String text = msg.getTextContent();
         return text == null ? "" : text;
+    }
+
+    /**
+     * 细粒度事件流：直接委托 Agentscope {@link HarnessAgent#streamEvents}，
+     * 原生透传 {@link AgentEvent}（逐字 delta / 思考 delta / 工具调用 delta）。
+     *
+     * <p>与 {@link #stream(AgentTask)} 的粗粒度 {@code io.agentscope.core.agent.Event}
+     * 是两套并行抽象：本方法不做事件类型映射，保真度最高。
+     */
+    @Override
+    public Flux<AgentEvent> streamEvents(AgentTask task) {
+        Objects.requireNonNull(task, "task");
+        return harnessAgent.streamEvents(new UserMessage(task.instruction()))
+                .onErrorMap(RuntimeException.class, e -> {
+                    log.warn("agentscope streamEvents failed: {}", e.getMessage());
+                    return new AgentExecutionException(
+                            "agentscope streamEvents failed: " + e.getMessage(), e);
+                });
     }
 }
