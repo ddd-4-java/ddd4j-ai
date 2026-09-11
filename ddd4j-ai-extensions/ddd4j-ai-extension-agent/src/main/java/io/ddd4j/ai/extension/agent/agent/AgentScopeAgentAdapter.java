@@ -15,6 +15,7 @@ import io.ddd4j.ai.extension.agent.service.AgentResult;
 import io.ddd4j.ai.extension.agent.service.AgentService;
 import io.ddd4j.ai.extension.agent.service.AgentStep;
 import io.ddd4j.ai.extension.agent.service.AgentTask;
+import io.ddd4j.ai.extension.agent.util.BlockingCallGuard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
@@ -42,20 +43,50 @@ public final class AgentScopeAgentAdapter implements AgentService {
     @Override
     public AgentResult execute(AgentTask task) {
         Objects.requireNonNull(task, "task");
-        List<AgentStep> steps = new ArrayList<>();
+        BlockingCallGuard.requireBlockingCapableThread("executeAsync(task)");
         try {
             Msg response = harnessAgent.call(new UserMessage(task.instruction())).block();
-            if (response instanceof AssistantMessage assistant) {
-                steps.add(new AgentStep("result", extractText(assistant), steps.size()));
-                return new AgentResult(extractText(assistant), steps, task.conversationId());
-            }
-            String fallback = response == null ? "" : response.getClass().getSimpleName();
-            steps.add(new AgentStep("result", fallback, steps.size()));
-            return new AgentResult(fallback, steps, task.conversationId());
+            return toResult(response, task.conversationId());
         } catch (RuntimeException e) {
             log.warn("agentscope execute failed: {}", e.getMessage());
             throw new AgentExecutionException("agentscope execute failed: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * 零阻塞执行：直接复用 Agentscope 的 reactive 链，全程不经过 {@code .block()}。
+     *
+     * <p>与 {@link #execute(AgentTask)} 的区别：本方法可在 Reactor 非阻塞线程上安全调用，
+     * 是 WebFlux / Reactor 消费方的正规入口。
+     */
+    @Override
+    public Mono<AgentResult> executeAsync(AgentTask task) {
+        Objects.requireNonNull(task, "task");
+        return harnessAgent.call(new UserMessage(task.instruction()))
+                .map(response -> toResult(response, task.conversationId()))
+                .onErrorMap(RuntimeException.class, e -> {
+                    log.warn("agentscope executeAsync failed: {}", e.getMessage());
+                    return new AgentExecutionException(
+                            "agentscope execute failed: " + e.getMessage(), e);
+                });
+    }
+
+    /**
+     * 把 Agentscope 响应规整为 {@link AgentResult}。
+     *
+     * <p>同步 {@link #execute(AgentTask)} 与异步 {@link #executeAsync(AgentTask)} 共用本方法，
+     * 以保证两条路径产出完全一致。
+     */
+    private static AgentResult toResult(Msg response, String conversationId) {
+        List<AgentStep> steps = new ArrayList<>();
+        if (response instanceof AssistantMessage assistant) {
+            String text = extractText(assistant);
+            steps.add(new AgentStep("result", text, 0));
+            return new AgentResult(text, steps, conversationId);
+        }
+        String fallback = response == null ? "" : response.getClass().getSimpleName();
+        steps.add(new AgentStep("result", fallback, 0));
+        return new AgentResult(fallback, steps, conversationId);
     }
 
     @Override

@@ -178,4 +178,40 @@ class AgentScopeAgentAdapterTest {
         assertThatThrownBy(() -> adapter.streamEvents(null))
                 .isInstanceOf(NullPointerException.class);
     }
+
+    @Test
+    void executeAsync_nonBlockingThread_succeeds() {
+        HarnessAgent harness = mock(HarnessAgent.class);
+        // 加延迟：瞬时完成会掩盖 NonBlocking 检查，必须让调用真的耗时
+        when(harness.call(any(Msg.class)))
+                .thenReturn(Mono.<Msg>just(new AssistantMessage("async answer"))
+                        .delayElement(java.time.Duration.ofMillis(200)));
+
+        AgentScopeAgentAdapter adapter = new AgentScopeAgentAdapter(harness);
+
+        String output = adapter
+                .executeAsync(io.ddd4j.ai.extension.agent.service.AgentTask.of("hi"))
+                .subscribeOn(reactor.core.scheduler.Schedulers.parallel())
+                .map(r -> r.output())
+                .block();
+
+        assertThat(output).isEqualTo("async answer");
+    }
+
+    @Test
+    void execute_onNonBlockingThread_throwsGuidedError() {
+        HarnessAgent harness = mock(HarnessAgent.class);
+        when(harness.call(any(Msg.class)))
+                .thenReturn(Mono.<Msg>just(new AssistantMessage("x"))
+                        .delayElement(java.time.Duration.ofMillis(200)));
+
+        AgentScopeAgentAdapter adapter = new AgentScopeAgentAdapter(harness);
+
+        assertThatThrownBy(() -> Mono.fromCallable(() -> adapter.execute(
+                        io.ddd4j.ai.extension.agent.service.AgentTask.of("hi")))
+                .subscribeOn(reactor.core.scheduler.Schedulers.parallel())
+                .block())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("executeAsync");
+    }
 }
