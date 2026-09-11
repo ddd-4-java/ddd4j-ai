@@ -261,3 +261,52 @@ mvn -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent -am \
 4. TTS / ASR 双 Router 收敛（Azure TTS 适配为 `TtsService` 第三后端；ASR 侧补统一端口）
 5. Micrometer 可观测性专项（引入 actuator，各扩展 `ObjectProvider<MeterRegistry>` 可选注入）
 6. 工程卫生批次（codegraph 排除 `docs/**` 与 `baseline-*.java`、删 `FallbackTtsRouter.of()` 与 `TextDeltaTtsBridge.ignored()`、`@Tag("network")` CI job）
+
+---
+
+## 11. 实施记录（2026-09-11）
+
+### 已完成（feature/2.0.x，已推 GitHub + Codeup）
+
+| Task | 提交 | 验证 |
+|------|------|------|
+| 1 `AgentService` default `streamEvents` | `514b4d9` | `AgentServiceContractTest` 6/6（5 既有 + 1 新）|
+| 2 `AgentScopeAgentAdapter` 覆写 | `45c9f96` | `AgentScopeAgentAdapterTest` 11/11（7 既有 + 4 新）|
+| 3 tts 真实事件保真测试 | `ef2ba4e` | `TextDeltaTtsBridgeTest` 9/9；tts 模块 59/59（1 skipped 网络冒烟）|
+
+回归确认：agent 模块 40 例 + tts 模块 59 例，`BUILD SUCCESS`。
+
+### §9 风险经实证关闭
+
+`streamEvents` 的阻塞风险（§9 第 1 行）**已实测排除**：`javap -c` 检查 `agentscope-harness-2.0.2.jar` 的 `HarnessAgent`，其全部字节码中 `.block` / `.subscribe` 出现 **0 次**；`streamEvents(Msg)` 只是 `List.of(msg)` + `RuntimeContext.empty()` 转发到 `streamEvents(List, RuntimeContext)` 的纯委托。
+
+**附带发现**：`AgentScopeAgentAdapter.execute` 里的 `.block()` 是**调用方**（我们的代码）所写，不在 HarnessAgent 内部——因此第 2 项（阻塞隔离）的目标位置确认为我们自己的调用点，与 SDK 无关。
+
+### Task 3 的结论（如实记录）
+
+真实 `TextBlockDeltaEvent.getDelta()` 的行为与原先 Mockito stub 的假定**完全一致**，**未发现生产缺陷**。该测试的价值不是"抓到了 bug"，而是从此把断言锚定在真实类型上——Agentscope 若变更 delta 语义会立刻失败。
+
+### Task 4 未完成：1.0.x 移植受阻（补丁已落，未推送）
+
+**已达成**：在隔离 worktree `.codex-worktrees/ddd4j-ai-1.0.x` 上，用 `git checkout feature/2.0.x -- <4 路径>` 套用补丁；四个文件与补丁基线 `514b4d9^` 的 diff **为空**（证明可干净套用、未覆盖 1.0.x 特有内容），套用后与 2.0.x **逐字节相同**。本地提交 `3b2350c`。
+
+**未达成**：1.0.x 构建验证。**该分支在本机从未成功构建过**——`~/.m2` 中 `io.ddd4j.ai:*:1.0.x.20260630-SNAPSHOT` 目录下只有 `.lastUpdated` 与 `resolver-status.properties`（失败下载残留），无 POM 无 JAR。因此未推送（未验证代码不应推）。
+
+**两层阻塞**：
+
+1. **父 POM 链的缓存缺陷（已修复）**。`io.ddd4j:ddd4j-parent:2.0.x.20260730-SNAPSHOT` 与 `io.ddd4j:ddd4j-dependencies:2.0.x.20260730-SNAPSHOT` 的**缓存 POM 把自身父版本写成字面 `${revision}`**，Maven 在插值前解析父 POM，必然失败。旁证：`ddd4j-parent` POM 第 1430 行自有注释「版本统一管理插件：替换 `${revision}`，默认未启用」——即 install 时占位符从未被替换；同目录另有一份 `${revision}` 计数为 0 的 `...-20260824.153236-1.pom`，说明该线曾有过一次正确安装。（对照组 `3.0.x.20260730` 的 POM 父版本为硬编码，故 2.0.x 线构建正常。）
+   → 已把两处改实为 `2.0.x.20260730-SNAPSHOT`，**原文件备份于 `/tmp/ddd4j-parent-2.0.x.20260730-SNAPSHOT.pom.bak` 与 `/tmp/ddd4j-dependencies-2.0.x.20260730-SNAPSHOT.pom.bak`**。注意这是对共享 `~/.m2` 的改动。
+2. **分支自身的既有 POM 缺陷（未修，超出本项范围）**。父链修通后暴露：
+   - `ddd4j-ai-samples/pom.xml:66` — `ddd4j-ai-extension-document` 缺 version 且无依赖管理条目
+   - `ddd4j-ai-sdk-deps/pom.xml:20/25/30` — `claudecode-java-sdk` / `codex-java-sdk` / `dreamina-java-sdk` 缺 version
+
+   这两模块均非 agent 扩展的依赖，但 `-pl` 仍需解析聚合器列出的全部子项目，故解析错误中止构建。要完成 1.0.x 验证，需先修这两处 POM（与「本项不改 pom」的约束冲突），并从零构建 core → chat → memory → agent。**这是独立于第 1 项的历史缺陷，应另开批次处理。**
+
+### 计划的两处偏差（已按实际情况调整）
+
+- Task 2 Step 2 原预期"编译失败"，实际是"**编译通过、4 例全红**"——因为 `AgentService` 已有 `streamEvents` default 方法，`AgentScopeAgentAdapter` 继承到它并抛 UOE。TDD 的"先看它失败"依然成立。
+- Task 4 的 Step 4（比对分支引用）只在 Step 5 提交**之后**才有意义（提交前 `feature/1.0.x` 引用仍指向未打补丁的提交），实际执行按"提交 → 比对"顺序。
+
+### 环境提示
+
+数据盘已用 **97%（剩 13Gi）**，已导致 agent 模块的 `MysqlStateStoreWiringTest` 容器 `exit 1`（Testcontainers，与本项改动无关，已单独复现确认）。建议清理磁盘。
