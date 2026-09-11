@@ -7,6 +7,7 @@ import com.alibaba.cloud.ai.graph.StateGraph;
 import com.alibaba.cloud.ai.graph.action.AsyncEdgeAction;
 import com.alibaba.cloud.ai.graph.action.AsyncNodeAction;
 import com.alibaba.cloud.ai.graph.exception.GraphStateException;
+import io.ddd4j.ai.extension.agent.util.BlockingCallGuard;
 import io.ddd4j.ai.extension.chat.service.ChatService;
 import io.ddd4j.ai.extension.flow.service.FlowDefinition;
 import io.ddd4j.ai.extension.flow.service.FlowEdge;
@@ -88,6 +89,7 @@ public class GraphFlowService implements FlowService {
 
     @Override
     public Map<String, Object> run(CompiledGraph graph, Map<String, Object> input) {
+        BlockingCallGuard.requireBlockingCapableThread("stream(graph, input)");
         NodeOutput last = graph.stream(input).blockLast();
         if (last == null) {
             return Map.of();
@@ -116,7 +118,7 @@ public class GraphFlowService implements FlowService {
         };
     }
 
-    /** AGENT 节点：prompt 作指令调 AgentService（Agentscope HarnessAgent），最终回答写 outputKey。 */
+    /** AGENT 节点：prompt 作指令调 AgentService，走 reactive 路径以免在非阻塞线程上 .block()。 */
     private AsyncNodeAction agentAction(FlowNodeSpec spec) {
         return state -> {
             if (agentService == null) {
@@ -124,12 +126,9 @@ public class GraphFlowService implements FlowService {
                         new IllegalStateException("AgentService 未装配（AGENT 节点不可用）: " + spec.id()));
             }
             String instruction = buildPrompt(spec, state);
-            try {
-                var result = agentService.execute(io.ddd4j.ai.extension.agent.service.AgentTask.of(instruction));
-                return CompletableFuture.completedFuture(Map.of(spec.outputKey(), result.output()));
-            } catch (Exception e) {
-                return CompletableFuture.failedFuture(e);
-            }
+            return agentService.executeAsync(io.ddd4j.ai.extension.agent.service.AgentTask.of(instruction))
+                    .map(result -> Map.<String, Object>of(spec.outputKey(), result.output()))
+                    .toFuture();
         };
     }
 

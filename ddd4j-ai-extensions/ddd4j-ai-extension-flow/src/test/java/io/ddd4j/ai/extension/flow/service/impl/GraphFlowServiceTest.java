@@ -139,6 +139,12 @@ class GraphFlowServiceTest {
         org.mockito.Mockito.when(agentService.execute(org.mockito.ArgumentMatchers.any()))
                 .thenReturn(new io.ddd4j.ai.extension.agent.service.AgentResult(
                         "agent final answer", List.of(), null));
+        // Mockito mock 不执行接口 default 方法：AGENT 节点已改走 executeAsync，
+        // 若不一并 stub，未 stub 的方法会返回 null（而非命中接口 default）。
+        org.mockito.Mockito.when(agentService.executeAsync(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(reactor.core.publisher.Mono.just(
+                        new io.ddd4j.ai.extension.agent.service.AgentResult(
+                                "agent final answer", List.of(), null)));
         GraphFlowService service = new GraphFlowService(chatService, List.of(), agentService);
 
         FlowDefinition definition = FlowDefinition.builder()
@@ -188,5 +194,47 @@ class GraphFlowServiceTest {
                 .prompt(prompt)
                 .outputKey(outputKey)
                 .build();
+    }
+
+    /**
+     * 回归锚点：AGENT 节点 + 内部会真正阻塞的智能体（真实 {@code AgentScopeAgentAdapter}，
+     * 其 {@code execute()} 内部 {@code .block()}），在 Reactor 非阻塞线程上订阅整个 flow。
+     *
+     * <p><b>修复前此处必抛</b> {@code block()/blockFirst()/blockLast() are blocking, which is
+     * not supported in thread parallel-N}（见 spec 2026-09-11-agent-blocking-call-remediation-design
+     * §2 F2 的判别实验）。本用例精确复现该失败条件：若它变绿，说明 AGENT 节点已不再阻塞。
+     *
+     * <p>注意：必须给 agent 调用**注入延迟**——瞬时完成时 Reactor 不做 NonBlocking 检查，
+     * 会给出骗人的绿灯。
+     */
+    @Test
+    void agentNode_withBlockingAgentService_subscribedOnNonBlockingThread_succeeds() throws Exception {
+        io.agentscope.harness.agent.HarnessAgent harness =
+                mock(io.agentscope.harness.agent.HarnessAgent.class);
+        when(harness.call(org.mockito.ArgumentMatchers.any(io.agentscope.core.message.Msg.class)))
+                .thenReturn(reactor.core.publisher.Mono
+                        .<io.agentscope.core.message.Msg>just(
+                                new io.agentscope.core.message.AssistantMessage("flow answer"))
+                        .delayElement(java.time.Duration.ofMillis(200)));
+
+        // 真实 adapter：其 execute() 内部 .block()，正是本项要治理的对象
+        io.ddd4j.ai.extension.agent.service.AgentService blockingAgent =
+                new io.ddd4j.ai.extension.agent.agent.AgentScopeAgentAdapter(harness);
+
+        GraphFlowService service = new GraphFlowService(chatService, List.of(), blockingAgent);
+        FlowDefinition definition = FlowDefinition.builder()
+                .name("agent-flow-nb")
+                .node(FlowNodeSpec.builder().id("a").type(FlowNodeType.AGENT)
+                        .prompt("研究 {topic}").outputKey("agent_out").build())
+                .edge(new FlowEdge("START", "a"))
+                .edge(new FlowEdge("a", "END"))
+                .build();
+
+        var last = service.stream(service.compile(definition), Map.of("topic", "AI"))
+                .subscribeOn(reactor.core.scheduler.Schedulers.parallel())
+                .blockLast();
+
+        assertThat(last).isNotNull();
+        assertThat(last.state().data()).containsEntry("agent_out", "flow answer");
     }
 }
