@@ -207,4 +207,29 @@ class TextDeltaTtsBridgeTest {
 
         assertThat(captured).containsExactly("一二。", "三。");
     }
+
+    @Test
+    void pipe_realTextBlockDeltaEvent_feedsChunkerCorrectly() {
+        // 用真实 TextBlockDeltaEvent（非 Mockito mock）验证该类型的 getDelta()
+        // 与 TextChunker 的期望一致——mock 版只能断言我们对它的假定。
+        // 3 参构造器语义已由 javap -c 的 putfield 顺序确认：(replyId, blockId, delta)
+        TextChunker chunker = TextChunker.defaultChunker();
+        TtsService tts = mock(TtsService.class);
+        when(tts.streamSynthesize(eq("你好。"), any()))
+                .thenReturn(Flux.just(audio("real-1")));
+
+        TextDeltaTtsBridge bridge = new TextDeltaTtsBridge(chunker, tts);
+
+        // 句末标点触发 feed() 切分；流自然结束走 doOnComplete 的 flush 分支
+        // （不使用 TextBlockEndEvent——其构造器未确认）
+        Flux<AgentEvent> events = Flux.just(
+                new TextBlockDeltaEvent("r1", "b1", "你好。"));
+
+        StepVerifier.create(bridge.pipe(events, null))
+                .expectNextMatches(arr -> java.util.Arrays.equals(arr, audio("real-1")))
+                .expectComplete()
+                .verify();
+
+        verify(tts, atLeastOnce()).streamSynthesize(eq("你好。"), eq(null));
+    }
 }
