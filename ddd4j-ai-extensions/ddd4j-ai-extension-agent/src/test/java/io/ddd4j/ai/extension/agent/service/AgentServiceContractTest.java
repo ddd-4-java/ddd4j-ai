@@ -77,4 +77,13 @@ class AgentServiceContractTest {
         mutable.clear();
         assertThat(result.steps()).hasSize(1);
     }
+
+    @Test
+    void streamEvents_defaultImpl_throwsUnsupported() {
+        // FakeAgentService 未覆写 streamEvents -> 命中 default 实现，应显式失败而非静默降级
+        AgentService service = new FakeAgentService();
+        assertThatThrownBy(() -> service.streamEvents(AgentTask.of("task")))
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("streamEvents 未实现");
+    }
 }
