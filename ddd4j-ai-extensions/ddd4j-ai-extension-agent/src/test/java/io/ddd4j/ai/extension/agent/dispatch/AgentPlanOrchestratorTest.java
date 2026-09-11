@@ -121,4 +121,42 @@ class AgentPlanOrchestratorTest {
                 .isInstanceOf(AgentExecutionException.class)
                 .hasMessageContaining("no pending tasks");
     }
+
+    @Test
+    void dispatchAllAsync_nonBlockingThread_succeeds() {
+        HarnessAgent harness = mock(HarnessAgent.class);
+        // 加延迟：瞬时完成会掩盖 NonBlocking 检查，必须让调用真的耗时
+        when(harness.call(any(Msg.class)))
+                .thenReturn(reactor.core.publisher.Mono.<Msg>just(new AssistantMessage("done"))
+                        .delayElement(java.time.Duration.ofMillis(150)));
+        AgentPlanOrchestrator orchestrator = new AgentPlanOrchestrator(
+                harness, new InMemoryAgentDispatchTaskRepository());
+
+        String planId = orchestrator.submitPlan("goal", List.of("t1", "t2"));
+
+        Map<String, String> results = orchestrator.dispatchAllAsync(planId)
+                .subscribeOn(reactor.core.scheduler.Schedulers.parallel())
+                .block();
+
+        assertThat(results).hasSize(2);
+        assertThat(results.values()).allMatch("done"::equals);
+    }
+
+    @Test
+    void dispatchAll_onNonBlockingThread_throwsGuidedError() {
+        HarnessAgent harness = mock(HarnessAgent.class);
+        when(harness.call(any(Msg.class)))
+                .thenReturn(reactor.core.publisher.Mono.<Msg>just(new AssistantMessage("x"))
+                        .delayElement(java.time.Duration.ofMillis(150)));
+        AgentPlanOrchestrator orchestrator = new AgentPlanOrchestrator(
+                harness, new InMemoryAgentDispatchTaskRepository());
+        String planId = orchestrator.submitPlan("goal", List.of("t1"));
+
+        assertThatThrownBy(() -> reactor.core.publisher.Mono
+                .fromCallable(() -> orchestrator.dispatchAll(planId))
+                .subscribeOn(reactor.core.scheduler.Schedulers.parallel())
+                .block())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("dispatchAllAsync");
+    }
 }
