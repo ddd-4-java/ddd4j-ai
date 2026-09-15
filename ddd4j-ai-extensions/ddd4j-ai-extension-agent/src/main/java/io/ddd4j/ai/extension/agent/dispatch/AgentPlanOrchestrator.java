@@ -1,19 +1,18 @@
 package io.ddd4j.ai.extension.agent.dispatch;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import io.agentscope.core.message.Msg;
 import io.agentscope.core.message.UserMessage;
 import io.agentscope.harness.agent.HarnessAgent;
 import io.ddd4j.ai.extension.agent.agent.AgentExecutionException;
+import io.ddd4j.ai.extension.agent.util.BlockingCallGuard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * 多智能体计划派发编排器：提交计划 → 拆分为子任务行 → 并行派发 HarnessAgent 执行 →
@@ -60,35 +59,49 @@ public class AgentPlanOrchestrator {
     }
 
     /**
+     * 非阻塞派发：为 WebFlux / Reactor 消费方提供的正规入口。全程不经过 {@code .block()}。
+     *
+     * @return planId → 各任务执行结果（taskId → result/error）
+     */
+    public Mono<Map<String, String>> dispatchAllAsync(String planId) {
+        Objects.requireNonNull(planId, "planId");
+        return Mono.fromCallable(() -> {
+                    List<AgentDispatchTask> pending = repository.findByPlanId(planId).stream()
+                            .filter(t -> AgentDispatchTask.PENDING.equals(t.status()))
+                            .toList();
+                    if (pending.isEmpty()) {
+                        throw new AgentExecutionException("no pending tasks for plan: " + planId);
+                    }
+                    pending.forEach(t -> repository.update(t.withStatus(AgentDispatchTask.RUNNING, null)));
+                    return pending;
+                })
+                // repository 可能是 JDBC 实现（阻塞 I/O），必须在可阻塞调度器上执行，
+                // 避免在 Reactor NonBlocking 线程上阻塞导致 IllegalStateException。
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMap(tasks -> Flux.merge(tasks.stream().map(this::executeTask).toList())
+                        .collectList())
+                .map(finished -> {
+                    Map<String, String> results = new java.util.LinkedHashMap<>();
+                    for (AgentDispatchTask task : finished) {
+                        repository.update(task);
+                        results.put(task.id(), task.result());
+                    }
+                    log.info("plan dispatched: planId={}, done={}", planId, results.size());
+                    return results;
+                });
+    }
+
+    /**
      * 并行派发该计划下全部 PENDING 任务给 HarnessAgent，结果写回任务表。
+     *
+     * <p>同步入口：在 Reactor 非阻塞线程上会抛出带指引的异常，请改用
+     * {@link #dispatchAllAsync(String)}。
      *
      * @return planId → 各任务执行结果（taskId → result/error）
      */
     public Map<String, String> dispatchAll(String planId) {
-        Objects.requireNonNull(planId, "planId");
-        List<AgentDispatchTask> tasks = repository.findByPlanId(planId).stream()
-                .filter(t -> AgentDispatchTask.PENDING.equals(t.status()))
-                .toList();
-        if (tasks.isEmpty()) {
-            throw new AgentExecutionException("no pending tasks for plan: " + planId);
-        }
-        tasks.forEach(t -> repository.update(t.withStatus(AgentDispatchTask.RUNNING, null)));
-
-        Map<String, Mono<AgentDispatchTask>> executions = new HashMap<>();
-        for (AgentDispatchTask task : tasks) {
-            executions.put(task.id(), executeTask(task));
-        }
-        List<AgentDispatchTask> finished = Flux.merge(executions.values())
-                .collectList()
-                .block();
-        Map<String, String> results = new java.util.LinkedHashMap<>();
-        for (AgentDispatchTask task : finished == null ? List.<AgentDispatchTask>of() : finished) {
-            repository.update(task);
-            results.put(task.id(), task.result());
-        }
-        log.info("plan dispatched: planId={}, done={}, failed={}", planId,
-                results.size(), 0);
-        return results;
+        BlockingCallGuard.requireBlockingCapableThread("dispatchAllAsync(planId)");
+        return dispatchAllAsync(planId).block();
     }
 
     /** 查看计划下全部任务（诊断/测试用）。 */
@@ -97,30 +110,45 @@ public class AgentPlanOrchestrator {
     }
 
     /**
-     * 合并结果：全部 DONE 时让父智能体 synthesis；有 FAILED 抛异常。
+     * 非阻塞合并：全部 DONE 时让父智能体 synthesis；有非 DONE 任务则错误终止。
+     */
+    public Mono<String> mergeResultsAsync(String planId) {
+        Objects.requireNonNull(planId, "planId");
+        return Mono.fromCallable(() -> {
+                    List<AgentDispatchTask> tasks = repository.findByPlanId(planId);
+                    if (tasks.isEmpty()) {
+                        throw new AgentExecutionException("no tasks for plan: " + planId);
+                    }
+                    for (AgentDispatchTask task : tasks) {
+                        if (!AgentDispatchTask.DONE.equals(task.status())) {
+                            throw new AgentExecutionException("plan not fully done: " + planId
+                                    + ", task " + task.id() + " is " + task.status());
+                        }
+                    }
+                    StringBuilder prompt = new StringBuilder("合并以下子任务结果为一个最终答案：\n");
+                    for (AgentDispatchTask task : tasks) {
+                        prompt.append("- ").append(task.instruction().replace('\n', ' '))
+                                .append("\n  结果：").append(task.result()).append('\n');
+                    }
+                    return prompt.toString();
+                })
+                // repository.findByPlanId 是阻塞 I/O，卸载到可阻塞调度器
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMap(prompt -> harnessAgent.call(new UserMessage(prompt)))
+                .map(merged -> merged == null ? "" : merged.getTextContent());
+    }
+
+    /**
+     * 合并结果（同步入口）：在 Reactor 非阻塞线程上会抛出带指引的异常，
+     * 请改用 {@link #mergeResultsAsync(String)}。
      */
     public String mergeResults(String planId) {
-        List<AgentDispatchTask> tasks = repository.findByPlanId(planId);
-        if (tasks.isEmpty()) {
-            throw new AgentExecutionException("no tasks for plan: " + planId);
-        }
-        for (AgentDispatchTask task : tasks) {
-            if (!AgentDispatchTask.DONE.equals(task.status())) {
-                throw new AgentExecutionException("plan not fully done: " + planId
-                        + ", task " + task.id() + " is " + task.status());
-            }
-        }
-        StringBuilder prompt = new StringBuilder("合并以下子任务结果为一个最终答案：\n");
-        for (AgentDispatchTask task : tasks) {
-            prompt.append("- ").append(task.instruction().replace('\n', ' '))
-                    .append("\n  结果：").append(task.result()).append('\n');
-        }
-        Msg merged = harnessAgent.call(new UserMessage(prompt.toString())).block();
-        return merged == null ? "" : merged.getTextContent();
+        BlockingCallGuard.requireBlockingCapableThread("mergeResultsAsync(planId)");
+        return mergeResultsAsync(planId).block();
     }
 
     private Mono<AgentDispatchTask> executeTask(AgentDispatchTask task) {
-        return Mono.fromCallable(() -> harnessAgent.call(new UserMessage(task.instruction())).block())
+        return harnessAgent.call(new UserMessage(task.instruction()))
                 .map(response -> task.withStatus(AgentDispatchTask.DONE,
                         response == null ? "" : response.getTextContent()))
                 .onErrorResume(e -> {
