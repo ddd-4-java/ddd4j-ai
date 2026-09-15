@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * 多智能体计划派发编排器：提交计划 → 拆分为子任务行 → 并行派发 HarnessAgent 执行 →
@@ -77,6 +78,9 @@ public class AgentPlanOrchestrator {
                     pending.forEach(t -> repository.update(t.withStatus(AgentDispatchTask.RUNNING, null)));
                     return pending;
                 })
+                // repository 可能是 JDBC 实现（阻塞 I/O），必须在可阻塞调度器上执行，
+                // 避免在 Reactor NonBlocking 线程上阻塞导致 IllegalStateException。
+                .subscribeOn(Schedulers.boundedElastic())
                 .flatMap(tasks -> Flux.merge(tasks.stream().map(this::executeTask).toList())
                         .collectList())
                 .map(finished -> {
@@ -131,6 +135,8 @@ public class AgentPlanOrchestrator {
                     }
                     return prompt.toString();
                 })
+                // repository.findByPlanId 是阻塞 I/O，卸载到可阻塞调度器
+                .subscribeOn(Schedulers.boundedElastic())
                 .flatMap(prompt -> harnessAgent.call(new UserMessage(prompt)))
                 .map(merged -> merged == null ? "" : merged.getTextContent());
     }

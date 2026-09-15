@@ -130,7 +130,14 @@ public class DashScopeRealtimeTtsService implements TtsService {
                     }
                 })
                 .subscribeOn(Schedulers.boundedElastic())
-                .subscribe();
+                .subscribe(
+                        v -> { /* no-op: 驱动侧不产出值 */ },
+                        err -> {
+                            // sink.tryEmitError 可能因 onClose 已先完成而失败（EmitResult.FAIL_TERMINATED），
+                            // 此处兜底确保异常至少被 log；避免 Reactor Hooks.onErrorDropped 静默吞掉。
+                            log.warn("DashScope TTS 驱动链异常（sink 可能已完成）: {}", err.getMessage());
+                        }
+                );
 
         return sink.asFlux()
                 .doOnCancel(client::close)
