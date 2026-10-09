@@ -2,7 +2,7 @@
 
 - 日期：2026-07-01
 - 作者：PartMe.AI
-- 状态：**已实现**（commit `2b808dc` feat(ai-core)）
+- 状态： **已实现**（commit `2b808dc` feat (ai-core)）
 - 范围：`ddd4j-ai-core` —— AI 通用纯 Java 契约层
 - 关联文档：整体架构与分层约定见 `2026-08-07-ddd4j-ai-architecture-design.md`
 
@@ -10,13 +10,14 @@
 
 ## 1. 背景
 
-在 sst 语音组件（`2026-01-05`）先行落地后，发现各 AI 组件缺少统一的稳定命名与调用契约，导致路由、诊断、配置定位无公共基线。`ddd4j-ai-core` 于 `2026-07-01` 反向抽取，提供不绑定任何框架（纯 Java）的契约层，作为所有 `ddd4j-ai-extension-*` 的公共依赖。
+在 sst 语音组件（`2026-01-05`）先行落地后，发现各 AI 组件缺少统一的稳定命名与调用契约，导致路由、诊断、配置定位无公共基线。
+`ddd4j-ai-core` 于 `2026-07-01` 反向抽取，提供不绑定任何框架（纯 Java）的契约层，作为所有 `ddd4j-ai-extension-*` 的公共依赖。
 
 ## 2. 目标
 
-- 提供所有 AI 组件的**稳定命名契约**（`AiComponent`）。
-- 提供最小化、框架无关的**调用契约**（`AiHandler` + `AiRequest`/`AiResponse`）。
-- 保证请求/响应**不可变**，便于并发与缓存。
+- 提供所有 AI 组件的 **稳定命名契约**（`AiComponent`）。
+- 提供最小化、框架无关的 **调用契约**（`AiHandler` + `AiRequest`/`AiResponse`）。
+- 保证请求/响应 **不可变**，便于并发与缓存。
 
 ### 非目标
 
@@ -26,14 +27,14 @@
 
 ## 3. 关键决策
 
-| # | 决策 | 理由 |
-|---|------|------|
-| C1 | 契约层为**纯 Java**，pom 零框架依赖 | 可在任意宿主复用，版本最稳定，升级成本最低 |
-| C2 | `AiHandler extends AiComponent` | 可调用处理器天然需要稳定命名（路由/诊断），继承避免双接口与类型转换 |
-| C3 | `AiRequest`/`AiResponse` 使用 **Java record** | 不可变、equals/hashCode/toString 免写、与未来值类演进兼容 |
-| C4 | 紧凑构造器做**防御性不可变**：`input`/`output` `requireNonNull`，`metadata` null→`Map.of()`，非空→`Map.copyOf` | 杜绝 null 与外部可变集合注入，保证线程安全 |
-| C5 | 提供 `of(String)` 静态工厂 | 无 metadata 场景的最常用入口，降低样板代码 |
-| C6 | `metadata` 类型为 `Map<String, Object>` | 兼顾灵活（任意诊断/链路/供应商字段）与简单（不引入强类型 schema） |
+| #  | 决策                                                                                                           | 理由                                                                |
+|----|----------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|
+| C1 | 契约层为**纯 Java**，pom 零框架依赖                                                                            | 可在任意宿主复用，版本最稳定，升级成本最低                          |
+| C2 | `AiHandler extends AiComponent`                                                                                | 可调用处理器天然需要稳定命名（路由/诊断），继承避免双接口与类型转换 |
+| C3 | `AiRequest`/`AiResponse` 使用 **Java record**                                                                  | 不可变、equals/hashCode/toString 免写、与未来值类演进兼容           |
+| C4 | 紧凑构造器做**防御性不可变**：`input`/`output` `requireNonNull`，`metadata` null→`Map.of()`，非空→`Map.copyOf` | 杜绝 null 与外部可变集合注入，保证线程安全                          |
+| C5 | 提供 `of(String)` 静态工厂                                                                                     | 无 metadata 场景的最常用入口，降低样板代码                          |
+| C6 | `metadata` 类型为 `Map<String, Object>`                                                                        | 兼顾灵活（任意诊断/链路/供应商字段）与简单（不引入强类型 schema）   |
 
 ## 4. 总体架构
 
@@ -122,10 +123,10 @@ public record AiResponse(String output, Map<String, Object> metadata) {
 > 现状：core 当前零测试。补齐计划见 `2026-08-07-ddd4j-ai-v1-core-and-sst.md`。
 
 - **record 契约测试**：
-  - `AiRequest.of(x)` 等价于 `new AiRequest(x, Map.of())`。
-  - `input` 为 null 抛 `NullPointerException`。
-  - `metadata` 为 null 时 `metadata()` 返回空映射；传入可变 Map 后修改原 Map 不影响实例（防御性拷贝）。
-  - `AiResponse` 同上对称校验。
+    - `AiRequest.of(x)` 等价于 `new AiRequest(x, Map.of())`。
+    - `input` 为 null 抛 `NullPointerException`。
+    - `metadata` 为 null 时 `metadata()` 返回空映射；传入可变 Map 后修改原 Map 不影响实例（防御性拷贝）。
+    - `AiResponse` 同上对称校验。
 - **AiHandler 行为测试**：以测试桩 `AiHandler` 实现验证 `handle(AiRequest)` → `AiResponse` 往返，并校验 `name()` 稳定返回。
 
 ## 8. 演进备注

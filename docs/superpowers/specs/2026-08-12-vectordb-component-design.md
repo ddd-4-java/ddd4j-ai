@@ -2,15 +2,18 @@
 
 - 日期：2026-08-12
 - 作者：PartMe.AI
-- 状态：**已实现**（2026-08-16，v1.x-A；实施修订：以单一通用 `VectorStoreAdapter` 委托任意 `VectorStore`，替代原计划的 {Milvus,PgVector,Redis} 三适配器——后端由业务侧引入的 spring-ai-starter-vector-store-* 决定，见 §9 实施备注）
+- 状态： **已实现**（2026-08-16，v1.x-A；实施修订：以单一通用 `VectorStoreAdapter` 委托任意 `VectorStore`，替代原计划的
+  {Milvus,PgVector,Redis} 三适配器——后端由业务侧引入的 spring-ai-starter-vector-store-* 决定，见 §9 实施备注）
 - 范围：`ddd4j-ai-extension-vectordb` —— 向量数据库接入与检索
-- 关联文档：整体架构见 `2026-08-07-ddd4j-ai-architecture-design.md`；嵌入见 `2026-08-12-embedding-component-design.md`；被 rag 引用
+- 关联文档：整体架构见 `2026-08-07-ddd4j-ai-architecture-design.md`；嵌入见 `2026-08-12-embedding-component-design.md`；被
+  rag 引用
 
 ---
 
 ## 1. 背景
 
-向量库是 RAG 的持久化与检索后端。vectordb 组件封装 Spring AI `VectorStore` 抽象，提供文档入库（含分块）与相似度检索端口，支持多后端切换，使 rag 组件与具体向量库解耦。
+向量库是 RAG 的持久化与检索后端。vectordb 组件封装 Spring AI `VectorStore` 抽象，提供文档入库（含分块）与相似度检索端口，支持多后端切换，使
+rag 组件与具体向量库解耦。
 
 ## 2. 目标
 
@@ -25,11 +28,11 @@
 
 ## 3. 关键决策（建议）
 
-| # | 决策候选 | 理由 |
-|---|---------|------|
-| V1 | 对接 Spring AI `VectorStore` | 多后端统一抽象 |
-| V2 | 分块策略可插拔（按字符/Token/递归） | 适应不同文档类型 |
-| V3 | 检索支持 metadata 过滤 | 支持权限/来源筛选 |
+| #  | 决策候选                            | 理由              |
+|----|-------------------------------------|-------------------|
+| V1 | 对接 Spring AI `VectorStore`        | 多后端统一抽象    |
+| V2 | 分块策略可插拔（按字符/Token/递归） | 适应不同文档类型  |
+| V3 | 检索支持 metadata 过滤              | 支持权限/来源筛选 |
 
 ## 4. 总体架构
 

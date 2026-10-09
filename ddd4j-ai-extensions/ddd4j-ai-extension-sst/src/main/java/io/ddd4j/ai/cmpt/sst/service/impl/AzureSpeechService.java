@@ -162,7 +162,7 @@ public class AzureSpeechService implements SpeechService<SpeechConfig>, Initiali
     }
 
     @Override
-    public void voice2TextFromWavByteArray(SpeechConfig speechConfigDto,byte[] wavFileBytes, SpeechServiceVoice2TextCallback callback) throws Exception {
+    public void voice2TextFromWavByteArray(SpeechConfig speechConfigDto, byte[] wavFileBytes, SpeechServiceVoice2TextCallback callback) throws Exception {
         SpeechConfig config = speechConfig;
         if (Objects.nonNull(speechConfigDto)) {
             config = speechConfigDto;
@@ -181,7 +181,7 @@ public class AzureSpeechService implements SpeechService<SpeechConfig>, Initiali
     }
 
     @Override
-    public void voice2TextFromMp3ByteArray(SpeechConfig speechConfigDto,byte[] wavFileBytes, SpeechServiceVoice2TextCallback callback) throws Exception {
+    public void voice2TextFromMp3ByteArray(SpeechConfig speechConfigDto, byte[] wavFileBytes, SpeechServiceVoice2TextCallback callback) throws Exception {
         SpeechConfig config = speechConfig;
         if (Objects.nonNull(speechConfigDto)) {
             config = speechConfigDto;

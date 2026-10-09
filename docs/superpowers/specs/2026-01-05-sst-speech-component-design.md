@@ -2,21 +2,24 @@
 
 - 日期：2026-01-05
 - 作者：PartMe.AI
-- 状态：**已实现**（commit `396adde` feat(sst)；命名规范化 `3fbd757` 2026-08-07）
+- 状态： **已实现**（commit `396adde` feat (sst)；命名规范化 `3fbd757` 2026-08-07）
 - 范围：`ddd4j-ai-extension-sst` —— 语音合成（TTS）与语音识别（STT）一体化组件
-- 关联文档：整体架构与分层约定见 `2026-08-07-ddd4j-ai-architecture-design.md`；core 契约见 `2026-07-01-ai-core-contract-design.md`
+- 关联文档：整体架构与分层约定见 `2026-08-07-ddd4j-ai-architecture-design.md`；core 契约见
+  `2026-07-01-ai-core-contract-design.md`
 
 ---
 
 ## 1. 背景
 
-SST（Speech Synthesis & Transcription）是 ddd4j-ai 最早落地的业务组件（早于 core 契约抽取）。它对接 Azure Cognitive Speech SDK 提供 TTS/STT 能力，并通过外部 FFmpeg 进程做音频格式转换，解决业务系统中语音播报与语音指令识别的需求。
+SST（Speech Synthesis & Transcription）是 ddd4j-ai 最早落地的业务组件（早于 core 契约抽取）。它对接 Azure Cognitive Speech
+SDK 提供 TTS/STT 能力，并通过外部 FFmpeg 进程做音频格式转换，解决业务系统中语音播报与语音指令识别的需求。
 
-> 命名说明：模块名为 `sst`（Speech Synthesis & Transcription），与独立的 `asr`（WhisperCpp 离线识别）、`tts`（Edge TTS 独立合成）形成互补：sst = 在线 Azure 一体化方案。
+> 命名说明：模块名为 `sst`（Speech Synthesis & Transcription），与独立的 `asr`（WhisperCpp 离线识别）、`tts`（Edge TTS
+> 独立合成）形成互补：sst = 在线 Azure 一体化方案。
 
 ## 2. 目标
 
-- 提供**端口接口** `SpeechService<T>`，隔离 Azure SDK，业务层不直接依赖供应商。
+- 提供 **端口接口** `SpeechService<T>`，隔离 Azure SDK，业务层不直接依赖供应商。
 - 实现 TTS（文本→语音，同步返回 MP3 / 回调音频流）。
 - 实现 STT（WAV 文件 / WAV 字节流 / MP3 字节流 → 文本）。
 - 提供 FFmpeg 音频格式转换（任意→16kHz 单声道 WAV、WAV→MP3），作为 STT 前置处理。
@@ -30,14 +33,14 @@ SST（Speech Synthesis & Transcription）是 ddd4j-ai 最早落地的业务组�
 
 ## 3. 关键决策
 
-| # | 决策 | 理由 |
-|---|------|------|
-| S1 | `SpeechService<T>` 使用泛型 `T` 绑定供应商语音配置 | Azure 实现绑定为 `com.microsoft.cognitiveservices.speech.SpeechConfig`；未来其他供应商可绑定各自配置类型，端口接口不变 |
-| S2 | TTS 提供同步 `tts()` 与回调 `text2Voice()` 两种形态 | 同步便于直接取 MP3 字节流；回调便于流式消费音频数据 |
-| S3 | `AzureSpeechService` 实现 `InitializingBean`，在 `afterPropertiesSet` 初始化 `SpeechConfig` | 配置就绪后一次性构建 SDK 配置，避免每次调用重复构造 |
-| S4 | STT 统一走 `PushAudioInputStream` + `recognizeOnceAsync` | 字节流/文件统一为推流模型，`close()` 触发发送（注释明确：不 close 会超时） |
-| S5 | FFmpeg 通过 `ProcessBuilder` 管道（`pipe:0`/`pipe:1`）处理字节流 | 避免落盘，适合服务端无状态处理；需宿主环境安装 ffmpeg 并在 PATH |
-| S6 | 配置类同时标注 `@ConfigurationProperties` + `@Configuration` | 简化引入：业务只需引入组件即生效，无需额外 `@EnableConfigurationProperties` |
+| #  | 决策                                                                                        | 理由                                                                                                                   |
+|----|---------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| S1 | `SpeechService<T>` 使用泛型 `T` 绑定供应商语音配置                                          | Azure 实现绑定为 `com.microsoft.cognitiveservices.speech.SpeechConfig`；未来其他供应商可绑定各自配置类型，端口接口不变 |
+| S2 | TTS 提供同步 `tts()` 与回调 `text2Voice()` 两种形态                                         | 同步便于直接取 MP3 字节流；回调便于流式消费音频数据                                                                    |
+| S3 | `AzureSpeechService` 实现 `InitializingBean`，在 `afterPropertiesSet` 初始化 `SpeechConfig` | 配置就绪后一次性构建 SDK 配置，避免每次调用重复构造                                                                    |
+| S4 | STT 统一走 `PushAudioInputStream` + `recognizeOnceAsync`                                    | 字节流/文件统一为推流模型，`close()` 触发发送（注释明确：不 close 会超时）                                             |
+| S5 | FFmpeg 通过 `ProcessBuilder` 管道（`pipe:0`/`pipe:1`）处理字节流                            | 避免落盘，适合服务端无状态处理；需宿主环境安装 ffmpeg 并在 PATH                                                        |
+| S6 | 配置类同时标注 `@ConfigurationProperties` + `@Configuration`                                | 简化引入：业务只需引入组件即生效，无需额外 `@EnableConfigurationProperties`                                            |
 
 ## 4. 总体架构
 
@@ -76,6 +79,7 @@ public interface SpeechService<T> {
 ```
 
 回调接口：
+
 - `SpeechServiceText2VoiceCallback`：`onSuccess(byte[] audioData)` / `onFail(String msg)`。
 - `SpeechServiceVoice2TextCallback`：`onSuccess(String text)` / `onFail(String msg)` / `onCancel(String msg)`。
 
@@ -146,15 +150,15 @@ azure:
 
 包 `io.ddd4j.ai.cmpt.sst`：
 
-| 类型 | 类名 | 说明 |
-|------|------|------|
-| 请求 DTO | `STTDto` | 语音转文本入参（channel、formatType、data） |
-| 请求 DTO | `TTSDto` | 文本转语音入参（text） |
-| 响应 VO | `STTResultVO` | 识别结果（status、msg、text、reason） |
-| 响应 VO | `TTSResultVO` | 合成结果（status、msg、audio、reason，Builder 模式） |
-| 渠道枚举 | `TTSSTTChannel` | 当前支持 `Azure` |
-| 音频格式 | `AVFormatEnums` | 音频采样率与编码格式枚举 |
-| 转换键 | `ConvertKeyEnums` | FFmpeg 转换参数键 |
+| 类型     | 类名              | 说明                                                 |
+|----------|-------------------|------------------------------------------------------|
+| 请求 DTO | `STTDto`          | 语音转文本入参（channel、formatType、data）          |
+| 请求 DTO | `TTSDto`          | 文本转语音入参（text）                               |
+| 响应 VO  | `STTResultVO`     | 识别结果（status、msg、text、reason）                |
+| 响应 VO  | `TTSResultVO`     | 合成结果（status、msg、audio、reason，Builder 模式） |
+| 渠道枚举 | `TTSSTTChannel`   | 当前支持 `Azure`                                     |
+| 音频格式 | `AVFormatEnums`   | 音频采样率与编码格式枚举                             |
+| 转换键   | `ConvertKeyEnums` | FFmpeg 转换参数键                                    |
 
 ## 7. 模块落点
 
@@ -173,13 +177,16 @@ ddd4j-ai-extension-sst/src/main/java/io/ddd4j/ai/cmpt/sst
 
 ## 8. 运行时与依赖
 
-- 第三方依赖：`com.microsoft.cognitiveservices.speech:client-sdk:1.47.0`（BOM 治理）、Lombok、Hutool（`FileUtil`）、Apache Commons Lang3（`StringUtils`）、Spring Boot（properties/service 注解）。
+- 第三方依赖：`com.microsoft.cognitiveservices.speech:client-sdk:1.47.0`（BOM 治理）、Lombok、Hutool（`FileUtil`）、Apache
+  Commons Lang3（`StringUtils`）、Spring Boot（properties/service 注解）。
 - 外部进程：FFmpeg 必须在宿主 PATH；缺失时 `FFmpegService` 转换调用会抛异常。
-- 配置缺失：`AzureSpeechService.afterPropertiesSet` 在 key/region 缺失时仍构建（SDK 层报错），建议业务侧通过 `${AZURE_SPEECH_KEY}` 注入。
+- 配置缺失：`AzureSpeechService.afterPropertiesSet` 在 key/region 缺失时仍构建（SDK 层报错），建议业务侧通过
+  `${AZURE_SPEECH_KEY}` 注入。
 
 ## 9. 错误处理与降级
 
-- TTS `Canceled`：记录 `ErrorCode/ErrorDetails`，回调 `onFail`；同步 `tts()` 返回 `TTSResultVO{status=1, msg=失败, audio=null}`。
+- TTS `Canceled`：记录 `ErrorCode/ErrorDetails`，回调 `onFail`；同步 `tts()` 返回
+  `TTSResultVO{status=1, msg=失败, audio=null}`。
 - STT `NoMatch`：回调 `onFail(reason.name())`（语音不能被识别）。
 - STT `Canceled`：回调 `onCancel(errorDetails)`。
 - FFmpeg 失败：非 0 退出码抛 `RuntimeException`，由业务层捕获。
@@ -189,6 +196,7 @@ ddd4j-ai-extension-sst/src/main/java/io/ddd4j/ai/cmpt/sst
 > 现状：sst 当前零测试。补齐计划见 `2026-08-07-ddd4j-ai-v1-core-and-sst.md`。
 
 - **端口契约测试**：针对 `SpeechService<T>` 接口，用测试桩验证回调路径（onSuccess/onFail/onCancel）。
-- **AzureSpeechService**：mock `SpeechConfig`/`SpeechSynthesizer`/`SpeechRecognizer`，验证 tts 返回结构、text2Voice 回调分支、voice2Text* 三入口与 doVoice2Text 的三 reason 分支。
+- **AzureSpeechService**：mock `SpeechConfig`/`SpeechSynthesizer`/`SpeechRecognizer`，验证 tts 返回结构、text2Voice
+  回调分支、voice2Text* 三入口与 doVoice2Text 的三 reason 分支。
 - **FFmpegService**：在装有 ffmpeg 的 CI 环境做端到端转换冒烟；无 ffmpeg 环境做命令构造与异常路径单测。
 - **AzureSpeechProperties**：`@ConfigurationProperties` 绑定测试，校验 `azure.speech.*` → 字段映射。
