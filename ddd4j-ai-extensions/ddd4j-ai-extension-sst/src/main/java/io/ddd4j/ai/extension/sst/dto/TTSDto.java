@@ -7,6 +7,6 @@ import lombok.Setter;
 @Setter
 public class TTSDto {
 
-        private String text;
+    private String text;
 
 }

@@ -23,19 +23,25 @@ public class MemorySample {
         this.memoryService = memoryService;
     }
 
-    /** 记录一轮问答。 */
+    /**
+     * 记录一轮问答。
+     */
     public void record(String conversationId, String question, String answer) {
         memoryService.add(conversationId, List.of(
                 new UserMessage(question),
                 new AssistantMessage(answer)));
     }
 
-    /** 读取会话历史（窗口策略自动截断）。 */
+    /**
+     * 读取会话历史（窗口策略自动截断）。
+     */
     public List<Message> history(String conversationId) {
         return memoryService.get(conversationId);
     }
 
-    /** 清空指定会话。 */
+    /**
+     * 清空指定会话。
+     */
     public void forget(String conversationId) {
         memoryService.clear(conversationId);
     }

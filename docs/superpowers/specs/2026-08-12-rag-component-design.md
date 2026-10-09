@@ -2,15 +2,17 @@
 
 - 日期：2026-08-12
 - 作者：PartMe.AI
-- 状态：**已实现**（2026-08-16，v1.x-B 提前交付 RAG 部分）
+- 状态： **已实现**（2026-08-16，v1.x-B 提前交付 RAG 部分）
 - 范围：`ddd4j-ai-extension-rag` —— 检索增强生成管道
-- 关联文档：整体架构见 `2026-08-07-ddd4j-ai-architecture-design.md`；依赖 chat `2026-08-12-chat-component-design.md` / embedding `2026-08-12-embedding-component-design.md` / vectordb `2026-08-12-vectordb-component-design.md`
+- 关联文档：整体架构见 `2026-08-07-ddd4j-ai-architecture-design.md`；依赖 chat `2026-08-12-chat-component-design.md` /
+  embedding `2026-08-12-embedding-component-design.md` / vectordb `2026-08-12-vectordb-component-design.md`
 
 ---
 
 ## 1. 背景
 
-RAG（Retrieval-Augmented Generation）是企业 LLM 落地最高频场景。rag 组件编排"检索 → 增强 → 生成"管道，串联 chat + embedding + vectordb，提供开箱即用的知识问答能力。
+RAG（Retrieval-Augmented Generation）是企业 LLM 落地最高频场景。rag 组件编排"检索 → 增强 → 生成"管道，串联 chat +
+embedding + vectordb，提供开箱即用的知识问答能力。
 
 ## 2. 目标
 
@@ -25,11 +27,11 @@ RAG（Retrieval-Augmented Generation）是企业 LLM 落地最高频场景。rag
 
 ## 3. 关键决策（建议）
 
-| # | 决策候选 | 理由 |
-|---|---------|------|
-| R1 | 管道以组合方式编排 chat/embedding/vectordb 端口 | 复用已建组件，单一职责 |
-| R2 | prompt 模板可配置（系统提示 + 检索上下文槽） | 不同业务知识库语料差异大 |
-| R3 | 提供 rerank 扩展点（默认空实现/直通） | 质量与成本可调 |
+| #  | 决策候选                                        | 理由                     |
+|----|-------------------------------------------------|--------------------------|
+| R1 | 管道以组合方式编排 chat/embedding/vectordb 端口 | 复用已建组件，单一职责   |
+| R2 | prompt 模板可配置（系统提示 + 检索上下文槽）    | 不同业务知识库语料差异大 |
+| R3 | 提供 rerank 扩展点（默认空实现/直通）           | 质量与成本可调           |
 
 ## 4. 总体架构
 

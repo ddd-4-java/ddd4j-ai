@@ -11,7 +11,9 @@
     </parent>
 
     <artifactId>ddd4j-ai-extension-document</artifactId>
-    <description>智能体文档统一读取门面：Tika 底座（结构化 Markdown/章节树/表格/图片/OCR/音频转写/嵌入资源），markitdown 全能力对齐</description>
+    <description>智能体文档统一读取门面：Tika 底座（结构化 Markdown/章节树/表格/图片/OCR/音频转写/嵌入资源），markitdown
+        全能力对齐
+    </description>
 
     <dependencies>
         <dependency>

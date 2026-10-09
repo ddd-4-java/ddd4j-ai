@@ -7,21 +7,33 @@ package io.ddd4j.ai.extension.document;
  */
 public enum SourceType {
 
-    /** markitdown4j 全 MIT 转换套件（通用基础实现）。 */
+    /**
+     * markitdown4j 全 MIT 转换套件（通用基础实现）。
+     */
     MARKITDOWN4J,
 
-    /** easy4j PDF 组件（1:1 结构还原）。 */
+    /**
+     * easy4j PDF 组件（1:1 结构还原）。
+     */
     EASYPDF,
 
-    /** easy4j DOC 组件（1:1 结构还原）。 */
+    /**
+     * easy4j DOC 组件（1:1 结构还原）。
+     */
     EASYDOC,
 
-    /** easy4j EXCEL 组件（1:1 结构还原）。 */
+    /**
+     * easy4j EXCEL 组件（1:1 结构还原）。
+     */
     EASYEXCEL,
 
-    /** easy4j ODF 组件（1:1 结构还原）。 */
+    /**
+     * easy4j ODF 组件（1:1 结构还原）。
+     */
     EASYODF,
 
-    /** Apache Tika 兜底解析。 */
+    /**
+     * Apache Tika 兜底解析。
+     */
     TIKA_FALLBACK
 }

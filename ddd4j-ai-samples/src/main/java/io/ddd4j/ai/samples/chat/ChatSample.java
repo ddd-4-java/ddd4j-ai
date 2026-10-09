@@ -21,17 +21,23 @@ public class ChatSample {
         this.chatService = chatService;
     }
 
-    /** 单轮问答。 */
+    /**
+     * 单轮问答。
+     */
     public String ask(String question) {
         return chatService.chat(question);
     }
 
-    /** 多轮问答：同一 conversationId 内自动携带历史上下文。 */
+    /**
+     * 多轮问答：同一 conversationId 内自动携带历史上下文。
+     */
     public String askInSession(String question, String conversationId) {
         return chatService.chat(question, conversationId);
     }
 
-    /** 流式问答：增量消费模型输出（如 SSE 推送）。 */
+    /**
+     * 流式问答：增量消费模型输出（如 SSE 推送）。
+     */
     public reactor.core.publisher.Flux<String> askStream(String question) {
         return chatService.streamChat(question);
     }

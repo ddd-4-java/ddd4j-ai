@@ -2,15 +2,17 @@
 
 - 日期：2026-08-12
 - 作者：PartMe.AI
-- 状态：**已实现**（2026-08-16，v1.x-A）
+- 状态： **已实现**（2026-08-16，v1.x-A）
 - 范围：`ddd4j-ai-extension-chat` —— 基于 Spring AI ChatClient 的对话能力封装
-- 关联文档：整体架构见 `2026-08-07-ddd4j-ai-architecture-design.md`；core 契约见 `2026-07-01-ai-core-contract-design.md`；与 memory 集成见 `2026-08-12-memory-component-design.md`
+- 关联文档：整体架构见 `2026-08-07-ddd4j-ai-architecture-design.md`；core 契约见 `2026-07-01-ai-core-contract-design.md`；与
+  memory 集成见 `2026-08-12-memory-component-design.md`
 
 ---
 
 ## 1. 背景
 
-对话是 LLM 应用最基础的能力。chat 组件在 Spring AI `ChatClient` 之上做 COLA 封装，对接 core 的 `AiHandler` 契约，使业务服务以统一端口调用大模型，并为 memory（多轮）、rag（检索增强）、agent（工具调用）提供底座。
+对话是 LLM 应用最基础的能力。chat 组件在 Spring AI `ChatClient` 之上做 COLA 封装，对接 core 的 `AiHandler`
+契约，使业务服务以统一端口调用大模型，并为 memory（多轮）、rag（检索增强）、agent（工具调用）提供底座。
 
 ## 2. 目标
 
@@ -27,11 +29,11 @@
 
 ## 3. 关键决策（建议，待实施时确认）
 
-| # | 决策候选 | 理由 |
-|---|---------|------|
-| C1 | 端口接口实现 `AiHandler`，`handle(AiRequest)` 走 ChatClient | 复用 core 统一调用契约 |
-| C2 | 多轮上下文通过注入 `ChatMemory`（memory 组件）实现 | 不在 chat 内自建会话存储 |
-| C3 | 流式响应提供独立方法返回 `Flux`/`Publisher` | 与同步 `handle` 分离，不破坏 core 契约 |
+| #  | 决策候选                                                    | 理由                                   |
+|----|-------------------------------------------------------------|----------------------------------------|
+| C1 | 端口接口实现 `AiHandler`，`handle(AiRequest)` 走 ChatClient | 复用 core 统一调用契约                 |
+| C2 | 多轮上下文通过注入 `ChatMemory`（memory 组件）实现          | 不在 chat 内自建会话存储               |
+| C3 | 流式响应提供独立方法返回 `Flux`/`Publisher`                 | 与同步 `handle` 分离，不破坏 core 契约 |
 
 ## 4. 总体架构
 

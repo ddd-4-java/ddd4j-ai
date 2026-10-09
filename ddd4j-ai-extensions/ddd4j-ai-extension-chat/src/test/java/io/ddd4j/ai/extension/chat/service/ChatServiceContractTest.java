@@ -20,7 +20,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class ChatServiceContractTest {
 
-    /** 回声桩：多轮路径真实读写记忆。 */
+    /**
+     * 回声桩：多轮路径真实读写记忆。
+     */
     static class EchoChatService implements ChatService {
 
         final MemoryService memory = new WindowMemoryService(new InMemoryChatMemoryRepository(), 20);

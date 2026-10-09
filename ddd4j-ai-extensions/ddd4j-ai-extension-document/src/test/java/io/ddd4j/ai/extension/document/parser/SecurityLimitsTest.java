@@ -95,7 +95,9 @@ class SecurityLimitsTest {
 
     // ---- 样本构造 ----
 
-    /** n 层互嵌 zip：最内层为 txt。 */
+    /**
+     * n 层互嵌 zip：最内层为 txt。
+     */
     private static byte[] nestedZip(int depth) throws Exception {
         byte[] payload = "innermost".getBytes(StandardCharsets.UTF_8);
         for (int i = 0; i < depth; i++) {
@@ -110,7 +112,9 @@ class SecurityLimitsTest {
         return payload;
     }
 
-    /** 含 n 张嵌入图片的最小 docx。 */
+    /**
+     * 含 n 张嵌入图片的最小 docx。
+     */
     private static byte[] docxWithImages(int imageCount) throws Exception {
         StringBuilder rels = new StringBuilder();
         StringBuilder drawings = new StringBuilder();
@@ -152,7 +156,7 @@ class SecurityLimitsTest {
                                 xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
                       <w:body>
                         <w:p><w:r><w:t>Hello embedded image</w:t></w:r></w:p>
-                        """ + drawings + """
+                    """ + drawings + """
                       </w:body>
                     </w:document>
                     """).getBytes());

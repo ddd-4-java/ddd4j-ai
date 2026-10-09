@@ -71,7 +71,9 @@ public class GraphFlowService implements FlowService {
         return graph.compile();
     }
 
-    /** DSL 的 START/END 字面量映射为图引擎常量（__START__/__END__）。 */
+    /**
+     * DSL 的 START/END 字面量映射为图引擎常量（__START__/__END__）。
+     */
     private static String resolveTarget(String id) {
         if ("START".equals(id)) {
             return StateGraph.START;
@@ -116,7 +118,9 @@ public class GraphFlowService implements FlowService {
         };
     }
 
-    /** AGENT 节点：prompt 作指令调 AgentService（Agentscope HarnessAgent），最终回答写 outputKey。 */
+    /**
+     * AGENT 节点：prompt 作指令调 AgentService（Agentscope HarnessAgent），最终回答写 outputKey。
+     */
     private AsyncNodeAction agentAction(FlowNodeSpec spec) {
         return state -> {
             if (agentService == null) {

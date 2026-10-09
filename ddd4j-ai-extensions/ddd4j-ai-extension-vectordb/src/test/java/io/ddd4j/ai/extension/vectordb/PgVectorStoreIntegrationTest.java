@@ -33,7 +33,9 @@ class PgVectorStoreIntegrationTest {
     static final PostgreSQLContainer<?> PGVECTOR = new PostgreSQLContainer<>(
             DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
 
-    /** 确定性二维嵌入：[首字符编码, 常量]。 */
+    /**
+     * 确定性二维嵌入：[首字符编码, 常量]。
+     */
     static class FirstCharEmbeddingModel implements org.springframework.ai.embedding.EmbeddingModel {
 
         @Override

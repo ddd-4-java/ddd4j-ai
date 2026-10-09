@@ -25,7 +25,9 @@ import static org.mockito.Mockito.when;
  */
 class TikaAudioTranscriptionTest {
 
-    /** 最小 WAV 头 + 少量 16-bit PCM 采样（16kHz mono）。 */
+    /**
+     * 最小 WAV 头 + 少量 16-bit PCM 采样（16kHz mono）。
+     */
     private static byte[] wavBytes() {
         java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
         byte[] header = {

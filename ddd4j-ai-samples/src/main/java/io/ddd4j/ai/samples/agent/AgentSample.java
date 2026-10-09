@@ -24,12 +24,16 @@ public class AgentSample {
         this.harnessAgent = harnessAgent;
     }
 
-    /** 同步执行：返回最终回答文本。 */
+    /**
+     * 同步执行：返回最终回答文本。
+     */
     public String run(String instruction) {
         return harnessAgent.call(new UserMessage(instruction)).block().getTextContent();
     }
 
-    /** 异步执行：返回响应式回答。 */
+    /**
+     * 异步执行：返回响应式回答。
+     */
     public Mono<String> runAsync(String instruction) {
         return harnessAgent.call(new UserMessage(instruction))
                 .map(message -> message.getTextContent());

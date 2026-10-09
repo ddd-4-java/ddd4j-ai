@@ -54,7 +54,9 @@ class DocumentReaderTest {
         assertThatThrownBy(() -> r.read(file)).isInstanceOf(UnsupportedOperationException.class);
     }
 
-    /** 高优先级委托未就位桩。 */
+    /**
+     * 高优先级委托未就位桩。
+     */
     static class PendingPdfParser implements DocumentParser {
 
         @Override
@@ -78,7 +80,9 @@ class DocumentReaderTest {
         }
     }
 
-    /** 通用兜底桩（UNKNOWN 匹配任意类型）。 */
+    /**
+     * 通用兜底桩（UNKNOWN 匹配任意类型）。
+     */
     static class TikaDocumentParserStub implements DocumentParser {
 
         @Override

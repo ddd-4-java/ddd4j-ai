@@ -18,7 +18,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class OcrServiceContractTest {
 
-    /** 桩实现：固定返回文本与单篇文档，可配置抛错验证错误路径。 */
+    /**
+     * 桩实现：固定返回文本与单篇文档，可配置抛错验证错误路径。
+     */
     static class FakeOcrService implements OcrService {
 
         private final RuntimeException failure;

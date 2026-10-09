@@ -13,7 +13,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class EmbeddingServiceContractTest {
 
-    /** 确定性桩：向量 = 文本哈希填充。 */
+    /**
+     * 确定性桩：向量 = 文本哈希填充。
+     */
     static class HashEmbeddingService implements EmbeddingService {
 
         @Override

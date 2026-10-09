@@ -104,7 +104,9 @@ public class AgentPlanOrchestrator {
         return dispatchAllAsync(planId).block();
     }
 
-    /** 查看计划下全部任务（诊断/测试用）。 */
+    /**
+     * 查看计划下全部任务（诊断/测试用）。
+     */
     public List<AgentDispatchTask> tasksOf(String planId) {
         BlockingCallGuard.requireBlockingCapableThread("tasksOf 在 reactive 线程上不可用（无 async 版本）");
         return List.copyOf(repository.findByPlanId(planId));
