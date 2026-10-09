@@ -70,7 +70,7 @@ public class TtsAutoConfiguration {
     @ConditionalOnExpression("'${ddd4j.ai.tts.dashscope.enabled:true}'.equals('true') "
             + "and '${ddd4j.ai.tts.dashscope.api-key:}' != ''")
     public TtsService dashScopeRealtimeTtsService(TtsProperties properties,
-                                                 org.springframework.beans.factory.ObjectProvider<TtsMetrics> metricsProvider) {
+                                                  org.springframework.beans.factory.ObjectProvider<TtsMetrics> metricsProvider) {
         TtsMetrics metrics = metricsProvider.getIfAvailable();
         if (metrics == null) {
             metrics = new TtsMetrics();
@@ -114,7 +114,7 @@ public class TtsAutoConfiguration {
      * 而不是抛错；只有全部后端都不可用时才报错。
      */
     private static Map<String, TtsService> buildBackendChain(Map<String, TtsService> ttsServiceBeans,
-                                                              TtsProperties properties) {
+                                                             TtsProperties properties) {
         Map<String, TtsService> chain = new LinkedHashMap<>();
 
         String primaryName = properties.resolvedPrimary() == TtsProperties.PrimaryType.DASHSCOPE

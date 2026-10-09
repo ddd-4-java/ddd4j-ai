@@ -9,15 +9,23 @@ import java.util.Map;
  */
 public enum FlowNodeType {
 
-    /** 大模型节点：以 prompt（可含 {stateKey} 占位符）调对话端口，结果写入 outputKey。 */
+    /**
+     * 大模型节点：以 prompt（可含 {stateKey} 占位符）调对话端口，结果写入 outputKey。
+     */
     LLM,
 
-    /** 工具节点：以 inputKey 的 state 值为入参执行 ToolCallback，结果写入 outputKey。 */
+    /**
+     * 工具节点：以 inputKey 的 state 值为入参执行 ToolCallback，结果写入 outputKey。
+     */
     TOOL,
 
-    /** 分支节点：按 inputKey 的 state 值经 branches 映射路由到下一节点。 */
+    /**
+     * 分支节点：按 inputKey 的 state 值经 branches 映射路由到下一节点。
+     */
     BRANCH,
 
-    /** 智能体节点：prompt（可含 {stateKey} 占位符）作为指令调 AgentService，最终回答写 outputKey。 */
+    /**
+     * 智能体节点：prompt（可含 {stateKey} 占位符）作为指令调 AgentService，最终回答写 outputKey。
+     */
     AGENT
 }

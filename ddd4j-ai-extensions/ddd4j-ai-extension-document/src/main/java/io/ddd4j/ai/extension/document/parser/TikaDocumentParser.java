@@ -43,9 +43,9 @@ import io.ddd4j.ai.extension.document.properties.DocumentProperties;
 /**
  * Tika 通用解析适配器：AutoDetectParser 覆盖 PDF / Office / HTML / CSV / 纯文本等全格式，
  * 作为通用基础实现（最低优先级兜底）。<ul>
- *   <li>MIME：{@link Tika#detect(byte[], String)} 内容嗅探 + 文件名联合检测（不依赖手写后缀映射）</li>
- *   <li>内容：{@link ToMarkdownContentHandler} 输出结构化 Markdown（标题/列表/表格 → GFM），供 RAG 分块</li>
- *   <li>元数据：透传 Tika 提取的 author/created/pages 等，供溯源与过滤</li>
+ * <li>MIME：{@link Tika#detect(byte[], String)} 内容嗅探 + 文件名联合检测（不依赖手写后缀映射）</li>
+ * <li>内容：{@link ToMarkdownContentHandler} 输出结构化 Markdown（标题/列表/表格 → GFM），供 RAG 分块</li>
+ * <li>元数据：透传 Tika 提取的 author/created/pages 等，供溯源与过滤</li>
  * </ul>
  * 注：计划原定 markitdown4j 1.0.0 承担此角色，但其 class 文件为 Java 25 编译（version 69），
  * 项目 target Java 17 无法加载且无低版本可退，故按计划预留的 {@link SourceType#TIKA_FALLBACK}
@@ -140,7 +140,9 @@ public final class TikaDocumentParser implements DocumentParser {
         }
     }
 
-    /** 限额复制：超过 max-file-size-bytes 抛 {@link DocumentTooLargeException}（流式计数，不全量入内存）。 */
+    /**
+     * 限额复制：超过 max-file-size-bytes 抛 {@link DocumentTooLargeException}（流式计数，不全量入内存）。
+     */
     private void copyLimited(InputStream in, Path target) throws IOException {
         long limit = properties.getMaxFileSizeBytes();
         InputStream source = limit > 0 ? new LimitedInputStream(in, limit) : in;
@@ -198,7 +200,9 @@ public final class TikaDocumentParser implements DocumentParser {
         return context;
     }
 
-    /** 注入解析超时：病态文档超时抛 TikaTimeoutException，不降级重试（重试只会再挂一次）。 */
+    /**
+     * 注入解析超时：病态文档超时抛 TikaTimeoutException，不降级重试（重试只会再挂一次）。
+     */
     private ParseContext withTimeout(ParseContext context) {
         long timeout = properties.getParseTimeoutMillis();
         if (timeout > 0) {
@@ -217,8 +221,10 @@ public final class TikaDocumentParser implements DocumentParser {
         return context;
     }
 
-    /** 流式解析：TikaInputStream 按需 spool（大文件落盘临时文件），SecureContentHandler 限制
-     *  SAX 实体数与输出量（zip 炸弹/高压缩比攻击面防护），不整体入内存。 */
+    /**
+     * 流式解析：TikaInputStream 按需 spool（大文件落盘临时文件），SecureContentHandler 限制
+     * SAX 实体数与输出量（zip 炸弹/高压缩比攻击面防护），不整体入内存。
+     */
     private static Parsed doParse(Path path, ParseContext context, EmbeddedImageExtractor extractor) throws Exception {
         StringWriter writer = new StringWriter();
         MarkdownStructureHandler structure = new MarkdownStructureHandler();
@@ -234,7 +240,9 @@ public final class TikaDocumentParser implements DocumentParser {
         }
     }
 
-    /** 限额读流：累计字节超限即抛，避免全量入内存后才拒绝。 */
+    /**
+     * 限额读流：累计字节超限即抛，避免全量入内存后才拒绝。
+     */
     private static final class LimitedInputStream extends FilterInputStream {
 
         private final long limit;
@@ -273,8 +281,10 @@ public final class TikaDocumentParser implements DocumentParser {
         }
     }
 
-    /** 收集容器文档（docx/zip 等）内嵌图片 → base64 data URL（对齐 markitdown 的图片提取），
-     *  受数量与单图大小双限额约束（图片轰炸防护），丢弃计数透出至 metadata。 */
+    /**
+     * 收集容器文档（docx/zip 等）内嵌图片 → base64 data URL（对齐 markitdown 的图片提取），
+     * 受数量与单图大小双限额约束（图片轰炸防护），丢弃计数透出至 metadata。
+     */
     private static final class EmbeddedImageExtractor implements EmbeddedDocumentExtractor {
 
         private final int maxImages;
@@ -391,7 +401,9 @@ public final class TikaDocumentParser implements DocumentParser {
         }
     }
 
-    /** Tika 解析产物：Markdown 全文 + 结构化字段 + 原始元数据。 */
+    /**
+     * Tika 解析产物：Markdown 全文 + 结构化字段 + 原始元数据。
+     */
     private record Parsed(String markdown,
                           List<DocumentSection> sections,
                           List<DocumentTable> tables,

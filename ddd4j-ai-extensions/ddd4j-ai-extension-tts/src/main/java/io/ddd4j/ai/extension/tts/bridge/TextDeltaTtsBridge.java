@@ -49,7 +49,9 @@ public class TextDeltaTtsBridge {
         this.tts = Objects.requireNonNull(tts, "tts");
     }
 
-    /** 便捷工厂：使用默认 chunker (24/1)。 */
+    /**
+     * 便捷工厂：使用默认 chunker (24/1)。
+     */
     public static TextDeltaTtsBridge withDefaults(TtsService tts) {
         return new TextDeltaTtsBridge(TextChunker.defaultChunker(), tts);
     }
@@ -121,17 +123,23 @@ public class TextDeltaTtsBridge {
         return tts.streamSynthesize(text, voice);
     }
 
-    /** 重置分块器（每轮新对话前调用）。 */
+    /**
+     * 重置分块器（每轮新对话前调用）。
+     */
     public void reset() {
         chunker.reset();
     }
 
-    /** 当前 chunker 缓冲长度（用于调试）。 */
+    /**
+     * 当前 chunker 缓冲长度（用于调试）。
+     */
     public int pendingChunks() {
         return chunker.pendingSize();
     }
 
-    /** 抑制未使用警告（Mono 类型仅供后续扩展使用）。 */
+    /**
+     * 抑制未使用警告（Mono 类型仅供后续扩展使用）。
+     */
     @SuppressWarnings("unused")
     private static <T> Mono<T> ignored() {
         return Mono.empty();

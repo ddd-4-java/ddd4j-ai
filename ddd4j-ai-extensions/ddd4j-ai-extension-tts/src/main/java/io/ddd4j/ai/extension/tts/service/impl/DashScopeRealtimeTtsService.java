@@ -49,11 +49,13 @@ public class DashScopeRealtimeTtsService implements TtsService {
         this.defaultVoice = defaultVoice;
     }
 
-    /** 工厂方法：构造时直接创建 DashScope SDK 客户端（用于 AutoConfiguration）。 */
+    /**
+     * 工厂方法：构造时直接创建 DashScope SDK 客户端（用于 AutoConfiguration）。
+     */
     public static DashScopeRealtimeTtsService create(String apiKey,
-                                                      String model,
-                                                      String voice,
-                                                      TtsMetrics metrics) {
+                                                     String model,
+                                                     String voice,
+                                                     TtsMetrics metrics) {
         DashScopeRealtimeClient client = DashScopeRealtimeClient.create(apiKey, model, voice);
         return new DashScopeRealtimeTtsService(client, metrics, voice);
     }
@@ -180,17 +182,23 @@ public class DashScopeRealtimeTtsService implements TtsService {
         return null;
     }
 
-    /** 当前 TTS 指标快照（用于运维 / 测试断言）。 */
+    /**
+     * 当前 TTS 指标快照（用于运维 / 测试断言）。
+     */
     public TtsMetrics getMetrics() {
         return metrics;
     }
 
-    /** 释放底层 WebSocket 连接（业务方按需调用；spring 关闭时会自动 close）。 */
+    /**
+     * 释放底层 WebSocket 连接（业务方按需调用；spring 关闭时会自动 close）。
+     */
     public void close() {
         client.close();
     }
 
-    /** 默认音色的 getter（用于配置同步 / 测试断言）。 */
+    /**
+     * 默认音色的 getter（用于配置同步 / 测试断言）。
+     */
     public String getDefaultVoice() {
         return defaultVoice;
     }

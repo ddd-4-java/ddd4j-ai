@@ -23,7 +23,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class TikaEmbeddedResourceTest {
 
-    /** 1x1 透明 PNG（base64）。 */
+    /**
+     * 1x1 透明 PNG（base64）。
+     */
     private static final byte[] ONE_PX_PNG = Base64.getDecoder().decode(
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==");
 
@@ -49,7 +51,9 @@ class TikaEmbeddedResourceTest {
         assertThat(document.images()).isEmpty();
     }
 
-    /** 构造最小 docx：document.xml 引用 rId1 → media/image1.png。 */
+    /**
+     * 构造最小 docx：document.xml 引用 rId1 → media/image1.png。
+     */
     private static byte[] minimalDocxWithImage() throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (ZipOutputStream zip = new ZipOutputStream(out)) {

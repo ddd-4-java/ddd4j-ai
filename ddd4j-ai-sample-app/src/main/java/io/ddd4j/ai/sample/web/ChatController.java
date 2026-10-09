@@ -26,13 +26,17 @@ public class ChatController {
         this.chatService = chatService;
     }
 
-    /** 单轮：GET /chat?q=你好 */
+    /**
+     * 单轮：GET /chat?q=你好
+     */
     @GetMapping
     public Map<String, String> chat(@RequestParam("q") String question) {
         return Map.of("answer", chatService.chat(question));
     }
 
-    /** 多轮：同一 conversationId 内自动携带历史。POST /chat/session */
+    /**
+     * 多轮：同一 conversationId 内自动携带历史。POST /chat/session
+     */
     @PostMapping("/session")
     public Map<String, String> chatInSession(@RequestParam("q") String question,
                                              @RequestParam(value = "conversationId", defaultValue = "demo") String conversationId) {
@@ -40,7 +44,9 @@ public class ChatController {
                 chatService.chat(question, conversationId));
     }
 
-    /** 流式 SSE：GET /chat/stream */
+    /**
+     * 流式 SSE：GET /chat/stream
+     */
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> stream(@RequestParam("q") String question) {
         return chatService.streamChat(question);

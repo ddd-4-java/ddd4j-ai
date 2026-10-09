@@ -88,7 +88,7 @@ public class FFmpegService {
         String[] command = {
                 ffmpegBin,
                 "-i", "pipe:0",
-                "-ab","192k",// 比特率
+                "-ab", "192k",// 比特率
                 "-ar", "44100", // 采样率
                 "-ac", "1", // 单声道
                 "-f", "mp3",// 输出格式

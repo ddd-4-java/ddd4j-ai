@@ -11,7 +11,9 @@
     </parent>
 
     <artifactId>ddd4j-ai-extension-document</artifactId>
-    <description>智能体文档统一读取门面：markitdown4j 14 converters 深度集成 + 4 组件委托（easypdf/easydoc/easyexcel/easyodf）</description>
+    <description>智能体文档统一读取门面：markitdown4j 14 converters 深度集成 + 4
+        组件委托（easypdf/easydoc/easyexcel/easyodf）
+    </description>
 
     <dependencies>
         <dependency>

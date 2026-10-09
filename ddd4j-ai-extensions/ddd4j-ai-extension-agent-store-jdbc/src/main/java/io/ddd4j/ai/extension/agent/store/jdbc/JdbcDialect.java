@@ -32,7 +32,9 @@ public enum JdbcDialect {
     private static final String TABLE = "ddd4j_ai_agent_dispatch_task";
     private static final String INDEX = "idx_ddd4j_ai_dispatch_plan";
 
-    /** MySQL：大文本用 MEDIUMTEXT（16MB）；其余用 TEXT（PostgreSQL/H2 的 TEXT 无实际上限）。 */
+    /**
+     * MySQL：大文本用 MEDIUMTEXT（16MB）；其余用 TEXT（PostgreSQL/H2 的 TEXT 无实际上限）。
+     */
     public String textType() {
         return this == MYSQL ? "MEDIUMTEXT" : "TEXT";
     }
@@ -80,7 +82,9 @@ public enum JdbcDialect {
         };
     }
 
-    /** 按数据库产品名选择方言；未知或 null 回落 H2 兼容写法。 */
+    /**
+     * 按数据库产品名选择方言；未知或 null 回落 H2 兼容写法。
+     */
     public static JdbcDialect forProductName(String productName) {
         if (productName == null) {
             return H2;
@@ -95,7 +99,9 @@ public enum JdbcDialect {
         return H2;
     }
 
-    /** 从连接元数据探测方言。 */
+    /**
+     * 从连接元数据探测方言。
+     */
     public static JdbcDialect from(DataSource dataSource) {
         try (Connection connection = dataSource.getConnection()) {
             return forProductName(connection.getMetaData().getDatabaseProductName());

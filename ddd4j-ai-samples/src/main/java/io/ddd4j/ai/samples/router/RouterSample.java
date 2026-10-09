@@ -22,12 +22,16 @@ public class RouterSample {
         this.chatRouter = chatRouter;
     }
 
-    /** 路由到策略选中的模型完成单轮问答。 */
+    /**
+     * 路由到策略选中的模型完成单轮问答。
+     */
     public String ask(String message) {
         return chatRouter.route(AiRequest.of(message));
     }
 
-    /** 路由流式问答。 */
+    /**
+     * 路由流式问答。
+     */
     public Flux<String> askStream(String message) {
         return chatRouter.streamRoute(AiRequest.of(message));
     }

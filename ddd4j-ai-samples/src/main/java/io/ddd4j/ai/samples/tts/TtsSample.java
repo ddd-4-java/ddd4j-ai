@@ -21,12 +21,16 @@ public class TtsSample {
         this.ttsService = ttsService;
     }
 
-    /** 合成完整 mp3 音频字节。 */
+    /**
+     * 合成完整 mp3 音频字节。
+     */
     public byte[] speak(String text) throws Exception {
         return ttsService.synthesize(text, null);
     }
 
-    /** 流式合成（当前为整段单元素流）。 */
+    /**
+     * 流式合成（当前为整段单元素流）。
+     */
     public Flux<byte[]> speakStream(String text) {
         return ttsService.streamSynthesize(text, null);
     }

@@ -36,7 +36,7 @@ public final class SpringAiToolkitBuilder {
      * 单个工具注册失败时记录 WARN 跳过（不中断整个 Toolkit 装配），与 cloud-agents 行为一致。
      */
     public static void registerSpringAiTools(List<ToolCallback> callbacks,
-                                            io.agentscope.core.tool.Toolkit toolkit) {
+                                             io.agentscope.core.tool.Toolkit toolkit) {
         if (callbacks == null || callbacks.isEmpty()) {
             return;
         }
@@ -84,7 +84,8 @@ public final class SpringAiToolkitBuilder {
             try {
                 com.fasterxml.jackson.databind.ObjectMapper mapper =
                         new com.fasterxml.jackson.databind.ObjectMapper();
-                return mapper.readValue(schema, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+                return mapper.readValue(schema, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {
+                });
             } catch (Exception e) {
                 log.debug("tool schema not parseable as map: name={}, schema={}", getName(), schema);
                 return Collections.emptyMap();

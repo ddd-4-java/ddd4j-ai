@@ -1,60 +1,81 @@
 # Agent 细粒度事件流实施计划（streamEvents）
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:
+> executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 在 `AgentService` SPI 暴露 Agentscope 细粒度事件流（逐字文本 delta / 思考 delta / 工具调用 delta），并同补丁移植到 `feature/1.0.x`。
+**Goal:** 在 `AgentService` SPI 暴露 Agentscope 细粒度事件流（逐字文本 delta / 思考 delta / 工具调用 delta），并同补丁移植到
+`feature/1.0.x`。
 
-**Architecture:** 在 `AgentService` 端口加一个 `default` 方法 `streamEvents(AgentTask)`，默认抛 `UnsupportedOperationException`；唯一实现 `AgentScopeAgentAdapter` 覆写它，直接委托 `harnessAgent.streamEvents(new UserMessage(instruction))` 并把异常映射为 `AgentExecutionException`。**不做事件类型映射**——原生透传 `io.agentscope.core.event.AgentEvent`，30 余种事件类型全量保真。既有 `execute` / `stream` 签名与行为一字不动。
+**Architecture:** 在 `AgentService` 端口加一个 `default` 方法 `streamEvents(AgentTask)`，默认抛
+`UnsupportedOperationException`；唯一实现 `AgentScopeAgentAdapter` 覆写它，直接委托
+`harnessAgent.streamEvents(new UserMessage(instruction))` 并把异常映射为 `AgentExecutionException`。 **不做事件类型映射**
+——原生透传 `io.agentscope.core.event.AgentEvent`，30 余种事件类型全量保真。既有 `execute` / `stream` 签名与行为一字不动。
 
-**Tech Stack:** Java 17、Reactor（`Flux`）、AgentScope Java 2.0.2（`agentscope-core` / `agentscope-harness`）、JUnit 5 + AssertJ + Mockito、Maven（2.0.x 用 4.0.0-rc-6 / 1.0.x 用 3.x）。
+**Tech Stack:** Java 17、Reactor（`Flux`）、AgentScope Java 2.0.2（`agentscope-core` / `agentscope-harness`）、JUnit 5 +
+AssertJ + Mockito、Maven（2.0.x 用 4.0.0-rc-6 / 1.0.x 用 3.x）。
 
 **Spec:** `docs/superpowers/specs/2026-09-11-agent-fine-grained-event-stream-design.md`
 
 ## Global Constraints
 
-以下为 spec 的项目级约束，**每个任务都隐含包含**，逐字生效：
+以下为 spec 的项目级约束， **每个任务都隐含包含**，逐字生效：
 
 - **Java 17**，两条线均为 `<java.version>17</java.version>`；record / lambda / switch 表达式可用。
-- **构建工具按线区分**：`feature/2.0.x` 的 `modelVersion=4.1.0` + `<subprojects>`，**必须**用 Maven 4（`/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn`，Maven 3 会报 `Malformed POM: Unrecognised tag: 'subprojects'`）；`feature/1.0.x` 的 `modelVersion=4.0.0`，用 Maven 3。
-- **JAVA_HOME 必须为 JDK 17**：`/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home`。系统默认 JDK 是 26 / 21，不设会编译目标错位。
+- **构建工具按线区分**：`feature/2.0.x` 的 `modelVersion=4.1.0` + `<subprojects>`， **必须**用 Maven 4（
+  `/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn`，Maven 3 会报 `Malformed POM: Unrecognised tag: 'subprojects'`）；
+  `feature/1.0.x` 的 `modelVersion=4.0.0`，用 Maven 3。
+- **JAVA_HOME 必须为 JDK 17**：`/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home`。系统默认
+  JDK 是 26 / 21，不设会编译目标错位。
 - **本项不改动任何 pom**（spec §7）。两线差异仅在 pom 语法与 `revision`，本项不碰它们。
-- **两线的 `AgentService.java` 与 `AgentScopeAgentAdapter.java` 必须保持逐字节相同**（spec §2 F4，移植前实测为空 diff）。移植后须再次用空 diff 验证。
-- **1.0.x 的 tts 扩展是旧版**（无 `bridge/`、`chunk/`、`metrics/`、`router/`）——**Task 3 不移植到 1.0.x**。
+- **两线的 `AgentService.java` 与 `AgentScopeAgentAdapter.java` 必须保持逐字节相同**（spec §2 F4，移植前实测为空
+  diff）。移植后须再次用空 diff 验证。
+- **1.0.x 的 tts 扩展是旧版**（无 `bridge/`、`chunk/`、`metrics/`、`router/`）—— **Task 3 不移植到 1.0.x**。
 - **禁止 `git add -A` / `git add .`**：本仓是多会话共用的 worktree，只显式 stage 本任务列出的文件路径。
-- 所有测试必须**离线可跑**，不依赖网络、真实 LLM 或 API key。
+- 所有测试必须 **离线可跑**，不依赖网络、真实 LLM 或 API key。
 
 ---
 
 ## File Structure
 
-| 文件 | 职责 | 动作 |
-|------|------|------|
-| `ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/service/AgentService.java` | SPI 端口；新增 `default streamEvents` | 改 |
-| `ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/agent/AgentScopeAgentAdapter.java` | 唯一实现；覆写 `streamEvents` 委托 HarnessAgent | 改 |
-| `ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/service/AgentServiceContractTest.java` | 端口契约测试（`FakeAgentService` 不覆写新方法，正好测 default） | 改 |
-| `ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/agent/AgentScopeAgentAdapterTest.java` | 适配器单测：委托、异常映射、null 校验、顺序保真 | 改 |
-| `ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/test/java/io/ddd4j/ai/extension/tts/bridge/TextDeltaTtsBridgeTest.java` | 把 mock 事件换为真实 `TextBlockDeltaEvent`，闭合既有验证缺口 | 改 |
+| 文件                                                                                                                           | 职责                                                            | 动作 |
+|--------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------|------|
+| `ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/service/AgentService.java`             | SPI 端口；新增 `default streamEvents`                           | 改   |
+| `ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/agent/AgentScopeAgentAdapter.java`     | 唯一实现；覆写 `streamEvents` 委托 HarnessAgent                 | 改   |
+| `ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/service/AgentServiceContractTest.java` | 端口契约测试（`FakeAgentService` 不覆写新方法，正好测 default） | 改   |
+| `ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/agent/AgentScopeAgentAdapterTest.java` | 适配器单测：委托、异常映射、null 校验、顺序保真                 | 改   |
+| `ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/test/java/io/ddd4j/ai/extension/tts/bridge/TextDeltaTtsBridgeTest.java`        | 把 mock 事件换为真实 `TextBlockDeltaEvent`，闭合既有验证缺口    | 改   |
 
 **设计说明（供实施者理解）：**
-- 新方法返回 `Flux<io.agentscope.core.event.AgentEvent>`——**细粒度**事件流；既有 `stream()` 返回 `Flux<AgentStep>`（映射自**粗粒度** `io.agentscope.core.agent.Event`）。两者是 Agentscope 的两套并行事件抽象，简单名不同（`Event` vs `AgentEvent`），**不构成 import 冲突**，但同文件共存时需注释说明区别。
-- `TextBlockDeltaEvent` 的**3 参构造器已实测确认**为 `(String replyId, String blockId, String delta)`（`javap -c` 显示 `putfield` 顺序：param1→`replyId`、param2→`blockId`、param3→`delta`）。`getDelta()` 返回第三个参数。
-- `TextBlockEndEvent` 的构造器**未确认**，因此测试**不使用**它——`TextDeltaTtsBridge.pipe` 的 `doOnComplete` 分支同样会 flush 残余文本，用"流自然结束"即可覆盖。
+
+- 新方法返回 `Flux<io.agentscope.core.event.AgentEvent>`—— **细粒度**事件流；既有 `stream()` 返回 `Flux<AgentStep>`（映射自
+  **粗粒度** `io.agentscope.core.agent.Event`）。两者是 Agentscope 的两套并行事件抽象，简单名不同（`Event` vs `AgentEvent`），
+  **不构成 import 冲突**，但同文件共存时需注释说明区别。
+- `TextBlockDeltaEvent` 的 **3 参构造器已实测确认**为 `(String replyId, String blockId, String delta)`（`javap -c` 显示
+  `putfield` 顺序：param1→`replyId`、param2→`blockId`、param3→`delta`）。`getDelta()` 返回第三个参数。
+- `TextBlockEndEvent` 的构造器 **未确认**，因此测试 **不使用**它——`TextDeltaTtsBridge.pipe` 的 `doOnComplete` 分支同样会
+  flush 残余文本，用"流自然结束"即可覆盖。
 
 ---
 
 ## Task 1: AgentService 新增 default streamEvents
 
 **Files:**
-- Modify: `ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/service/AgentService.java`
-- Test: `ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/service/AgentServiceContractTest.java`
+
+- Modify:
+  `ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/service/AgentService.java`
+- Test:
+  `ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/service/AgentServiceContractTest.java`
 
 **Interfaces:**
+
 - Consumes: 既有 `AgentTask`（record，`of(String)` 静态工厂）
-- Produces: `AgentService.streamEvents(AgentTask) → Flux<io.agentscope.core.event.AgentEvent>`，未实现时同步抛 `UnsupportedOperationException`（message 含 `streamEvents 未实现`）
+- Produces: `AgentService.streamEvents(AgentTask) → Flux<io.agentscope.core.event.AgentEvent>`，未实现时同步抛
+  `UnsupportedOperationException`（message 含 `streamEvents 未实现`）
 
 - [ ] **Step 1: 写失败测试**
 
-在 `AgentServiceContractTest.java` 的最后一个 `}` 之前追加（该类已有 `FakeAgentService`，它**只实现 `execute` 与 `stream`**，不覆写新方法，因此正好命中 default）：
+在 `AgentServiceContractTest.java` 的最后一个 `}` 之前追加（该类已有 `FakeAgentService`，它 **只实现 `execute` 与
+`stream`**，不覆写新方法，因此正好命中 default）：
 
 ```java
     @Test
@@ -142,16 +163,23 @@ degrading to the coarse-grained stream()."
 ## Task 2: AgentScopeAgentAdapter 覆写 streamEvents
 
 **Files:**
-- Modify: `ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/agent/AgentScopeAgentAdapter.java`
-- Test: `ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/agent/AgentScopeAgentAdapterTest.java`
+
+- Modify:
+  `ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/agent/AgentScopeAgentAdapter.java`
+- Test:
+  `ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/agent/AgentScopeAgentAdapterTest.java`
 
 **Interfaces:**
-- Consumes: Task 1 产出的 `AgentService.streamEvents(AgentTask)`；Agentscope `HarnessAgent.streamEvents(Msg) → Flux<AgentEvent>`；既有 `AgentExecutionException(String, Throwable)`
+
+- Consumes: Task 1 产出的 `AgentService.streamEvents(AgentTask)`；Agentscope
+  `HarnessAgent.streamEvents(Msg) → Flux<AgentEvent>`；既有 `AgentExecutionException(String, Throwable)`
 - Produces: 可用的细粒度事件流实现；错误统一包装为 `AgentExecutionException`
 
 - [ ] **Step 1: 写失败测试**
 
-在 `AgentScopeAgentAdapterTest.java` 追加以下 4 个用例。**注意**：该文件已 `import io.agentscope.core.agent.Event`（粗粒度），新用例用**全限定名** `io.agentscope.core.event.AgentEvent` / `io.agentscope.core.event.TextBlockDeltaEvent` 以免读者混淆两套抽象。
+在 `AgentScopeAgentAdapterTest.java` 追加以下 4 个用例。 **注意**：该文件已 `import io.agentscope.core.agent.Event`
+（粗粒度），新用例用 **全限定名** `io.agentscope.core.event.AgentEvent` / `io.agentscope.core.event.TextBlockDeltaEvent`
+以免读者混淆两套抽象。
 
 同时在文件顶部 import 区补两条静态导入（若尚无）：
 
@@ -232,7 +260,8 @@ cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
   -Denforcer.skip=true -DskipITs test
 ```
 
-Expected: 编译失败，`找不到符号: 方法 streamEvents(...)`（`FakeAgentService` 走 default，但 adapter 尚未覆写，新用例调用的仍是抛异常的 default——若编译通过则会 4 例全红）。
+Expected: 编译失败，`找不到符号: 方法 streamEvents(...)`（`FakeAgentService` 走 default，但 adapter 尚未覆写，新用例调用的仍是抛异常的
+default——若编译通过则会 4 例全红）。
 
 - [ ] **Step 3: 覆写实现**
 
@@ -284,9 +313,10 @@ javap -c -p -cp ~/.m2/repository/io/agentscope/agentscope-harness/2.0.2/agentsco
   io.agentscope.harness.agent.HarnessAgent 2>/dev/null | grep -A 25 "streamEvents"
 ```
 
-Expected: 方法体为 reactive 链，**不含** `block()` 或 `subscribe()`。
+Expected: 方法体为 reactive 链， **不含** `block()` 或 `subscribe()`。
 
-若发现阻塞调用：在 Step 6 的提交信息中如实记录该事实，并作为**第 2 项**（阻塞调用隔离到 `boundedElastic`）的输入。**不在本任务修复**——那是第 2 项的范围。
+若发现阻塞调用：在 Step 6 的提交信息中如实记录该事实，并作为 **第 2 项**（阻塞调用隔离到 `boundedElastic`）的输入。
+**不在本任务修复**——那是第 2 项的范围。
 
 - [ ] **Step 6: 提交**
 
@@ -309,13 +339,21 @@ AgentExecutionException, matching the existing stream() behaviour."
 ## Task 3: tts 桥接改用真实 TextBlockDeltaEvent
 
 **Files:**
-- Modify: `ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/test/java/io/ddd4j/ai/extension/tts/bridge/TextDeltaTtsBridgeTest.java`
+
+- Modify:
+  `ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/test/java/io/ddd4j/ai/extension/tts/bridge/TextDeltaTtsBridgeTest.java`
 
 **Interfaces:**
-- Consumes: `TextDeltaTtsBridge.pipe(Flux<io.agentscope.core.event.AgentEvent>, String)`（已存在）；`TextChunker.defaultChunker()`；`TextBlockDeltaEvent(String, String, String)`（参数为 `replyId, blockId, delta`，**已由字节码实测确认**）
+
+- Consumes: `TextDeltaTtsBridge.pipe(Flux<io.agentscope.core.event.AgentEvent>, String)`（已存在）；
+  `TextChunker.defaultChunker()`；`TextBlockDeltaEvent(String, String, String)`（参数为 `replyId, blockId, delta`，
+  **已由字节码实测确认**）
 - Produces: 对真实 Agentscope 事件类型的保真断言（替代原先对 Mockito mock 的断言）
 
-**为什么这个任务存在**：原 `TextDeltaTtsBridgeTest` 用 `mock(TextBlockDeltaEvent.class)` 并 `when(ev.getDelta()).thenReturn("...")`——它断言的是"我假定的该类型行为"，而非真实行为。若真实类型的 delta 取值语义与假定不符，测试仍会通过而生产失败。本任务用真实构造的事件闭合该缺口。**无需任何 pom 改动**：`agentscope-core` 在本模块是 `provided` 作用域，compile 与 test 期均可见。
+**为什么这个任务存在**：原 `TextDeltaTtsBridgeTest` 用 `mock(TextBlockDeltaEvent.class)` 并
+`when(ev.getDelta()).thenReturn("...")`——它断言的是"我假定的该类型行为"，而非真实行为。若真实类型的 delta
+取值语义与假定不符，测试仍会通过而生产失败。本任务用真实构造的事件闭合该缺口。 **无需任何 pom 改动**：`agentscope-core`
+在本模块是 `provided` 作用域，compile 与 test 期均可见。
 
 - [ ] **Step 1: 写失败测试（真实事件版）**
 
@@ -366,7 +404,9 @@ cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
 
 Expected: PASS（`TextDeltaTtsBridgeTest` 原 8 例 + 新 1 例 = 9 例）。
 
-**若失败**：说明真实 `TextBlockDeltaEvent` 的行为与 `TextDeltaTtsBridge` 的假定不符——这是本任务的价值所在。**不要改测试去迁就**；记录实际行为差异，检查 `TextDeltaTtsBridge.pipe` 中对 `TextBlockDeltaEvent` 的处理（`delta.getDelta()` 取值、`TextChunker.feed` 的调用），定位是生产代码问题还是构造参数顺序问题，修正后重跑。
+**若失败**：说明真实 `TextBlockDeltaEvent` 的行为与 `TextDeltaTtsBridge` 的假定不符——这是本任务的价值所在。
+**不要改测试去迁就**；记录实际行为差异，检查 `TextDeltaTtsBridge.pipe` 中对 `TextBlockDeltaEvent` 的处理（
+`delta.getDelta()` 取值、`TextChunker.feed` 的调用），定位是生产代码问题还是构造参数顺序问题，修正后重跑。
 
 - [ ] **Step 3: 提交**
 
@@ -388,17 +428,20 @@ agentscope-core is provided scope in this module."
 ## Task 4: 移植 Task 1+2 到 feature/1.0.x
 
 **Files:**
+
 - Create（worktree）: 独立 worktree，checkout `feature/1.0.x`
 - Modify: 与 Task 1+2 相同的 **4 个文件**（agent 扩展的 2 个源文件 + 2 个测试文件）
 - **不改** tts 扩展任何文件（1.0.x 的 tts 是旧版，无 `bridge/` 包）
 
 **Interfaces:**
+
 - Consumes: Task 1+2 在 `feature/2.0.x` 上已验证的补丁
 - Produces: `feature/1.0.x` 上等价的实现与测试，两线关键文件保持逐字节相同
 
 - [ ] **Step 1: 用 using-git-worktrees 技能创建隔离 worktree**
 
-**必须先读并遵循 `superpowers:using-git-worktrees`**。不得在当前共享 worktree 上直接 `git checkout feature/1.0.x`——本仓是多会话共用的 worktree（memory 有"他人 WIP 被卷入""worktree 被外部删除"等历史事故），切分支会打断其他会话。
+**必须先读并遵循 `superpowers:using-git-worktrees`**。不得在当前共享 worktree 上直接 `git checkout feature/1.0.x`
+——本仓是多会话共用的 worktree（memory 有"他人 WIP 被卷入""worktree 被外部删除"等历史事故），切分支会打断其他会话。
 
 创建后在该 worktree 内确认基线：
 
@@ -410,7 +453,7 @@ grep -E "java.version|modelVersion" pom.xml
 
 - [ ] **Step 2: 套用补丁**
 
-把 Task 1+2 对以下 4 个文件的改动**原样**应用到 1.0.x worktree（因 spec §2 F4 已实测这 4 个文件两线逐字节相同，补丁应无冲突）：
+把 Task 1+2 对以下 4 个文件的改动 **原样**应用到 1.0.x worktree（因 spec §2 F4 已实测这 4 个文件两线逐字节相同，补丁应无冲突）：
 
 ```
 ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/service/AgentService.java
@@ -468,7 +511,7 @@ AgentScopeAgentAdapter implementation delegating to
 HarnessAgent.streamEvents(Msg)."
 ```
 
-推送前先 fetch 确认无并行会话新提交，再推两个远端（**不加 `-f`**）：
+推送前先 fetch 确认无并行会话新提交，再推两个远端（ **不加 `-f`**）：
 
 ```bash
 git fetch github feature/1.0.x && git fetch origin feature/1.0.x
@@ -490,11 +533,14 @@ git push origin feature/2.0.x
 
 ## 验收清单（全部满足才算完成）
 
-- [ ] `AgentService.streamEvents` 存在且为 `default`，未实现时同步抛 `UnsupportedOperationException`，message 含 `streamEvents 未实现`。
-- [ ] `AgentScopeAgentAdapter.streamEvents` 覆写并委托 `harnessAgent.streamEvents(Msg)`，异常包装为 `AgentExecutionException`，`task` 为 null 时抛 NPE。
-- [ ] 新测试用例全部通过：`AgentServiceContractTest` 6 例、`AgentScopeAgentAdapterTest` 11 例、`TextDeltaTtsBridgeTest` 9 例。
-- [ ] `execute` / `stream` 的既有测试**零改动零回归**，方法签名未变。
-- [ ] `TextDeltaTtsBridgeTest` 中至少一个用例使用**真实** `TextBlockDeltaEvent`。
+- [ ] `AgentService.streamEvents` 存在且为 `default`，未实现时同步抛 `UnsupportedOperationException`，message 含
+  `streamEvents 未实现`。
+- [ ] `AgentScopeAgentAdapter.streamEvents` 覆写并委托 `harnessAgent.streamEvents(Msg)`，异常包装为
+  `AgentExecutionException`，`task` 为 null 时抛 NPE。
+- [ ] 新测试用例全部通过：`AgentServiceContractTest` 6 例、`AgentScopeAgentAdapterTest` 11 例、`TextDeltaTtsBridgeTest` 9
+  例。
+- [ ] `execute` / `stream` 的既有测试 **零改动零回归**，方法签名未变。
+- [ ] `TextDeltaTtsBridgeTest` 中至少一个用例使用 **真实** `TextBlockDeltaEvent`。
 - [ ] 两条线各自构建 + 测试通过（2.0.x 用 Maven 4，1.0.x 用 Maven 3）。
 - [ ] 两线的 4 个关键文件 `git diff` 为空（逐字节相同）。
 - [ ] 两线均已推送 GitHub + Codeup（无 force）。

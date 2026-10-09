@@ -25,12 +25,16 @@ public class OcrSample {
         this.ocrService = ocrService;
     }
 
-    /** 提取 PDF 内嵌文本。 */
+    /**
+     * 提取 PDF 内嵌文本。
+     */
     public String extractPdfText(byte[] pdf) throws Exception {
         return ocrService.extractText(new ByteArrayInputStream(pdf), MediaType.APPLICATION_PDF);
     }
 
-    /** 解析任意格式（Office/HTML/PDF）为文档列表，可直接投喂 RAG。 */
+    /**
+     * 解析任意格式（Office/HTML/PDF）为文档列表，可直接投喂 RAG。
+     */
     public List<Document> extractDocuments(byte[] bytes, MediaType mediaType) throws Exception {
         return ocrService.extract(new ByteArrayInputStream(bytes), mediaType);
     }

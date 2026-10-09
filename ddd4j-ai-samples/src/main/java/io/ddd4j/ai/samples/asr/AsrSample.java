@@ -23,12 +23,16 @@ public class AsrSample {
         this.asrService = asrService;
     }
 
-    /** 转写音频文件（自动重采样为 16kHz 单声道）。 */
+    /**
+     * 转写音频文件（自动重采样为 16kHz 单声道）。
+     */
     public String transcribeFile(File audio) throws Exception {
         return asrService.transcribe(audio, AudioFormat.wav44100Stereo16());
     }
 
-    /** 转写音频字节（WAV 头自动解析）。 */
+    /**
+     * 转写音频字节（WAV 头自动解析）。
+     */
     public String transcribeBytes(byte[] audio) throws Exception {
         return asrService.transcribe(audio, AudioFormat.wav44100Stereo16());
     }

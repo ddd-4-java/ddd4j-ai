@@ -33,10 +33,14 @@ import java.util.List;
  */
 public final class TextChunker {
 
-    /** Qwen3-TTS 单字符流式推荐上限（与 agentscope-cpp 默认值对齐）。 */
+    /**
+     * Qwen3-TTS 单字符流式推荐上限（与 agentscope-cpp 默认值对齐）。
+     */
     public static final int DEFAULT_MAX_CHARS = 24;
 
-    /** 最小切分阈值（小于此长度不切，避免太碎）。 */
+    /**
+     * 最小切分阈值（小于此长度不切，避免太碎）。
+     */
     public static final int DEFAULT_MIN_CHARS = 1;
 
     private final int maxChars;
@@ -123,12 +127,16 @@ public final class TextChunker {
         return remaining;
     }
 
-    /** 当前缓冲长度（用于监控 / 调试）。 */
+    /**
+     * 当前缓冲长度（用于监控 / 调试）。
+     */
     public int pendingSize() {
         return buffer.length();
     }
 
-    /** 重置内部缓冲（重新开始累积，例如每轮新对话前）。 */
+    /**
+     * 重置内部缓冲（重新开始累积，例如每轮新对话前）。
+     */
     public void reset() {
         buffer.setLength(0);
     }

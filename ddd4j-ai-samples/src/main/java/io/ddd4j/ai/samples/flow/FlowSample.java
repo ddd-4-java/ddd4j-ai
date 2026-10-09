@@ -24,7 +24,9 @@ public class FlowSample {
         this.flowService = flowService;
     }
 
-    /** 编译并运行工作流，返回最终 state（各节点 outputKey 结果）。 */
+    /**
+     * 编译并运行工作流，返回最终 state（各节点 outputKey 结果）。
+     */
     public Map<String, Object> run(FlowDefinition definition, Map<String, Object> input) throws Exception {
         CompiledGraph graph = flowService.compile(definition);
         return flowService.run(graph, input);

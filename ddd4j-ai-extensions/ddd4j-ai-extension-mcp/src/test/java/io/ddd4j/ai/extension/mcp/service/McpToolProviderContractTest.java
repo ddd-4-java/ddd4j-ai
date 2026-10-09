@@ -17,7 +17,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class McpToolProviderContractTest {
 
-    /** 桩实现：注册两个工具，一个抛异常用于验证错误路径。 */
+    /**
+     * 桩实现：注册两个工具，一个抛异常用于验证错误路径。
+     */
     static class FakeToolProvider implements McpToolProvider {
 
         final ToolDefinition echo = new ToolDefinition(

@@ -10,7 +10,8 @@
 
 ## 1. 背景
 
-[MCP](https://modelcontextprotocol.io/) 是工具调用的标准化协议，统一 Tool/Resource/Prompt 三类能力的暴露与消费。mcp 组件集成 MCP SDK，为 agent 提供跨进程、跨语言的工具接入能力，并支持 Spring Boot AutoConfiguration 开箱接入。
+[MCP](https://modelcontextprotocol.io/) 是工具调用的标准化协议，统一 Tool/Resource/Prompt 三类能力的暴露与消费。mcp 组件集成
+MCP SDK，为 agent 提供跨进程、跨语言的工具接入能力，并支持 Spring Boot AutoConfiguration 开箱接入。
 
 ## 2. 目标
 
@@ -26,11 +27,11 @@
 
 ## 3. 关键决策（建议）
 
-| # | 决策候选 | 理由 |
-|---|---------|------|
+| #  | 决策候选                                       | 理由                                           |
+|----|------------------------------------------------|------------------------------------------------|
 | M1 | 客户端（消费工具）+ 服务端（暴露工具）双向支持 | 既能调用外部 MCP server，也能把 ddd4j 能力暴露 |
-| M2 | AutoConfiguration 按 starter 习惯装配 | 业务零配置接入 |
-| M3 | 工具描述符（input schema）自动生成 | 降低业务暴露工具成本 |
+| M2 | AutoConfiguration 按 starter 习惯装配          | 业务零配置接入                                 |
+| M3 | 工具描述符（input schema）自动生成             | 降低业务暴露工具成本                           |
 
 ## 4. 总体架构
 

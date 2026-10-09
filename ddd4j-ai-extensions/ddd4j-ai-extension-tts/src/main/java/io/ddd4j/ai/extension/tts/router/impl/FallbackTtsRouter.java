@@ -99,7 +99,9 @@ public class FallbackTtsRouter implements TtsRouter {
                 });
     }
 
-    /** 公开构造器（无后端顺序保证），仅供测试。 */
+    /**
+     * 公开构造器（无后端顺序保证），仅供测试。
+     */
     public static FallbackTtsRouter of(TtsService... backends) {
         java.util.LinkedHashMap<String, TtsService> map = new java.util.LinkedHashMap<>();
         for (int i = 0; i < backends.length; i++) {

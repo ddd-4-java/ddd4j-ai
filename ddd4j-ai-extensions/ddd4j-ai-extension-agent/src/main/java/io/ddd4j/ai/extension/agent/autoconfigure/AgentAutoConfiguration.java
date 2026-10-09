@@ -97,7 +97,9 @@ public class AgentAutoConfiguration {
         return builder.build();
     }
 
-    /** AgentProperties.subagents → Agentscope SubagentDeclaration 列表（静态供测试）。 */
+    /**
+     * AgentProperties.subagents → Agentscope SubagentDeclaration 列表（静态供测试）。
+     */
     public static List<io.agentscope.harness.agent.subagent.SubagentDeclaration> parseSubagents(
             AgentProperties properties) {
         if (properties.getSubagents() == null || properties.getSubagents().isEmpty()) {

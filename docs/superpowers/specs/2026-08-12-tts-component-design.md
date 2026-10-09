@@ -10,7 +10,8 @@
 
 ## 1. 背景
 
-sst 的 TTS 基于 Azure Cognitive Speech（付费、高质量）。tts 组件规划对接 Edge TTS（`tts-edge-java:1.3.1`），提供**免费在线**文本转语音，满足低成本/非关键场景，与 sst 的 Azure TTS 形成付费/免费互补。
+sst 的 TTS 基于 Azure Cognitive Speech（付费、高质量）。tts 组件规划对接 Edge TTS（`tts-edge-java:1.3.1`），提供 **免费在线**
+文本转语音，满足低成本/非关键场景，与 sst 的 Azure TTS 形成付费/免费互补。
 
 ## 2. 目标
 
@@ -25,11 +26,11 @@ sst 的 TTS 基于 Azure Cognitive Speech（付费、高质量）。tts 组件�
 
 ## 3. 关键决策（建议）
 
-| # | 决策候选 | 理由 |
-|---|---------|------|
-| T1 | 对接 tts-edge-java 1.3.1（BOM 已声明） | 免费、多语种 |
-| T2 | 端口接口与 sst TTS 语义对齐 | 业务可平滑切换 |
-| T3 | 音色枚举可配置 | Edge TTS 音色频繁更新 |
+| #  | 决策候选                               | 理由                  |
+|----|----------------------------------------|-----------------------|
+| T1 | 对接 tts-edge-java 1.3.1（BOM 已声明） | 免费、多语种          |
+| T2 | 端口接口与 sst TTS 语义对齐            | 业务可平滑切换        |
+| T3 | 音色枚举可配置                         | Edge TTS 音色频繁更新 |
 
 ## 4. 总体架构
 

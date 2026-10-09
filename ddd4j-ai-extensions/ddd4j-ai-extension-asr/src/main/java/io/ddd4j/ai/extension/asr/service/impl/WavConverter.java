@@ -88,7 +88,9 @@ public final class WavConverter {
         };
     }
 
-    /** WAV 头解析结果；非 WAV 返回 null。 */
+    /**
+     * WAV 头解析结果；非 WAV 返回 null。
+     */
     record Header(int sampleRate, int channels, int bitsPerSample, byte[] data) {
 
         static Header parse(byte[] bytes) {

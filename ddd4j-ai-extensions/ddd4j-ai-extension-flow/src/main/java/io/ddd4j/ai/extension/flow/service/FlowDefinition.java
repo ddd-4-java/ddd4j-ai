@@ -6,9 +6,9 @@ import java.util.Objects;
 /**
  * 工作流定义（声明式 DSL）：节点集合 + 有向边集合。
  *
- * @param name   工作流名称（诊断标识）
- * @param nodes  节点定义
- * @param edges  有向边（from → to；from 为 {@code "START"} 表示入口）
+ * @param name  工作流名称（诊断标识）
+ * @param nodes 节点定义
+ * @param edges 有向边（from → to；from 为 {@code "START"} 表示入口）
  * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
  */
 public record FlowDefinition(String name, List<FlowNodeSpec> nodes, List<FlowEdge> edges) {

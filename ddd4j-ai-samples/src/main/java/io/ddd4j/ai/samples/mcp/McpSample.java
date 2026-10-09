@@ -24,12 +24,16 @@ public class McpSample {
         this.toolProvider = toolProvider;
     }
 
-    /** 列出全部可用 MCP 工具（供 LLM 提示词注入 / 诊断）。 */
+    /**
+     * 列出全部可用 MCP 工具（供 LLM 提示词注入 / 诊断）。
+     */
     public List<ToolDefinition> availableTools() {
         return toolProvider.availableTools();
     }
 
-    /** 调用指定工具并返回执行结果。 */
+    /**
+     * 调用指定工具并返回执行结果。
+     */
     public Object invoke(String toolName, Map<String, Object> arguments) throws Exception {
         return toolProvider.invokeTool(toolName, arguments);
     }

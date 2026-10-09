@@ -1,13 +1,20 @@
 # ddd4j-ai-extension-document 实现计划（智能体文档统一读取门面 —— markitdown4j 深度集成 + 4 组件委托）
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:
+> executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
-**Goal:** 新增 `ddd4j-ai-extension-document` 模块，作为智能体文档读取的统一门面。**深度集成** `io.gitlab.ade90036:markitdown-core:1.0.0` + **14 个 converter 子模块**（MIT 协议）作为 PDF/DOCX/XLSX/PPTX/CSV/HTML/IPYNB/EPUB/RSS/ZIP/PlainText/Wikipedia 的"通用基础实现"；同时**委托** 4 组件仓库（easypdf/easydoc/easyexcel/easyodf）以获得**深度结构还原**（1:1 保真），两套并行：用户可配置"高质量优先"（委托组件）或"通用优先"（markitdown4j 兜底）。
+**Goal:** 新增 `ddd4j-ai-extension-document` 模块，作为智能体文档读取的统一门面。 **深度集成**
+`io.gitlab.ade90036:markitdown-core:1.0.0` + **14 个 converter 子模块**（MIT 协议）作为
+PDF/DOCX/XLSX/PPTX/CSV/HTML/IPYNB/EPUB/RSS/ZIP/PlainText/Wikipedia 的"通用基础实现"；同时 **委托** 4
+组件仓库（easypdf/easydoc/easyexcel/easyodf）以获得 **深度结构还原**（1:1
+保真），两套并行：用户可配置"高质量优先"（委托组件）或"通用优先"（markitdown4j 兜底）。
 
 **关键定位（用户已确认）**：
-- ddd4j-ai-extension-document **不是兜底**，而是 markitdown4j 的**主要使用者**（14 个 converter 全部依赖进来）
-- 4 组件仓库**不是 markitdown 的复刻**，而是各自基于自有生态（iText7/docx4j/POI/ofdrw）实现**完美 1:1 结构还原**（可达 95%+ 还原度，markitdown 是参考但非依赖）
-- 两套输出**统一为 ddd4j 的 `Document` POJO**（智能体调用单点）
+
+- ddd4j-ai-extension-document **不是兜底**，而是 markitdown4j 的 **主要使用者**（14 个 converter 全部依赖进来）
+- 4 组件仓库 **不是 markitdown 的复刻**，而是各自基于自有生态（iText7/docx4j/POI/ofdrw）实现 **完美 1:1 结构还原**（可达
+  95%+ 还原度，markitdown 是参考但非依赖）
+- 两套输出 **统一为 ddd4j 的 `Document` POJO**（智能体调用单点）
 
 > **实施偏差记录（2026-08-26）**：markitdown4j 1.0.0 为 Maven Central 唯一版本，但其 class 文件为
 > **Java 25 字节码（version 69）**，项目 target Java 17（version 65）无法加载且无低版本可退。
@@ -17,21 +24,33 @@
 > 若后续 markitdown4j 发布 Java 17 兼容版本，可无缝替换回（仅改 `TikaDocumentParser` 一个适配器）。
 
 **Architecture:**
+
 - 主门面 `DocumentReader.read(File/InputStream/Path/URL) → Document` —— 智能体入口
 - 解析器 SPI：`DocumentParser` 接口 + `MediaType` 路由 + 优先级 `order()` 排序
-- 默认实现：markitdown4j 全套 14 converter（MIT 子集，单 Maven 坐标聚合）+ 自研的 Markitdown4jAdapter 桥接 `DocumentConverter` → `DocumentParser`
+- 默认实现：markitdown4j 全套 14 converter（MIT 子集，单 Maven 坐标聚合）+ 自研的 Markitdown4jAdapter 桥接
+  `DocumentConverter` → `DocumentParser`
 - 委托实现：4 个 `*DocumentParser` 包装 easypdf/easydoc/easyexcel/easyodf（这些组件已发布到 Maven Central 后启用；当前为契约占位）
-- 切换策略：默认走"高质量"（委托组件 → 失败回退 markitdown4j）；`@ConditionalOnProperty("ddd4j.ai.document.high-quality")` 控制
+- 切换策略：默认走"高质量"（委托组件 → 失败回退 markitdown4j）；`@ConditionalOnProperty("ddd4j.ai.document.high-quality")`
+  控制
 
-代码位置：`/Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai/ddd4j-ai-extensions/ddd4j-ai-extension-document/`，遵循 ddd4j-ai-extension-rag 同构（`pom.xml` + `autoconfigure/` + `properties/` + `service/` + `service/impl/`）。
+代码位置：
+`/Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai/ddd4j-ai-extensions/ddd4j-ai-extension-document/`
+，遵循 ddd4j-ai-extension-rag 同构（`pom.xml` + `autoconfigure/` + `properties/` + `service/` + `service/impl/`）。
 
-**Tech Stack:** markitdown4j 1.0.0（core + 14 converters，全 MIT）、Apache Tika 3.3.2（已管）、Spring AI Commons 2.0.0、Spring Boot AutoConfigure。
+**Tech Stack:** markitdown4j 1.0.0（core + 14 converters，全 MIT）、Apache Tika 3.3.2（已管）、Spring AI Commons 2.0.0、Spring
+Boot AutoConfigure。
 
 ## Global Constraints
 
 - 模块坐标：`io.ddd4j.ai:ddd4j-ai-extension-document:${revision}`，包 `io.ddd4j.ai.extension.document`
 - **Java 17+ 语法**（ddd4j 整体目标；可用 `var`/record/sealed）
-- 引入依赖：`io.gitlab.ade90036:markitdown-core:1.0.0` + `io.gitlab.ade90036:converter-pdf:1.0.0` + `io.gitlab.ade90036:converter-docx:1.0.0` + `io.gitlab.ade90036:converter-xlsx:1.0.0` + `io.gitlab.ade90036:converter-csv:1.0.0` + `io.gitlab.ade90036:converter-html:1.0.0` + `io.gitlab.ade90036:converter-pptx:1.0.0` + `io.gitlab.ade90036:converter-plaintext:1.0.0` + `io.gitlab.ade90036:converter-epub:1.0.0` + `io.gitlab.ade90036:converter-ipynb:1.0.0` + `io.gitlab.ade90036:converter-rss:1.0.0` + `io.gitlab.ade90036:converter-wikipedia:1.0.0` + `io.gitlab.ade90036:converter-zip:1.0.0`（13 个 + core，共 14 个 MIT artifact）
+- 引入依赖：`io.gitlab.ade90036:markitdown-core:1.0.0` + `io.gitlab.ade90036:converter-pdf:1.0.0` +
+  `io.gitlab.ade90036:converter-docx:1.0.0` + `io.gitlab.ade90036:converter-xlsx:1.0.0` +
+  `io.gitlab.ade90036:converter-csv:1.0.0` + `io.gitlab.ade90036:converter-html:1.0.0` +
+  `io.gitlab.ade90036:converter-pptx:1.0.0` + `io.gitlab.ade90036:converter-plaintext:1.0.0` +
+  `io.gitlab.ade90036:converter-epub:1.0.0` + `io.gitlab.ade90036:converter-ipynb:1.0.0` +
+  `io.gitlab.ade90036:converter-rss:1.0.0` + `io.gitlab.ade90036:converter-wikipedia:1.0.0` +
+  `io.gitlab.ade90036:converter-zip:1.0.0`（13 个 + core，共 14 个 MIT artifact）
 - **避免** `io.gitlab.ade90036:markitdown:0.0.1`（AGPL 协议）——改用全 MIT 套件
 - 4 组件委托实现：当前为契约占位（标 `@ConditionalOnClass`），待各组件 JAR 发布后激活
 - 提交信息风格：`feat(extension): add document reader with markitdown4j integration`
@@ -42,28 +61,37 @@
 ### Task 1: 模块骨架 + Document POJO（统一结构模型）
 
 **Files:**
+
 - Create: `ddd4j-ai-extension-document/pom.xml`（含 14 个 markitdown4j 依赖）
 - Create: `src/main/java/io/ddd4j/ai/cmpt/document/Document.java` (record)
 - Create: `src/main/java/io/ddd4j/ai/cmpt/document/DocumentSection.java` (record)
 - Create: `src/main/java/io/ddd4j/ai/cmpt/document/DocumentTable.java` (record)
 - Create: `src/main/java/io/ddd4j/ai/cmpt/document/DocumentImage.java` (record)
 - Create: `src/main/java/io/ddd4j/ai/cmpt/document/MediaType.java` (enum)
-- Create: `src/main/java/io/ddd4j/ai/cmpt/document/SourceType.java` (enum: `MARKITDOWN4J | EASYPDF | EASYDOC | EASYEXCEL | EASYODF`)
+- Create: `src/main/java/io/ddd4j/ai/cmpt/document/SourceType.java` (enum:
+  `MARKITDOWN4J | EASYPDF | EASYDOC | EASYEXCEL | EASYODF`)
 - Test: `src/test/java/io/ddd4j/ai/cmpt/document/DocumentTest.java`
 - Modify: `ddd4j-ai-extensions/pom.xml`（添加 `<subproject>ddd4j-ai-extension-document</subproject>`）
 
 **Interfaces:**
+
 - Produces:
-  - `public record Document(String title, String mime, SourceType source, List<DocumentSection> sections, List<DocumentTable> tables, List<DocumentImage> images, String fullMarkdown, Map<String, Object> metadata)`
-  - `public record DocumentSection(String title, int level, String content, List<DocumentSection> children, List<DocumentTable> tables, List<DocumentImage> images)`
-  - `public record DocumentTable(List<List<String>> headers, List<List<String>> rows)`
-  - `public record DocumentImage(String alt, String src)`（src = base64 data URL 或 URL）
-  - `public enum MediaType { PDF, DOCX, XLSX, PPTX, CSV, HTML, IPYNB, EPUB, RSS, WIKIPEDIA, ZIP, PLAINTEXT, MD, IMAGE, UNKNOWN }` + `public static MediaType fromFilename(String)`
-  - `public enum SourceType { MARKITDOWN4J, EASYPDF, EASYDOC, EASYEXCEL, EASYODF, TIKA_FALLBACK }` —— **追踪输出来源**（智能体/审计关键需求）
+    -
+    `public record Document(String title, String mime, SourceType source, List<DocumentSection> sections, List<DocumentTable> tables, List<DocumentImage> images, String fullMarkdown, Map<String, Object> metadata)`
+    -
+    `public record DocumentSection(String title, int level, String content, List<DocumentSection> children, List<DocumentTable> tables, List<DocumentImage> images)`
+    - `public record DocumentTable(List<List<String>> headers, List<List<String>> rows)`
+    - `public record DocumentImage(String alt, String src)`（src = base64 data URL 或 URL）
+    -
+    `public enum MediaType { PDF, DOCX, XLSX, PPTX, CSV, HTML, IPYNB, EPUB, RSS, WIKIPEDIA, ZIP, PLAINTEXT, MD, IMAGE, UNKNOWN }` +
+    `public static MediaType fromFilename(String)`
+    - `public enum SourceType { MARKITDOWN4J, EASYPDF, EASYDOC, EASYEXCEL, EASYODF, TIKA_FALLBACK }` —— **追踪输出来源**
+      （智能体/审计关键需求）
 
 - [x] **Step 1: 添加子模块声明**
 
 修改 `ddd4j-ai-extensions/pom.xml`：
+
 ```xml
 <subproject>ddd4j-ai-extension-document</subproject>
 ```
@@ -71,6 +99,7 @@
 - [x] **Step 2: 写失败测试**
 
 `DocumentTest.java`：
+
 ```java
 package io.ddd4j.ai.extension.document;
 
@@ -109,11 +138,13 @@ class DocumentTest {
 
 - [x] **Step 3: 运行测试确认失败**
 
-Run: `cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai/ddd4j-ai-extensions && ./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=DocumentTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "BUILD|ERROR" | head -3`
+Run:
+`cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai/ddd4j-ai-extensions && ./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=DocumentTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "BUILD|ERROR" | head -3`
 
 - [x] **Step 4: 创建 pom.xml（14 个 markitdown4j 依赖 + Tika + Spring AI）+ 7 个 model 文件**
 
 `pom.xml`（节选关键依赖）：
+
 ```xml
 <properties>
     <markitdown4j.version>1.0.0</markitdown4j.version>
@@ -161,7 +192,8 @@ Run: `cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai/d
 
 - [x] **Step 5: 运行测试确认通过**
 
-Run: `./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=DocumentTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "Tests run:|BUILD" | tail -3`
+Run:
+`./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=DocumentTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "Tests run:|BUILD" | tail -3`
 Expected: PASS（2 tests）
 
 - [x] **Step 6: Commit**
@@ -177,19 +209,26 @@ git commit -m "feat(extension): add ddd4j-ai-extension-document module with Docu
 ### Task 2: DocumentParser SPI + Markitdown4jAdapter（markitdown4j 主入口桥接）
 
 **Files:**
+
 - Create: `src/main/java/io/ddd4j/ai/cmpt/document/DocumentParser.java` (interface)
-- Create: `src/main/java/io/ddd4j/ai/cmpt/document/parser/Markitdown4jAdapter.java`（包装 markitdown4j 的 MarkItDown + 14 converters）
+- Create: `src/main/java/io/ddd4j/ai/cmpt/document/parser/Markitdown4jAdapter.java`（包装 markitdown4j 的 MarkItDown + 14
+  converters）
 - Test: `src/test/java/io/ddd4j/ai/cmpt/document/parser/Markitdown4jAdapterTest.java`
 
 **Interfaces:**
+
 - Produces:
-  - `public interface DocumentParser { MediaType supports(); default int order() { return 0; } Document parse(File file) throws Exception; Document parse(InputStream in, String filename) throws Exception; }`
-  - `Markitdown4jAdapter implements DocumentParser` — 内部用 `MarkItDown.builder().registerConverter(new PdfConverter()).registerConverter(new DocxConverter())...build().convert(Path)` 获取 `DocumentConverterResult`，映射为 `Document` (source=`MARKITDOWN4J`)
-  - `order() = 0`（**最低优先级**）—— 作为通用兜底，让 4 组件委托 parser 优先
+    -
+    `public interface DocumentParser { MediaType supports(); default int order() { return 0; } Document parse(File file) throws Exception; Document parse(InputStream in, String filename) throws Exception; }`
+    - `Markitdown4jAdapter implements DocumentParser` — 内部用
+      `MarkItDown.builder().registerConverter(new PdfConverter()).registerConverter(new DocxConverter())...build().convert(Path)`
+      获取 `DocumentConverterResult`，映射为 `Document` (source=`MARKITDOWN4J`)
+    - `order() = 0`（ **最低优先级**）—— 作为通用兜底，让 4 组件委托 parser 优先
 
 - [x] **Step 1: 写失败测试**
 
 `Markitdown4jAdapterTest.java`：
+
 ```java
 package io.ddd4j.ai.extension.document.parser;
 
@@ -237,11 +276,13 @@ class Markitdown4jAdapterTest {
 
 - [x] **Step 2: 运行测试确认失败**
 
-Run: `./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=Markitdown4jAdapterTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "BUILD|ERROR" | head -3`
+Run:
+`./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=Markitdown4jAdapterTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "BUILD|ERROR" | head -3`
 
 - [x] **Step 3: 实现 DocumentParser + Markitdown4jAdapter**
 
 `DocumentParser.java`：
+
 ```java
 package io.ddd4j.ai.extension.document;
 import java.io.File; import java.io.InputStream;
@@ -254,6 +295,7 @@ public interface DocumentParser {
 ```
 
 `Markitdown4jAdapter.java`：
+
 ```java
 package io.ddd4j.ai.extension.document.parser;
 
@@ -362,7 +404,8 @@ public final class Markitdown4jAdapter implements DocumentParser {
 
 - [x] **Step 4: 验证通过 + Commit**
 
-Run: `./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=Markitdown4jAdapterTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "Tests run:|BUILD" | tail -3`
+Run:
+`./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=Markitdown4jAdapterTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "Tests run:|BUILD" | tail -3`
 Expected: PASS（3 tests）
 
 - [x] **Step 5: Commit**
@@ -377,6 +420,7 @@ git commit -m "feat(extension): add Markitdown4jAdapter bridging 14 converters t
 ### Task 3: 4 组件委托 Parser（easypdf/easydoc/easyexcel/easyodf 契约占位）
 
 **Files:**
+
 - Create: `src/main/java/io/ddd4j/ai/cmpt/document/parser/EasypdfDocumentParser.java`
 - Create: `src/main/java/io/ddd4j/ai/cmpt/document/parser/EasydocDocumentParser.java`
 - Create: `src/main/java/io/ddd4j/ai/cmpt/document/parser/EasyexcelDocumentParser.java`
@@ -384,9 +428,10 @@ git commit -m "feat(extension): add Markitdown4jAdapter bridging 14 converters t
 - Test: 每个 parser 1 个契约测试
 
 **Interfaces:**
+
 - Produces:
-  - 4 个 `*Parser implements DocumentParser` —— 内部**当前为契约占位**（标 `@ConditionalOnClass`），各组件 JAR 发布后激活
-  - `order() = 10`（**高于** markitdown4j 兜底的 0）—— 高质量优先
+    - 4 个 `*Parser implements DocumentParser` —— 内部 **当前为契约占位**（标 `@ConditionalOnClass`），各组件 JAR 发布后激活
+    - `order() = 10`（ **高于** markitdown4j 兜底的 0）—— 高质量优先
 
 - [x] **Step 1: 写契约测试（以 EasypdfDocumentParser 为代表）**
 
@@ -421,7 +466,8 @@ class EasypdfDocumentParserTest {
 
 - [x] **Step 2: 运行测试确认失败**
 
-- [x] **Step 3: 实现 4 个 Parser（契约占位：`@ConditionalOnClass(name = "io.github.easy4j.pdf.core.convert.HtmlPdfConverter")` 等）**
+- [x] **Step 3: 实现 4 个 Parser（契约占位：
+  `@ConditionalOnClass(name = "io.github.easy4j.pdf.core.convert.HtmlPdfConverter")` 等）**
 
 ```java
 // EasypdfDocumentParser.java
@@ -458,11 +504,13 @@ public class EasypdfDocumentParser implements DocumentParser {
 }
 ```
 
-EasydocDocumentParser / EasyexcelDocumentParser / EasyodfDocumentParser 同构，分别用 `@ConditionalOnClass("io.github.easy4j.doc.xhtml.markdown.DocxToMarkdownConverter")` 等。
+EasydocDocumentParser / EasyexcelDocumentParser / EasyodfDocumentParser 同构，分别用
+`@ConditionalOnClass("io.github.easy4j.doc.xhtml.markdown.DocxToMarkdownConverter")` 等。
 
 - [x] **Step 4: 验证 4 个测试 + Commit**
 
-Run: `./mvnw -pl ddd4j-ai-extension-document -am test -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "Tests run:|BUILD" | tail -3`
+Run:
+`./mvnw -pl ddd4j-ai-extension-document -am test -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "Tests run:|BUILD" | tail -3`
 Expected: PASS（≥12 tests）
 
 ```bash
@@ -475,6 +523,7 @@ git commit -m "feat(extension): add 4 high-priority component-delegation parsers
 ### Task 4: DocumentReader 门面 + Spring Boot AutoConfiguration
 
 **Files:**
+
 - Create: `src/main/java/io/ddd4j/ai/cmpt/document/DocumentReader.java`
 - Create: `src/main/java/io/ddd4j/ai/cmpt/document/properties/DocumentProperties.java`
 - Create: `src/main/java/io/ddd4j/ai/cmpt/document/autoconfigure/DocumentAutoConfiguration.java`
@@ -483,14 +532,19 @@ git commit -m "feat(extension): add 4 high-priority component-delegation parsers
 - Test: `src/test/java/io/ddd4j/ai/cmpt/document/autoconfigure/DocumentAutoConfigurationTest.java`
 
 **Interfaces:**
+
 - Produces:
-  - `public final class DocumentReader { public Document read(File); Document read(InputStream, String); Document read(java.net.URL); Document read(java.nio.file.Path); }` —— 智能体主入口
-  - `DocumentProperties`（`@ConfigurationProperties("ddd4j.ai.document")`）：开关、缓存、并发等
-  - `DocumentAutoConfiguration`：注册 `DocumentReader` + 5 个 Parser Bean（4 个委托 + 1 个 markitdown4j 兜底），`@ConditionalOnProperty` 控制
+    -
+    `public final class DocumentReader { public Document read(File); Document read(InputStream, String); Document read(java.net.URL); Document read(java.nio.file.Path); }` ——
+    智能体主入口
+    - `DocumentProperties`（`@ConfigurationProperties("ddd4j.ai.document")`）：开关、缓存、并发等
+    - `DocumentAutoConfiguration`：注册 `DocumentReader` + 5 个 Parser Bean（4 个委托 + 1 个 markitdown4j 兜底），
+      `@ConditionalOnProperty` 控制
 
 - [x] **Step 1: 写失败测试**
 
 `DocumentReaderTest.java`：
+
 ```java
 @SpringBootTest(classes = DocumentAutoConfiguration.class)
 class DocumentReaderTest {
@@ -571,13 +625,15 @@ public class DocumentAutoConfiguration {
 ```
 
 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`：
+
 ```
 io.ddd4j.ai.extension.document.autoconfigure.DocumentAutoConfiguration
 ```
 
 - [x] **Step 3: 验证 + Commit**
 
-Run: `./mvnw -pl ddd4j-ai-extension-document -am test -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "Tests run:|BUILD" | tail -3`
+Run:
+`./mvnw -pl ddd4j-ai-extension-document -am test -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "Tests run:|BUILD" | tail -3`
 
 ```bash
 git add ddd4j-ai-extensions/ddd4j-ai-extension-document/
@@ -589,6 +645,7 @@ git commit -m "feat(extension): add DocumentReader facade and Spring Boot autoco
 ### Task 5: 集成测试（实际 PDF 渲染验证 markitdown4j 端到端）
 
 **Files:**
+
 - Create: `src/test/java/io/ddd4j/ai/cmpt/document/DocumentReaderIntegrationTest.java`
 - Create: `src/test/resources/sample.pdf`（从上游 markitdown-java 项目或本地 PDF 测试样本）
 
@@ -612,7 +669,8 @@ class DocumentReaderIntegrationTest {
 
 - [x] **Step 2: 验证 + Commit**
 
-Run: `./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=DocumentReaderIntegrationTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "Tests run:|BUILD" | tail -3`
+Run:
+`./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=DocumentReaderIntegrationTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "Tests run:|BUILD" | tail -3`
 Expected: PASS
 
 ```bash
@@ -642,8 +700,10 @@ git push origin $(git rev-parse --abbrev-ref HEAD)
 
 ## Self-Review
 
-- **Spec 覆盖**：markitdown4j 14 converters 全面集成（Task 2 桥接）+ 4 组件委托 SPI（Task 3 占位）+ DocumentReader 门面（Task 4）+ 集成测试（Task 5）
+- **Spec 覆盖**：markitdown4j 14 converters 全面集成（Task 2 桥接）+ 4 组件委托 SPI（Task 3 占位）+ DocumentReader 门面（Task
+  4）+ 集成测试（Task 5）
 - **占位符扫描**：无 TBD；4 组件委托用 `@ConditionalOnClass` 占位，待组件发布后激活
 - **类型一致性**：Document/Section/Table/Image 字段名与 4 组件一致；`SourceType` enum 追踪输出来源（智能体/审计）
 - **依赖隔离**：不用 AGPL 的 `io.gitlab.ade90036:markitdown:0.0.1`；用全 MIT 的 14 个独立 converter artifact
-- **降级策略**：DocumentReader 循环 parser 列表，委托 parser 抛 `UnsupportedOperationException` 时自动降级到 markitdown4j 兜底（保证智能体总是拿到结果）
+- **降级策略**：DocumentReader 循环 parser 列表，委托 parser 抛 `UnsupportedOperationException` 时自动降级到 markitdown4j
+  兜底（保证智能体总是拿到结果）

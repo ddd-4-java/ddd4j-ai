@@ -20,33 +20,47 @@ import java.util.function.Consumer;
  */
 public interface DashScopeRealtimeClient {
 
-    /** 启动 WebSocket 长连接（dashscope SDK 内部异步建链）。 */
+    /**
+     * 启动 WebSocket 长连接（dashscope SDK 内部异步建链）。
+     */
     void connect();
 
-    /** 流式追加文本片段（与 Qwen3-TTS 的 input_text_delta 对齐）。 */
+    /**
+     * 流式追加文本片段（与 Qwen3-TTS 的 input_text_delta 对齐）。
+     */
     void appendText(String text);
 
-    /** 提交当前累积的文本缓冲（与 Qwen3-TTS 的 input_text_done 对齐）。 */
+    /**
+     * 提交当前累积的文本缓冲（与 Qwen3-TTS 的 input_text_done 对齐）。
+     */
     void commit();
 
-    /** 标记流结束，等待最后音频（与 Qwen3-TTS 的 response.done 对齐）。 */
+    /**
+     * 标记流结束，等待最后音频（与 Qwen3-TTS 的 response.done 对齐）。
+     */
     void finish();
 
-    /** 强制关闭 WebSocket。 */
+    /**
+     * 强制关闭 WebSocket。
+     */
     void close();
 
-    /** 接收音频/事件回调（按 SDK 推送顺序）。 */
+    /**
+     * 接收音频/事件回调（按 SDK 推送顺序）。
+     */
     void onEvent(Consumer<JsonObject> handler);
 
-    /** 接收关闭事件回调（code + reason）。 */
+    /**
+     * 接收关闭事件回调（code + reason）。
+     */
     void onClose(java.util.function.BiConsumer<Integer, String> handler);
 
     /**
      * 工厂方法：构造一个真正调用 DashScope SDK 的客户端实现。
      *
-     * @param apiKey   DashScope 控制台申请的 API key
-     * @param model    TTS 模型名（如 {@code qwen3-tts-12hz-0.6b-customvoice}）
-     * @param voice    音色 shortName（如 {@code Cherry}），null 用模型默认
+     * @param apiKey DashScope 控制台申请的 API key
+     * @param model  TTS 模型名（如 {@code qwen3-tts-12hz-0.6b-customvoice}）
+     * @param voice  音色 shortName（如 {@code Cherry}），null 用模型默认
      */
     static DashScopeRealtimeClient create(String apiKey, String model, String voice) {
         return new DashScopeSdkClient(apiKey, model, voice);

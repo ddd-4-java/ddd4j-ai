@@ -1,12 +1,17 @@
 # Agent 派发任务仓储 JDBC 持久化实施计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:
+> executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 新增 `ddd4j-ai-extension-agent-store-jdbc` 扩展，为 `AgentDispatchTaskRepository` 提供 JDBC 实现，一次覆盖 PostgreSQL / MySQL / H2，消除"进程重启即丢派发任务"的缺陷。
+**Goal:** 新增 `ddd4j-ai-extension-agent-store-jdbc` 扩展，为 `AgentDispatchTaskRepository` 提供 JDBC 实现，一次覆盖
+PostgreSQL / MySQL / H2，消除"进程重启即丢派发任务"的缺陷。
 
-**Architecture:** 独立扩展模块（避免 `spring-jdbc` 传染给所有 agent 使用方）。把仓储契约抽成**一份共享抽象测试基类**，让内存实现与 JDBC 实现跑同一套断言，从机制上保证语义一致。JDBC 实现通过 `JdbcDialect` 分派方言（DDL 类型 + upsert 语句）。**H2 内存库是契约测试的主路径**（无需 Docker，必执行），MySQL/PostgreSQL 容器只做跨库补充验证。
+**Architecture:** 独立扩展模块（避免 `spring-jdbc` 传染给所有 agent 使用方）。把仓储契约抽成 **一份共享抽象测试基类**
+，让内存实现与 JDBC 实现跑同一套断言，从机制上保证语义一致。JDBC 实现通过 `JdbcDialect` 分派方言（DDL 类型 + upsert 语句）。
+**H2 内存库是契约测试的主路径**（无需 Docker，必执行），MySQL/PostgreSQL 容器只做跨库补充验证。
 
-**Tech Stack:** Java 17、`spring-jdbc`（`JdbcTemplate`）、H2 / MySQL / PostgreSQL、Testcontainers、JUnit 5 + AssertJ + Mockito、Maven（2.0.x 用 4.0.0-rc-6）。
+**Tech Stack:** Java 17、`spring-jdbc`（`JdbcTemplate`）、H2 / MySQL / PostgreSQL、Testcontainers、JUnit 5 + AssertJ +
+Mockito、Maven（2.0.x 用 4.0.0-rc-6）。
 
 **Spec:** `docs/superpowers/specs/2026-09-11-agent-dispatch-repository-jdbc-design.md`
 
@@ -15,9 +20,11 @@
 - **Java 17**；两条线均 `<java.version>17</java.version>`。
 - **构建**：`feature/2.0.x` 用 `/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn`；`feature/1.0.x` 用 Maven 3。
 - **JAVA_HOME 必须为 JDK 17**：`/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home`。
-- **测试类必须以 `*Test` 结尾**：本仓 surefire 只收 `*Test`，且**未配置 failsafe**。叫 `*IT` 会静默不运行（骗人绿灯）。
-- **`-pl` 解析不到新模块**：新增模块后必须同时在 `ddd4j-ai-extensions/pom.xml` 的 `<subprojects>` 与 `ddd4j-ai-bom/pom.xml` 的 `<dependencyManagement>` 登记。改动上游扩展后再测下游，一律加 `-am`（否则对着 `~/.m2` 旧 jar 跑，结论无效）。
-- **磁盘**：本机曾因 97% 导致 Testcontainers `ContainerLaunchException`（现已 84%）。容器测试失败**先查磁盘**。
+- **测试类必须以 `*Test` 结尾**：本仓 surefire 只收 `*Test`，且 **未配置 failsafe**。叫 `*IT` 会静默不运行（骗人绿灯）。
+- **`-pl` 解析不到新模块**：新增模块后必须同时在 `ddd4j-ai-extensions/pom.xml` 的 `<subprojects>` 与
+  `ddd4j-ai-bom/pom.xml` 的 `<dependencyManagement>` 登记。改动上游扩展后再测下游，一律加 `-am`（否则对着 `~/.m2` 旧 jar
+  跑，结论无效）。
+- **磁盘**：本机曾因 97% 导致 Testcontainers `ContainerLaunchException`（现已 84%）。容器测试失败 **先查磁盘**。
 - **禁止 `git add -A` / `git add .`**：只显式 stage 本任务列出的路径。
 - **`thenReturn` 泛型需类型见证**：如 `Mono.<Msg>just(...)`。
 - **Mockito mock 不执行接口 default 方法**：mock 带 default 方法的接口时需显式 stub 下游会调用的方法。
@@ -27,28 +34,31 @@
 
 ## File Structure
 
-| 文件 | 职责 | 动作 |
-|------|------|------|
-| `ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/dispatch/AgentDispatchTaskRepositoryContract.java` | 共享契约测试基类（抽象） | 新增 |
-| `ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/dispatch/InMemoryAgentDispatchTaskRepositoryTest.java` | 内存实现的契约测试 | 新增 |
-| `ddd4j-ai-extension-agent/pom.xml` | 加 `maven-jar-plugin` test-jar goal（供跨模块复用契约基类） | 改 |
-| `ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc/pom.xml` | 新模块 pom | 新增 |
-| `.../agent-store-jdbc/src/main/java/io/ddd4j/ai/extension/agent/store/jdbc/JdbcDialect.java` | 方言：建表 / 建索引 / upsert SQL | 新增 |
-| `.../store/jdbc/JdbcAgentDispatchTaskRepository.java` | `JdbcTemplate` 实现 4 个端口方法 | 新增 |
-| `.../store/jdbc/autoconfigure/JdbcDispatchRepositoryAutoConfiguration.java` | 条件装配 + 按需建表 | 新增 |
-| `.../store/jdbc/package-info.java` | 包文档 | 新增 |
-| `.../agent-store-jdbc/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` | 注册自动装配（**漏了装配静默失效**） | 新增 |
-| `ddd4j-ai-extensions/pom.xml` | 登记 `<subproject>` | 改 |
-| `ddd4j-ai-bom/pom.xml` | 登记 `dependencyManagement` | 改 |
-| `.../agent-store-jdbc/src/test/java/.../JdbcAgentDispatchTaskRepositoryH2Test.java` | H2 契约测试（主路径，无需 Docker） | 新增 |
-| `.../agent-store-jdbc/src/test/java/.../JdbcAgentDispatchTaskRepositoryMySqlTest.java` | MySQL 容器契约测试 | 新增 |
-| `.../agent-store-jdbc/src/test/java/.../JdbcAgentDispatchTaskRepositoryPostgresTest.java` | PostgreSQL 容器契约测试 | 新增 |
-| `.../agent-store-jdbc/src/test/java/.../JdbcDialectTest.java` | 方言 SQL 分派 | 新增 |
-| `.../agent-store-jdbc/src/test/java/.../JdbcDispatchRepositoryAutoConfigurationTest.java` | 装配分支 | 新增 |
+| 文件                                                                                                                       | 职责                                                        | 动作 |
+|----------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------|------|
+| `ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/dispatch/AgentDispatchTaskRepositoryContract.java`     | 共享契约测试基类（抽象）                                    | 新增 |
+| `ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/dispatch/InMemoryAgentDispatchTaskRepositoryTest.java` | 内存实现的契约测试                                          | 新增 |
+| `ddd4j-ai-extension-agent/pom.xml`                                                                                         | 加 `maven-jar-plugin` test-jar goal（供跨模块复用契约基类） | 改   |
+| `ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc/pom.xml`                                                          | 新模块 pom                                                  | 新增 |
+| `.../agent-store-jdbc/src/main/java/io/ddd4j/ai/extension/agent/store/jdbc/JdbcDialect.java`                               | 方言：建表 / 建索引 / upsert SQL                            | 新增 |
+| `.../store/jdbc/JdbcAgentDispatchTaskRepository.java`                                                                      | `JdbcTemplate` 实现 4 个端口方法                            | 新增 |
+| `.../store/jdbc/autoconfigure/JdbcDispatchRepositoryAutoConfiguration.java`                                                | 条件装配 + 按需建表                                         | 新增 |
+| `.../store/jdbc/package-info.java`                                                                                         | 包文档                                                      | 新增 |
+| `.../agent-store-jdbc/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` | 注册自动装配（**漏了装配静默失效**）                        | 新增 |
+| `ddd4j-ai-extensions/pom.xml`                                                                                              | 登记 `<subproject>`                                         | 改   |
+| `ddd4j-ai-bom/pom.xml`                                                                                                     | 登记 `dependencyManagement`                                 | 改   |
+| `.../agent-store-jdbc/src/test/java/.../JdbcAgentDispatchTaskRepositoryH2Test.java`                                        | H2 契约测试（主路径，无需 Docker）                          | 新增 |
+| `.../agent-store-jdbc/src/test/java/.../JdbcAgentDispatchTaskRepositoryMySqlTest.java`                                     | MySQL 容器契约测试                                          | 新增 |
+| `.../agent-store-jdbc/src/test/java/.../JdbcAgentDispatchTaskRepositoryPostgresTest.java`                                  | PostgreSQL 容器契约测试                                     | 新增 |
+| `.../agent-store-jdbc/src/test/java/.../JdbcDialectTest.java`                                                              | 方言 SQL 分派                                               | 新增 |
+| `.../agent-store-jdbc/src/test/java/.../JdbcDispatchRepositoryAutoConfigurationTest.java`                                  | 装配分支                                                    | 新增 |
 
 **关键设计说明（供实施者理解）：**
-- 契约基类用"模板方法"模式：`protected abstract AgentDispatchTaskRepository newRepository()`，断言写在基类的 `@Test` 方法里；子类只提供实现实例。这样"三个实现跑同一套断言"是结构保证的，而非靠人工同步。
-- **`save` 语义定为 upsert（按 id 幂等写）**：与既有 `InMemoryAgentDispatchTaskRepository` 的 `store.put(...)` 行为一致。JDBC 侧由 `JdbcDialect` 提供各方言 upsert 语句。`dispatchAll` 的重试路径依赖这一点。
+
+- 契约基类用"模板方法"模式：`protected abstract AgentDispatchTaskRepository newRepository()`，断言写在基类的 `@Test`
+  方法里；子类只提供实现实例。这样"三个实现跑同一套断言"是结构保证的，而非靠人工同步。
+- **`save` 语义定为 upsert（按 id 幂等写）**：与既有 `InMemoryAgentDispatchTaskRepository` 的 `store.put(...)` 行为一致。JDBC
+  侧由 `JdbcDialect` 提供各方言 upsert 语句。`dispatchAll` 的重试路径依赖这一点。
 - **`findByPlanId` 必须按 `createdAt` 升序**：与内存实现的显式 `sort(comparing createdAt)` 一致，契约测试会锚定。
 
 ---
@@ -56,13 +66,19 @@
 ## Task 1: 共享契约基类 + 内存实现契约测试
 
 **Files:**
-- Create: `ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/dispatch/AgentDispatchTaskRepositoryContract.java`
-- Create: `ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/dispatch/InMemoryAgentDispatchTaskRepositoryTest.java`
+
+- Create:
+  `ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/dispatch/AgentDispatchTaskRepositoryContract.java`
+- Create:
+  `ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/dispatch/InMemoryAgentDispatchTaskRepositoryTest.java`
 - Modify: `ddd4j-ai-extension-agent/pom.xml`（加 test-jar）
 
 **Interfaces:**
-- Consumes: `AgentDispatchTaskRepository`（save / findById / findByPlanId / update）、`AgentDispatchTask`（record，6 字段；常量 `PENDING`/`RUNNING`/`DONE`/`FAILED`）
-- Produces: `AgentDispatchTaskRepositoryContract`（抽象基类，`protected abstract AgentDispatchTaskRepository newRepository()`），供 Task 3/4 的 JDBC 测试继承
+
+- Consumes: `AgentDispatchTaskRepository`（save / findById / findByPlanId / update）、`AgentDispatchTask`（record，6 字段；常量
+  `PENDING`/`RUNNING`/`DONE`/`FAILED`）
+- Produces: `AgentDispatchTaskRepositoryContract`（抽象基类，
+  `protected abstract AgentDispatchTaskRepository newRepository()`），供 Task 3/4 的 JDBC 测试继承
 
 - [ ] **Step 1: 加 test-jar 发布配置**
 
@@ -223,7 +239,7 @@ cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
 
 Expected: `Tests run: 7, Failures: 0, Errors: 0`。
 
-**若失败**：说明既有内存实现不满足契约（尤其 `createdAt` 升序或 upsert）。**不要改契约去迁就**——先判断是契约定错了还是实现有缺陷，把结论写进提交信息。
+**若失败**：说明既有内存实现不满足契约（尤其 `createdAt` 升序或 upsert）。 **不要改契约去迁就**——先判断是契约定错了还是实现有缺陷，把结论写进提交信息。
 
 - [ ] **Step 5: 提交**
 
@@ -249,12 +265,14 @@ save is an idempotent upsert by id."
 ## Task 2: 新模块骨架（可构建）
 
 **Files:**
+
 - Create: `ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc/pom.xml`
 - Create: `.../src/main/java/io/ddd4j/ai/extension/agent/store/jdbc/package-info.java`
 - Modify: `ddd4j-ai-extensions/pom.xml`
 - Modify: `ddd4j-ai-bom/pom.xml`
 
 **Interfaces:**
+
 - Produces: 一个能被 `-pl` 定位、能编译的空模块 `ddd4j-ai-extension-agent-store-jdbc`
 
 - [ ] **Step 1: 写新模块 pom**
@@ -402,6 +420,7 @@ Registered in the extensions aggregator and the BOM so -pl can resolve it."
 ## Task 3: JdbcDialect + 仓储实现 + 装配 + H2 契约测试
 
 **Files:**
+
 - Create: `.../store/jdbc/JdbcDialect.java`
 - Create: `.../store/jdbc/JdbcAgentDispatchTaskRepository.java`
 - Create: `.../store/jdbc/autoconfigure/JdbcDispatchRepositoryAutoConfiguration.java`
@@ -410,8 +429,12 @@ Registered in the extensions aggregator and the BOM so -pl can resolve it."
 - Create: `.../src/test/java/.../JdbcAgentDispatchTaskRepositoryH2Test.java`
 
 **Interfaces:**
-- Consumes: Task 1 的 `AgentDispatchTaskRepositoryContract`（test-jar）；`AgentDispatchTask` / `AgentDispatchTaskRepository` / `AgentDispatchTask.PENDING|RUNNING|DONE|FAILED`
-- Produces: `JdbcDialect.from(DataSource) → JdbcDialect`（方言探测）；`JdbcDialect.createTableSql()/createIndexSql()/upsertSql()`；`JdbcAgentDispatchTaskRepository(DataSource, JdbcDialect, boolean autoDdl)`
+
+- Consumes: Task 1 的 `AgentDispatchTaskRepositoryContract`（test-jar）；`AgentDispatchTask` /
+  `AgentDispatchTaskRepository` / `AgentDispatchTask.PENDING|RUNNING|DONE|FAILED`
+- Produces: `JdbcDialect.from(DataSource) → JdbcDialect`（方言探测）；
+  `JdbcDialect.createTableSql()/createIndexSql()/upsertSql()`；
+  `JdbcAgentDispatchTaskRepository(DataSource, JdbcDialect, boolean autoDdl)`
 
 - [ ] **Step 1: 写方言测试（失败）**
 
@@ -757,12 +780,15 @@ present DataSource, so existing users are untouched."
 ## Task 4: 装配测试 + MySQL/PostgreSQL 容器契约测试
 
 **Files:**
+
 - Create: `.../src/test/java/.../JdbcDispatchRepositoryAutoConfigurationTest.java`
 - Create: `.../src/test/java/.../JdbcAgentDispatchTaskRepositoryMySqlTest.java`
 - Create: `.../src/test/java/.../JdbcAgentDispatchTaskRepositoryPostgresTest.java`
 
 **Interfaces:**
-- Consumes: Task 3 的 `JdbcAgentDispatchTaskRepository` / `JdbcDialect` / `JdbcDispatchRepositoryAutoConfiguration`；Task 1 的契约基类
+
+- Consumes: Task 3 的 `JdbcAgentDispatchTaskRepository` / `JdbcDialect` / `JdbcDispatchRepositoryAutoConfiguration`；Task
+  1 的契约基类
 - Produces: 跨库验证证据（MySQL + PostgreSQL 与 H2 语义一致）
 
 - [ ] **Step 1: 写装配测试**
@@ -846,7 +872,8 @@ Expected: `Tests run: 4, Failures: 0, Errors: 0`。
 
 - [ ] **Step 3: 写容器多库契约测试（两个顶层类，避免 `@Nested` 生命周期坑）**
 
-刻意不用 `@Testcontainers` + `@Nested` + 非静态 `@Container` 的组合——那是边界用法，容器生命周期与 JUnit 嵌套类交互有已知陷阱。改用最稳的 canonical 形态：**每个库一个顶层类，`static final @Container`**。
+刻意不用 `@Testcontainers` + `@Nested` + 非静态 `@Container` 的组合——那是边界用法，容器生命周期与 JUnit 嵌套类交互有已知陷阱。改用最稳的
+canonical 形态： **每个库一个顶层类，`static final @Container`**。
 
 `JdbcAgentDispatchTaskRepositoryMySqlTest.java`：
 
@@ -975,7 +1002,8 @@ git push github feature/2.0.x && git push origin feature/2.0.x
 
 - [ ] **Step 2: 执行记录回写 spec**
 
-在 spec（`docs/superpowers/specs/2026-09-11-agent-dispatch-repository-jdbc-design.md`）末尾追加 `## 11. 实施记录（2026-09-11）`，内容包含：各 Task 提交号与测试数、H2/MySQL/PG 三实现契约通过的证据、实施中发现的新事实（若有）、以及 1.0.x 阻塞状态。提交并推送。
+在 spec（`docs/superpowers/specs/2026-09-11-agent-dispatch-repository-jdbc-design.md`）末尾追加 `## 11. 实施记录（2026-09-11）`
+，内容包含：各 Task 提交号与测试数、H2/MySQL/PG 三实现契约通过的证据、实施中发现的新事实（若有）、以及 1.0.x 阻塞状态。提交并推送。
 
 ---
 

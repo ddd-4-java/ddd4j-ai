@@ -3,7 +3,9 @@ package io.ddd4j.ai.extension.memory.autoconfigure;
 import io.ddd4j.ai.extension.memory.service.MemoryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
+
 import java.util.List;
+
 import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -58,7 +60,9 @@ class MemoryAutoConfigurationTest {
                 });
     }
 
-    /** 探针 repository：验证 AutoConfiguration 是否复用了外部实现。 */
+    /**
+     * 探针 repository：验证 AutoConfiguration 是否复用了外部实现。
+     */
     static class TrackingRepository implements ChatMemoryRepository {
         final ChatMemoryRepository delegate = new InMemoryChatMemoryRepository();
         volatile boolean used;

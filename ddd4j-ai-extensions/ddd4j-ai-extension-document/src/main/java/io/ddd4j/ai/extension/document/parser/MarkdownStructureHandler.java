@@ -175,7 +175,9 @@ final class MarkdownStructureHandler extends DefaultHandler {
         return name.charAt(1) - '0';
     }
 
-    /** 构建期可变 section（DocumentSection 为不可变 record）。 */
+    /**
+     * 构建期可变 section（DocumentSection 为不可变 record）。
+     */
     private static final class MutableSection {
 
         private final String title;

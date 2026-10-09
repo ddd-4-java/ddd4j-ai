@@ -78,7 +78,9 @@ public final class TtsMetrics {
         log.info("tts.firstaudio: samples={}, avg={}ms, min={}ms, max={}ms", n, avgMs, minMs, maxMs);
     }
 
-    /** 重置所有统计（用于业务方手动触发新窗口）。 */
+    /**
+     * 重置所有统计（用于业务方手动触发新窗口）。
+     */
     public void reset() {
         samples.set(0);
         totalNanos.set(0);

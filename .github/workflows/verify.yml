@@ -69,7 +69,7 @@ jobs:
   ai-model-integration:
     name: Ollama real-model integration (tolerant)
     runs-on: ubuntu-latest
-    needs: [workflow-lint, unit-and-contract]
+    needs: [ workflow-lint, unit-and-contract ]
     # Ollama 容器内拉取 qwen2.5:0.5b / all-minilm 受网络波动影响，偶发超时与代码无关，允许失败不阻塞 CI
     continue-on-error: true
     steps:
