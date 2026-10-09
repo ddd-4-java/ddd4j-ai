@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * {@link DocumentReader} 集成测试：真实 Spring 上下文端到端（纯文本 / 真实 PDF / 委托降级）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @SpringBootTest(classes = DocumentAutoConfiguration.class)
 class DocumentReaderIntegrationTest {

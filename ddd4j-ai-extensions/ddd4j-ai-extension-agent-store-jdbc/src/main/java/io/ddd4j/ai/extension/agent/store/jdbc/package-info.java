@@ -5,6 +5,6 @@
  * <p>本模块是**可选构件**——只有需要派发任务持久化的业务才引入，
  * 从而不把 {@code spring-jdbc} 传染给所有智能体使用方。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 package io.ddd4j.ai.extension.agent.store.jdbc;

@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * {@link ChunkBoundary} 标点判定测试。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class ChunkBoundaryTest {
 

@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
  *   <li>宿主机安装 ffmpeg 并在 PATH 中（STT 前置转换与 MP3 输出依赖它）。</li>
  * </ul>
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Component
 public class SstSample {
@@ -29,6 +29,12 @@ public class SstSample {
 
     private final FFmpegService ffmpegService;
 
+    /**
+     * 构造 SstSample。
+     *
+     * @param speechService 语音合成与识别服务
+     * @param ffmpegService FFmpeg 转码服务
+     */
     public SstSample(SpeechService<SpeechConfig> speechService, FFmpegService ffmpegService) {
         this.speechService = speechService;
         this.ffmpegService = ffmpegService;
@@ -36,6 +42,10 @@ public class SstSample {
 
     /**
      * 文本转语音（同步）：返回 16kHz 32kbps 单声道 MP3 字节流，可直接落盘或写 HTTP 响应。
+     *
+     * @param text 文本内容
+     * @return 执行结果
+     * @throws Exception 执行过程中出现异常时抛出
      */
     public byte[] speak(String text) throws Exception {
         TTSResultVO result = speechService.tts(null, text);
@@ -44,6 +54,10 @@ public class SstSample {
 
     /**
      * 文本转语音（回调）：适合流式消费合成音频的场景。
+     *
+     * @param text 文本内容
+     * @param callback 回调接口
+     * @throws Exception 执行过程中出现异常时抛出
      */
     public void speakAsync(String text, SpeechServiceText2VoiceCallback callback) throws Exception {
         speechService.text2Voice(text, callback);
@@ -51,6 +65,10 @@ public class SstSample {
 
     /**
      * 语音转文本：任意格式音频先经 FFmpeg 归一化为 16kHz 单声道 WAV（Azure STT 推荐格式）再识别。
+     *
+     * @param arbitraryAudio 任意格式音频数据
+     * @param callback 回调接口
+     * @throws Exception 执行过程中出现异常时抛出
      */
     public void listen(byte[] arbitraryAudio, SpeechServiceVoice2TextCallback callback) throws Exception {
         byte[] wav = ffmpegService.convertAudioToWavFromByteAry(arbitraryAudio);
@@ -59,6 +77,10 @@ public class SstSample {
 
     /**
      * 语音转文本：直接识别 MP3 字节流（Azure SDK 原生支持压缩格式）。
+     *
+     * @param mp3Audio MP3 音频数据
+     * @param callback 回调接口
+     * @throws Exception 执行过程中出现异常时抛出
      */
     public void listenMp3(byte[] mp3Audio, SpeechServiceVoice2TextCallback callback) throws Exception {
         speechService.voice2TextFromMp3ByteArray(null, mp3Audio, callback);

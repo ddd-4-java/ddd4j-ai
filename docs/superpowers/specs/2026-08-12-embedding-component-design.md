@@ -1,7 +1,7 @@
 # Embedding 向量嵌入组件设计
 
 - 日期：2026-08-12
-- 作者：PartMe.AI
+- 作者：ddd4j
 - 状态：**已实现**（2026-08-16，v1.x-A）
 - 范围：`ddd4j-ai-extension-embedding` —— 文本向量嵌入
 - 关联文档：整体架构见 `2026-08-07-ddd4j-ai-architecture-design.md`；被 rag/vectordb 引用

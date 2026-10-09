@@ -21,10 +21,11 @@ import java.util.Objects;
  * 多轮对话通过组合 {@link MemoryService}（读取历史 → 请求 → 写回本轮问答）实现，
  * 不依赖 ChatClient 的 advisor 机制，保持端口可独立替换。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class ChatClientAdapter implements ChatService, AiHandler {
 
+    /** 服务注册名。 */
     public static final String NAME = "ddd4j-ai-chat";
 
     private final ChatClient chatClient;
@@ -33,6 +34,13 @@ public class ChatClientAdapter implements ChatService, AiHandler {
 
     private final String defaultSystemPrompt;
 
+    /**
+     * 创建对话适配器。
+     *
+     * @param chatClient         Spring AI 对话客户端，不允许为 {@code null}
+     * @param memoryService      记忆服务，可为 {@code null}（不启用多轮记忆）
+     * @param defaultSystemPrompt 默认系统提示词，可为 {@code null}
+     */
     public ChatClientAdapter(ChatClient chatClient, MemoryService memoryService, String defaultSystemPrompt) {
         this.chatClient = Objects.requireNonNull(chatClient, "chatClient");
         this.memoryService = memoryService;

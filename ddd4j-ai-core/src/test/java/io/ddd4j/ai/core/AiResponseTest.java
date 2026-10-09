@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * {@link AiResponse} 不可变契约测试（与 {@link AiRequestTest} 对称）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class AiResponseTest {
 

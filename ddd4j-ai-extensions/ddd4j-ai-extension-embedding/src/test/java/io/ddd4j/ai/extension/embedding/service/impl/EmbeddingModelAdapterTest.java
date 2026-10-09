@@ -17,7 +17,7 @@ import static org.mockito.Mockito.when;
 /**
  * {@link EmbeddingModelAdapter} 单元测试：mock EmbeddingModel，验证分片、顺序与维度透传。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class EmbeddingModelAdapterTest {
 

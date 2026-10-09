@@ -13,8 +13,8 @@
 ## Global Constraints
 
 - **Java 17**；两条线均 `<java.version>17</java.version>`。
-- **构建**：`feature/2.0.x` 用 `/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn`；`feature/1.0.x` 用 Maven 3。
-- **JAVA_HOME 必须为 JDK 17**：`/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home`。
+- **构建**：`feature/2.0.x` 用 `<maven4-bin>/mvn`；`feature/1.0.x` 用 Maven 3。
+- **JAVA_HOME 必须为 JDK 17**：`<jdk17-home>`。
 - **测试类必须以 `*Test` 结尾**：本仓 surefire 只收 `*Test`，且**未配置 failsafe**。叫 `*IT` 会静默不运行（骗人绿灯）。
 - **`-pl` 解析不到新模块**：新增模块后必须同时在 `ddd4j-ai-extensions/pom.xml` 的 `<subprojects>` 与 `ddd4j-ai-bom/pom.xml` 的 `<dependencyManagement>` 登记。改动上游扩展后再测下游，一律加 `-am`（否则对着 `~/.m2` 旧 jar 跑，结论无效）。
 - **磁盘**：本机曾因 97% 导致 Testcontainers `ContainerLaunchException`（现已 84%）。容器测试失败**先查磁盘**。
@@ -105,7 +105,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>子类仅需提供实现实例（{@link #newRepository()}），断言在此统一维护——
  * 从而以结构保证"内存实现与各持久化实现语义一致"，而非靠人工同步。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public abstract class AgentDispatchTaskRepositoryContract {
 
@@ -199,7 +199,7 @@ package io.ddd4j.ai.extension.agent.dispatch;
 /**
  * {@link InMemoryAgentDispatchTaskRepository} 契约测试：与 JDBC 实现跑同一套断言。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class InMemoryAgentDispatchTaskRepositoryTest extends AgentDispatchTaskRepositoryContract {
 
@@ -213,9 +213,9 @@ class InMemoryAgentDispatchTaskRepositoryTest extends AgentDispatchTaskRepositor
 - [ ] **Step 4: 运行确认通过**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent \
   -Dtest=InMemoryAgentDispatchTaskRepositoryTest -Dsurefire.failIfNoSpecifiedTests=false \
   -Denforcer.skip=true -DskipITs test
@@ -228,7 +228,7 @@ Expected: `Tests run: 7, Failures: 0, Errors: 0`。
 - [ ] **Step 5: 提交**
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 git add \
   ddd4j-ai-extensions/ddd4j-ai-extension-agent/pom.xml \
   ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/dispatch/AgentDispatchTaskRepositoryContract.java \
@@ -344,7 +344,7 @@ save is an idempotent upsert by id."
  * 智能体派发任务仓储的 JDBC 实现：以 {@code DataSource} 为接入点，
  * 一次覆盖 PostgreSQL / MySQL / H2。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 package io.ddd4j.ai.extension.agent.store.jdbc;
 ```
@@ -370,9 +370,9 @@ package io.ddd4j.ai.extension.agent.store.jdbc;
 - [ ] **Step 4: 构建确认模块可被定位与编译**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc -am \
   -Denforcer.skip=true -DskipITs -DskipTests install
 ```
@@ -384,7 +384,7 @@ Expected: Reactor 含 `ddd4j-ai-extension-agent-store-jdbc ... SUCCESS`；`BUILD
 - [ ] **Step 5: 提交**
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 git add \
   ddd4j-ai-extensions/pom.xml \
   ddd4j-ai-bom/pom.xml \
@@ -455,9 +455,9 @@ class JdbcDialectTest {
 - [ ] **Step 2: 运行确认失败**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc \
   -Dtest=JdbcDialectTest -Dsurefire.failIfNoSpecifiedTests=false \
   -Denforcer.skip=true -DskipITs test
@@ -480,7 +480,7 @@ import java.sql.SQLException;
  * <p>探测失败或未知产品名时回落到 H2 兼容写法（`MERGE INTO`），
  * 因为它是 SQL 标准里最接近"按主键 upsert"的表述。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public enum JdbcDialect {
 
@@ -572,7 +572,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * H2 内存库的契约测试——**主路径，无需 Docker**，因此在任何环境都真实执行。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class JdbcAgentDispatchTaskRepositoryH2Test extends AgentDispatchTaskRepositoryContract {
 
@@ -620,7 +620,7 @@ import java.util.Optional;
 /**
  * {@link AgentDispatchTaskRepository} 的 JDBC 实现：一次覆盖 PostgreSQL / MySQL / H2。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class JdbcAgentDispatchTaskRepository implements AgentDispatchTaskRepository {
 
@@ -697,7 +697,7 @@ import javax.sql.DataSource;
  * JDBC 派发任务仓储自动装配：仅在显式开启且存在 DataSource 时生效。
  * 不配置则维持 agent 扩展既有的内存实现，既有用户零影响。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @AutoConfiguration
 @ConditionalOnClass(JdbcTemplate.class)
@@ -726,9 +726,9 @@ io.ddd4j.ai.extension.agent.store.jdbc.autoconfigure.JdbcDispatchRepositoryAutoC
 - [ ] **Step 7: 运行 H2 契约测试确认通过**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc -am \
   -Dtest=JdbcAgentDispatchTaskRepositoryH2Test -Dsurefire.failIfNoSpecifiedTests=false \
   -Denforcer.skip=true -DskipITs test
@@ -739,7 +739,7 @@ Expected: `Tests run: 8, Failures: 0, Errors: 0`（契约 7 + autoDdlFalse 1）�
 - [ ] **Step 8: 提交**
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 git add ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc/src
 git commit -m "feat(agent-store-jdbc): add JDBC dispatch repository with dialect dispatch
 
@@ -834,9 +834,9 @@ class JdbcDispatchRepositoryAutoConfigurationTest {
 - [ ] **Step 2: 运行装配测试确认通过**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc -am \
   -Dtest=JdbcDispatchRepositoryAutoConfigurationTest -Dsurefire.failIfNoSpecifiedTests=false \
   -Denforcer.skip=true -DskipITs test
@@ -866,7 +866,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * <p>类名必须以 {@code Test} 结尾——本仓 surefire 无 failsafe，叫 {@code *IT} 会静默不运行。
  * 无 Docker 时按 Testcontainers 语义跳过。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Testcontainers
 class JdbcAgentDispatchTaskRepositoryMySqlTest extends AgentDispatchTaskRepositoryContract {
@@ -898,7 +898,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 /**
  * PostgreSQL 容器契约测试：与 H2 主路径跑同一套断言，验证跨库语义一致。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Testcontainers
 class JdbcAgentDispatchTaskRepositoryPostgresTest extends AgentDispatchTaskRepositoryContract {
@@ -918,10 +918,10 @@ class JdbcAgentDispatchTaskRepositoryPostgresTest extends AgentDispatchTaskRepos
 - [ ] **Step 4: 运行容器契约测试**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
 df -h /System/Volumes/Data | tail -1   # 磁盘需充裕，否则容器起不来
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc -am \
   -Dtest='JdbcAgentDispatchTaskRepositoryMySqlTest,JdbcAgentDispatchTaskRepositoryPostgresTest' \
   -Dsurefire.failIfNoSpecifiedTests=false \
@@ -935,9 +935,9 @@ Expected: `Tests run: 14, Failures: 0, Errors: 0`（MySQL 7 + PostgreSQL 7）。
 - [ ] **Step 5: 运行模块全量测试**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc -am \
   -Denforcer.skip=true -DskipITs test
 ```
@@ -947,7 +947,7 @@ Expected: `BUILD SUCCESS`，含 H2 契约 + 容器契约 + 方言 + 装配全部
 - [ ] **Step 6: 提交**
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 git add ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc/src/test
 git commit -m "test(agent-store-jdbc): verify the JDBC repository on H2, MySQL and PostgreSQL
 
@@ -965,7 +965,7 @@ auto-ddl off)."
 - [ ] **Step 1: 推送 2.0.x**
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 git fetch github feature/2.0.x && git fetch origin feature/2.0.x
 git log --oneline -1 github/feature/2.0.x   # 确认无并行会话分叉
 git push github feature/2.0.x && git push origin feature/2.0.x

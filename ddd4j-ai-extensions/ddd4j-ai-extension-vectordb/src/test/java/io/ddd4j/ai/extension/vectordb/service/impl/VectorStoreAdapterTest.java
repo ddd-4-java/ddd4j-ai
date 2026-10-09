@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 /**
  * {@link VectorStoreAdapter} 单元测试：mock VectorStore，验证委托与默认 topK。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class VectorStoreAdapterTest {
 

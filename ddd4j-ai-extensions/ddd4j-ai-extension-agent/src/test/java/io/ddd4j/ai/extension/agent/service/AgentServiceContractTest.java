@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * {@link AgentService} 端口契约测试：任务校验 / 结果结构 / 流式步骤 / 异常传播。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class AgentServiceContractTest {
 

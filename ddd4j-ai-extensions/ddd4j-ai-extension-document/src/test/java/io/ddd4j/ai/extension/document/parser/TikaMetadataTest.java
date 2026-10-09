@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * {@link TikaDocumentParser} 元数据透传与语言检测测试（对齐 markitdown 的元数据能力 + Tika 加分项）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class TikaMetadataTest {
 

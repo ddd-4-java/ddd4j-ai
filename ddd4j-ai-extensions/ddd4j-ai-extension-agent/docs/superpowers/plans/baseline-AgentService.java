@@ -5,7 +5,7 @@ import reactor.core.publisher.Flux;
 /**
  * 智能体编排端口：一次性执行与逐步流式两条入口，屏蔽具体策略（ReAct / Plan-Execute）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface AgentService {
 

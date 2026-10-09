@@ -1,16 +1,16 @@
 package io.ddd4j.ai.core;
 
 /**
- * Common contract for AI capability components.
+ * 通用 AI 能力组件契约，所有可插拔 AI 组件的最小公共接口。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface AiComponent {
 
     /**
-     * Stable component name used for routing, diagnostics, and configuration.
+     * 稳定的组件名称，用于路由选择、诊断排查与配置识别。
      *
-     * @return component name
+     * @return 组件名称
      */
     String name();
 }

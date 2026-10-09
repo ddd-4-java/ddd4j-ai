@@ -9,9 +9,15 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 内存版派发任务仓储（首版默认实现；生产建议换 JDBC/MySQL 实现）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class InMemoryAgentDispatchTaskRepository implements AgentDispatchTaskRepository {
+
+    /**
+     * 默认构造器：初始化线程安全的内存存储。
+     */
+    public InMemoryAgentDispatchTaskRepository() {
+    }
 
     private final Map<String, AgentDispatchTask> store = new ConcurrentHashMap<>();
 

@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Bean;
 /**
  * 向量数据库自动装配：依赖业务侧向量库 starter 提供的 {@link VectorStore}。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @AutoConfiguration(afterName = {
         "org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration",
@@ -27,6 +27,20 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(VectorDbProperties.class)
 public class VectorDbAutoConfiguration {
 
+    /**
+     * 默认构造器（自动装配类无状态，由 Spring 容器管理）。
+     */
+    public VectorDbAutoConfiguration() {
+    }
+
+    /**
+     * 注册向量库服务：容器中已存在 {@link VectorStore} 时，
+     * 以默认检索条数包装为 {@link VectorDbService}。
+     *
+     * @param vectorStore Spring AI 向量存储实现（由业务侧 starter 提供）
+     * @param properties  向量数据库组件配置
+     * @return 向量库服务实例
+     */
     @Bean
     @ConditionalOnMissingBean(VectorDbService.class)
     public VectorDbService vectorDbService(VectorStore vectorStore, VectorDbProperties properties) {

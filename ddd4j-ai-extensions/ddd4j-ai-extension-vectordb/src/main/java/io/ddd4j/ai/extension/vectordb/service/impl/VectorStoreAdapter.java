@@ -13,7 +13,7 @@ import java.util.Objects;
  * 通用向量库适配器：委托任意 Spring AI {@link VectorStore} 实现
  * （pgvector / Milvus / Redis / Chroma 等 starter 提供什么就适配什么）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class VectorStoreAdapter implements VectorDbService {
 
@@ -21,6 +21,12 @@ public class VectorStoreAdapter implements VectorDbService {
 
     private final int defaultTopK;
 
+    /**
+     * 构造向量库适配器。
+     *
+     * @param vectorStore 底层 Spring AI 向量存储实现，不允许为 {@code null}
+     * @param defaultTopK 默认检索条数（查询未显式指定 topK 时使用）
+     */
     public VectorStoreAdapter(VectorStore vectorStore, int defaultTopK) {
         this.vectorStore = Objects.requireNonNull(vectorStore, "vectorStore");
         this.defaultTopK = defaultTopK;

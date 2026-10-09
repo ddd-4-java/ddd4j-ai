@@ -7,10 +7,15 @@ import java.util.Objects;
  *
  * @param from 起始节点 id（或 START）
  * @param to   目标节点 id（或 END）
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public record FlowEdge(String from, String to) {
 
+    /**
+     * 压缩构造器：校验两端节点 id 非空。
+     *
+     * @throws NullPointerException {@code from}/{@code to} 为 {@code null}
+     */
     public FlowEdge {
         Objects.requireNonNull(from, "from must not be null");
         Objects.requireNonNull(to, "to must not be null");

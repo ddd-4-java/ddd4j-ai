@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * {@link TikaOcrService} 单元测试：纯文本 / HTML 多格式提取（无需 Docker）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class TikaOcrServiceTest {
 

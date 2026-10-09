@@ -16,12 +16,20 @@ public class MultiModelRouterSample {
 
     private final ChatRouter chatRouter;
 
+    /**
+     * 构造 MultiModelRouterSample。
+     *
+     * @param chatRouter 多模型路由器
+     */
     public MultiModelRouterSample(ChatRouter chatRouter) {
         this.chatRouter = chatRouter;
     }
 
     /**
      * 路由请求：按策略自动选择模型并返回结果。
+     *
+     * @param message 消息内容
+     * @return 文本结果
      */
     public String route(String message) {
         return chatRouter.route(AiRequest.of(message));
@@ -29,6 +37,9 @@ public class MultiModelRouterSample {
 
     /**
      * 路由流式请求：按策略选择模型并逐 token 返回。
+     *
+     * @param message 消息内容
+     * @return 响应式数据流
      */
     public Flux<String> routeStream(String message) {
         return chatRouter.streamRoute(AiRequest.of(message));

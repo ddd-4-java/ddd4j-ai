@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 本项开发中它曾与代码共享同一个错误假设（MySQL 用 CLOB）而全绿，最终由
  * MySQL 容器契约测试证伪。因此真库验证不可省——本测试是回归护栏，不是正确性证明。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class JdbcDialectTest {
 

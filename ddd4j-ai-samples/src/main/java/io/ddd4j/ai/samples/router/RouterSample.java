@@ -11,23 +11,38 @@ import reactor.core.publisher.Flux;
  * <p>前提：引入 {@code ddd4j-ai-extension-router}，业务侧以不同 bean 名注册多个
  * {@code ChatClient}（bean 名即模型 id），策略经 {@code ddd4j.ai.router.strategy} 配置。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Component
 public class RouterSample {
 
     private final ChatRouter chatRouter;
 
+    /**
+     * 构造 RouterSample。
+     *
+     * @param chatRouter 多模型路由器
+     */
     public RouterSample(ChatRouter chatRouter) {
         this.chatRouter = chatRouter;
     }
 
-    /** 路由到策略选中的模型完成单轮问答。 */
+    /**
+     * 路由到策略选中的模型完成单轮问答。
+     *
+     * @param message 消息内容
+     * @return 回答文本
+     */
     public String ask(String message) {
         return chatRouter.route(AiRequest.of(message));
     }
 
-    /** 路由流式问答。 */
+    /**
+     * 路由流式问答。
+     *
+     * @param message 消息内容
+     * @return 响应式数据流
+     */
     public Flux<String> askStream(String message) {
         return chatRouter.streamRoute(AiRequest.of(message));
     }

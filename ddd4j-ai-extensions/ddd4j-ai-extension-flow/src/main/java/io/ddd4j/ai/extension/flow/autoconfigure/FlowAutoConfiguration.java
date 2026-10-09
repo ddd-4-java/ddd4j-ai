@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * 工作流自动装配：依赖对话端口与图引擎类，可选注入工具回调集合。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @AutoConfiguration(afterName = {
         "io.ddd4j.ai.extension.chat.autoconfigure.ChatAutoConfiguration",
@@ -31,6 +31,20 @@ import java.util.List;
 @EnableConfigurationProperties(FlowProperties.class)
 public class FlowAutoConfiguration {
 
+    /**
+     * 默认构造器（自动装配类无状态）。
+     */
+    public FlowAutoConfiguration() {
+    }
+
+    /**
+     * 装配工作流服务（图引擎编译执行声明式 DSL）。
+     *
+     * @param chatService      对话端口
+     * @param toolCallbacks    工具回调提供器（可为空）
+     * @param agentService     智能体服务提供器（可为空，AGENT 节点不可用）
+     * @return 工作流服务 Bean
+     */
     @Bean
     @ConditionalOnMissingBean(FlowService.class)
     public FlowService flowService(ChatService chatService,

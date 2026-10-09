@@ -13,7 +13,7 @@ import java.util.List;
  * MCP 组件自动装配：容器中存在任一 Spring AI MCP 客户端 bean
  * （{@code McpSyncClient} 或 {@code McpAsyncClient}）时激活。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @AutoConfiguration(afterName = {
         "org.springframework.ai.model.mcp.client.autoconfigure.McpClientAutoConfiguration",
@@ -26,6 +26,18 @@ import java.util.List;
 @ConditionalOnProperty(name = "ddd4j.ai.mcp.enabled", havingValue = "true", matchIfMissing = true)
 public class McpAutoConfiguration {
 
+    /**
+     * 默认构造器（自动装配类无状态）。
+     */
+    public McpAutoConfiguration() {
+    }
+
+    /**
+     * 装配 MCP 工具提供端口（聚合容器内全部 MCP 客户端）。
+     *
+     * @param mcpClientsProvider MCP 客户端列表提供器
+     * @return MCP 工具提供端口 Bean
+     */
     @org.springframework.context.annotation.Bean
     @ConditionalOnClass(name = "org.springframework.ai.mcp.client.McpSyncClient")
     public McpToolProvider mcpToolProvider(ObjectProvider<List<Object>> mcpClientsProvider) {

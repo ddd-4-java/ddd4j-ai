@@ -1,7 +1,7 @@
 # Agent 阻塞调用治理设计（reactive 入口 + Flow 路径修复）
 
 - 日期：2026-09-11
-- 作者：PartMe.AI
+- 作者：ddd4j
 - 状态：待实施（方案已选定：方案 A）
 - 范围：`ddd4j-ai-extension-agent`（`AgentService` / `AgentScopeAgentAdapter` / `AgentPlanOrchestrator`）+ `ddd4j-ai-extension-flow`（`GraphFlowService`）
 - 分支：`feature/2.0.x`（实施与验证）+ `feature/1.0.x`（同补丁移植，前提是该线可构建——见第 9 节残留项）
@@ -209,10 +209,10 @@ public Mono<Map<String, String>> dispatchAllAsync(String planId);
 ### 构建与验证命令
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
 # 2.0.x 用 Maven 4
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent,ddd4j-ai-extensions/ddd4j-ai-extension-flow \
   -Denforcer.skip=true -DskipITs test
 ```

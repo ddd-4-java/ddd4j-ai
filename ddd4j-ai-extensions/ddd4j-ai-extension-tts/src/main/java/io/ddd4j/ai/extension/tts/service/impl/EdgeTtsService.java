@@ -20,10 +20,10 @@ import java.io.ByteArrayOutputStream;
  * <p>本类保留此实现是作为：
  * <ul>
  *   <li>无 DashScope API key 时的兜底后端</li>
- *   <li>{@link FallbackTtsRouter} 链路中的次选</li>
+ *   <li>{@code FallbackTtsRouter} 链路中的次选</li>
  * </ul>
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class EdgeTtsService implements TtsService {
 
@@ -31,6 +31,11 @@ public class EdgeTtsService implements TtsService {
 
     private final String defaultVoice;
 
+    /**
+     * 创建 Edge TTS 实现。
+     *
+     * @param defaultVoice 默认音色 shortName（voice 为空时使用）
+     */
     public EdgeTtsService(String defaultVoice) {
         this.defaultVoice = defaultVoice;
     }

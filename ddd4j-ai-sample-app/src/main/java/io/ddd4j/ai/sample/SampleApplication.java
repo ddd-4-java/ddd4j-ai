@@ -17,11 +17,22 @@ import org.springframework.context.annotation.Bean;
  *   ollama pull all-minilm
  * </pre>
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @SpringBootApplication
 public class SampleApplication {
 
+    /**
+     * 默认构造器（应用主类无状态，由 Spring 容器管理）。
+     */
+    public SampleApplication() {
+    }
+
+    /**
+     * 启动示例应用。
+     *
+     * @param args 命令行参数
+     */
     public static void main(String[] args) {
         SpringApplication.run(SampleApplication.class, args);
     }

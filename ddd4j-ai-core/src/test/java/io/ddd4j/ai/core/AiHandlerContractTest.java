@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * {@link AiHandler} 调用契约测试：以测试桩验证 request → response 往返与稳定命名。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class AiHandlerContractTest {
 

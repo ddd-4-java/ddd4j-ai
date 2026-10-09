@@ -24,11 +24,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 会话记忆 PostgreSQL 容器集成测试：官方 JdbcChatMemoryRepository 作为存储后端，
  * 验证 WindowMemoryService 的持久化往返与窗口截断。无 Docker 自动跳过。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Testcontainers(disabledWithoutDocker = true)
 class PostgresChatMemoryIntegrationTest {
 
+    // 测试镜像来源: https://testcontainers.com/modules/postgresql/
     @Container
     static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine");
 

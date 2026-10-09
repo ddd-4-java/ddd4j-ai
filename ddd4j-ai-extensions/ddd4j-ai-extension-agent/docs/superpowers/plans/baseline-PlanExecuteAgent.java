@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
  * 计划解析支持 {@code 1. item}、{@code - item}、{@code * item} 行前缀，
  * 步数由 {@code maxPlanSteps} 约束。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class PlanExecuteAgent implements AgentService {
 

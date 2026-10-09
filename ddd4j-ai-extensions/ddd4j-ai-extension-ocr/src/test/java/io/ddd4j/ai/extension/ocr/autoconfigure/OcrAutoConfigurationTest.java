@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * {@link OcrAutoConfiguration} 装配测试：默认装配 / 关闭回退 / 自定义端口覆盖。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class OcrAutoConfigurationTest {
 

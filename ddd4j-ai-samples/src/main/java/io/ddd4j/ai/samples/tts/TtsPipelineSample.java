@@ -21,7 +21,7 @@ import reactor.core.publisher.Flux;
  * <p>注意：本示例展示用法而非真实联机，{@link #streamSpeech(String, String)} 在 DashScope 后端
  * 启用时通过 WebSocket 流式输出音频帧；在 Edge 后端时为单元素 mp3 流。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Component
 public class TtsPipelineSample {
@@ -30,6 +30,13 @@ public class TtsPipelineSample {
     private final TtsService tts;
     private final TtsMetrics metrics;
 
+    /**
+     * 构造 TtsPipelineSample。
+     *
+     * @param ttsRouter TTS 路由器
+     * @param tts TTS 语音合成服务
+     * @param metrics TTS 指标采集器
+     */
     public TtsPipelineSample(TtsRouter ttsRouter, TtsService tts, TtsMetrics metrics) {
         this.ttsRouter = ttsRouter;
         this.tts = tts;
@@ -38,6 +45,10 @@ public class TtsPipelineSample {
 
     /**
      * 流式合成：业务方直接订阅返回的 Flux 即可拿到音频字节流。
+     *
+     * @param text 文本内容
+     * @param voice 音色标识
+     * @return 响应式数据流
      */
     public Flux<byte[]> streamSpeech(String text, String voice) {
         return ttsRouter.streamSynthesize(text, voice);
@@ -52,6 +63,10 @@ public class TtsPipelineSample {
      *         agentService.streamSynthesizeEvents(instruction), "zh-CN-XiaoxiaoNeural");
      * audio.subscribe(bytes -> writeToPlayer(bytes));
      * }</pre>
+     *
+     * @param agentEvents 智能体事件流
+     * @param voice 音色标识
+     * @return 响应式数据流
      */
     public Flux<byte[]> pipeAgentTextDeltas(Flux<io.agentscope.core.event.AgentEvent> agentEvents,
                                             String voice) {
@@ -62,6 +77,11 @@ public class TtsPipelineSample {
 
     /**
      * 单次合成 + 摘要当前 TTFA 指标：用于演示日志输出。
+     *
+     * @param text 文本内容
+     * @param voice 音色标识
+     * @return 执行结果
+     * @throws Exception 执行过程中出现异常时抛出
      */
     public byte[] synthesizeAndLogMetrics(String text, String voice) throws Exception {
         byte[] audio = tts.synthesize(text, voice);

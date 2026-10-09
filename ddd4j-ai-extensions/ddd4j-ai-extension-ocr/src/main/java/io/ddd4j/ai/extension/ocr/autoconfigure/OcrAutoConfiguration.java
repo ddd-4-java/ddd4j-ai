@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Primary;
  * 文档识别自动装配：PDFBox 与 Tika 均就位时组合为单一端口实现，
  * 按媒体类型分派（PDF → PDFBox 直提，其余 → Tika）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @AutoConfiguration
 @ConditionalOnClass({PDFTextStripper.class, AutoDetectParser.class})
@@ -27,6 +27,19 @@ import org.springframework.context.annotation.Primary;
 @EnableConfigurationProperties(OcrProperties.class)
 public class OcrAutoConfiguration {
 
+    /**
+     * 默认构造器（自动装配类无状态）。
+     */
+    public OcrAutoConfiguration() {
+    }
+
+    /**
+     * 装配组合识别端口：按媒体类型分派到 PDFBox 或 Tika。
+     *
+     * @param pdfBoxOcrService PDF 专用提取实现
+     * @param tikaOcrService   多格式提取实现
+     * @return 识别端口 Bean（{@code @Primary}）
+     */
     @Bean
     @Primary
     @ConditionalOnMissingBean(OcrService.class)
@@ -34,11 +47,22 @@ public class OcrAutoConfiguration {
         return new CompositeOcrService(pdfBoxOcrService, tikaOcrService);
     }
 
+    /**
+     * 装配 PDFBox 提取实现。
+     *
+     * @return PDF 提取实现 Bean
+     */
     @Bean
     public PdfBoxOcrService pdfBoxOcrService() {
         return new PdfBoxOcrService();
     }
 
+    /**
+     * 装配 Tika 多格式提取实现。
+     *
+     * @param properties 识别配置属性
+     * @return Tika 提取实现 Bean
+     */
     @Bean
     public TikaOcrService tikaOcrService(OcrProperties properties) {
         return new TikaOcrService(properties.isOcrEnabled());

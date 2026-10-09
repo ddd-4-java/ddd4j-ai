@@ -3,7 +3,7 @@ package io.ddd4j.ai.extension.document;
 /**
  * 文档解析输出来源：追踪每次读取由哪个引擎产出（智能体可信度与审计）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public enum SourceType {
 

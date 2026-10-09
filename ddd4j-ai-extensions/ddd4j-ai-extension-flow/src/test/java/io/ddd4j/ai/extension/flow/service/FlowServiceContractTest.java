@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * {@link FlowService} 端口契约测试：运行语义 / 流式 / 异常传播 / DSL 校验。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class FlowServiceContractTest {
 

@@ -1,4 +1,4 @@
-# ddd4j-ai-extension-agent v2.1：替换为 Agentscope 域模型（修正版，按 cloud-agents 实际 API）
+# ddd4j-ai-extension-agent v2.1：替换为 Agentscope 域模型（修正版，按 参考实现 实际 API）
 
 > **实施记录（2026-09-02，全部 7 Task 完成）**：
 > - Task 1（fc45fc4）：agentscope-core/harness/extensions-model-openai 提升 compile scope
@@ -13,7 +13,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
-**修订背景（2026-09-02 关键发现）**：plan 初稿基于错误的 Agentscope API 假设（`Model.reply()`/`Msg.builder().textContent()`/`TextContent.of()`），实际 agentscope-core 2.0.0 jar 中这些 API 形态完全不同。本计划按 cloud-agents 真实代码路径修订：
+**修订背景（2026-09-02 关键发现）**：plan 初稿基于错误的 Agentscope API 假设（`Model.reply()`/`Msg.builder().textContent()`/`TextContent.of()`），实际 agentscope-core 2.0.0 jar 中这些 API 形态完全不同。本计划按 参考实现 真实代码路径修订：
 
 | 旧 plan 假设 | 实际 API（已核实） |
 |------------|----------------|
@@ -22,17 +22,17 @@
 | `TextContent.of(chunk)` | **不存在** `TextContent` 子类；`ContentBlock` 是普通类，文本走 `AssistantMessage(String)` |
 | `Toolkit.Builder` | `Toolkit.registerTool(AgentTool)` |
 | `Tool` 是接口 | 实际 `io.agentscope.core.tool.AgentTool`（类）+ `ToolCallParam` + `ToolResultBlock` |
-| 适配 Model 接口再被 `ReActAgent.Builder` 消费 | 实际 cloud-agents **不写 Model 适配**，直接构造 `HarnessAgent`（含 plan/replay/subagent）+ 用 `OpenAIChatModel` |
+| 适配 Model 接口再被 `ReActAgent.Builder` 消费 | 实际 参考实现 **不写 Model 适配**，直接构造 `HarnessAgent`（含 plan/replay/subagent）+ 用 `OpenAIChatModel` |
 
-**Goal:** 在 2.0.x 上将 `ddd4j-ai-extension-agent` 默认实现替换为 **Agentscope-Java 2.0.0**（参考 cloud-agents `AgentScopeHarnessFactory` 实际架构），保留 `AgentService` SPI 作为业务调用方稳定入口；删除自实现 `ReActAgent`/`PlanExecuteAgent`。验证后 cherry-pick 到 1.0.x。
+**Goal:** 在 2.0.x 上将 `ddd4j-ai-extension-agent` 默认实现替换为 **Agentscope-Java 2.0.0**（参考 参考实现 `AgentScopeHarnessFactory` 实际架构），保留 `AgentService` SPI 作为业务调用方稳定入口；删除自实现 `ReActAgent`/`PlanExecuteAgent`。验证后 cherry-pick 到 1.0.x。
 
 **关键决策**：
-- 严格对齐 cloud-agents 实际 API 调用形态——避免 plan 初稿的"猜 API"
+- 严格对齐 参考实现 实际 API 调用形态——避免 plan 初稿的"猜 API"
 - 保留 `AgentService`/`AgentTask`/`AgentStep`/`AgentResult` 契约（flow/router/samples 仍依赖）；由 `AgentScopeAgentAdapter implements AgentService` 包装 Agentscope `HarnessAgent` 调用结果
 - 自实现 `ReActAgent`/`PlanExecuteAgent` 内部类删除；对应 9 个内部测试改写为对 Agentscope Beans 的契约测试
-- `SpringAiChatModelAdapter`（Model 适配器）**不**需要——Agentscope `HarnessAgent.Builder.model(String)` 支持字符串模型名（按 cloud-agents `AgentScopeHarnessFactory.java:67` 的 `.model(agent.getModelName())` 直接传字符串模型名），Model provider 由业务侧按 agentscope-extensions-model-openai 配置
+- `SpringAiChatModelAdapter`（Model 适配器）**不**需要——Agentscope `HarnessAgent.Builder.model(String)` 支持字符串模型名（按 参考实现 `AgentScopeHarnessFactory.java:67` 的 `.model(agent.getModelName())` 直接传字符串模型名），Model provider 由业务侧按 agentscope-extensions-model-openai 配置
 
-**Architecture（替换后，与 cloud-agents 对齐）**：
+**Architecture（替换后，与 参考实现 对齐）**：
 ```
 [业务调用方: flow/router/samples] → AgentService SPI（不变）
                                        ↓
@@ -85,7 +85,7 @@ agentscope-core/harness/extensions-model-openai 已 compile；17 既有测试保
 - Create: `src/main/java/io/ddd4j/ai/extension/agent/agent/AgentScopeAgentAdapter.java`
 - Create: `src/test/java/io/ddd4j/ai/extension/agent/agent/AgentScopeAgentAdapterTest.java`
 
-**Interfaces（按 cloud-agents 实际 API 形态）**：
+**Interfaces（按 参考实现 实际 API 形态）**：
 - `public final class AgentScopeAgentAdapter implements AgentService`
 - 构造：`AgentScopeAgentAdapter(HarnessAgent harnessAgent)` — 业务侧构造 HarnessAgent 并注入 Model/Toolkit/Memory/Subagents 后传入
 - `execute(AgentTask task)`：
@@ -101,7 +101,7 @@ agentscope-core/harness/extensions-model-openai 已 compile；17 既有测试保
   return events.map(event -> mapToStep(event));  // → Flux<AgentStep>
   ```
 - 错误：`Mono`/`Flux` 抛异常 → 包 `AgentExecutionException extends RuntimeException`
-- **不**实现 `Model` 接口（cloud-agents 也不实现）——直接用 `HarnessAgent.Builder` 在 AutoConfiguration 中装配
+- **不**实现 `Model` 接口（参考实现 也不实现）——直接用 `HarnessAgent.Builder` 在 AutoConfiguration 中装配
 
 - [x] **Step 1: 写失败测试** `AgentScopeAgentAdapterTest`（5 个）：
   - `execute_returnsAgentResultFromAssistantMessage`
@@ -121,7 +121,7 @@ agentscope-core/harness/extensions-model-openai 已 compile；17 既有测试保
 - Create: `src/main/java/io/ddd4j/ai/extension/agent/agent/SpringAiToolkitBuilder.java`
 - Create: `src/test/java/io/ddd4j/ai/extension/agent/agent/SpringAiToolkitBuilderTest.java`
 
-**Interfaces（参考 cloud-agents `AgentScopeOpenClawToolAdapter`）**：
+**Interfaces（参考 参考实现 `AgentScopeOpenClawToolAdapter`）**：
 - `public final class SpringAiToolkitBuilder` 工具类（不实例化）
 - `public static Toolkit.Builder registerSpringAiTools(Toolkit.Builder builder, List<ToolCallback> callbacks)` — 批量注册 Spring AI 工具回调
 - 内部适配类 `SpringAiAgentTool implements AgentTool`：
@@ -148,7 +148,7 @@ agentscope-core/harness/extensions-model-openai 已 compile；17 既有测试保
 - Modify: `src/main/java/io/ddd4j/ai/extension/agent/autoconfigure/AgentAutoConfiguration.java`
 - Modify: `src/test/java/io/ddd4j/ai/extension/agent/autoconfigure/AgentAutoConfigurationTest.java`
 
-**Interfaces（参考 cloud-agents `AgentScopeHarnessFactory.java:41-78`）**：
+**Interfaces（参考 参考实现 `AgentScopeHarnessFactory.java:41-78`）**：
 - `@Bean @ConditionalOnMissingBean public HarnessAgent harnessAgent(AgentProperties properties, ObjectProvider<List<ToolCallback>> toolCallbacks, ObjectProvider<Model> modelProvider)`：
   ```java
   HarnessAgent.Builder builder = HarnessAgent.builder()
@@ -201,7 +201,7 @@ agentscope-core/harness/extensions-model-openai 已 compile；17 既有测试保
 **Files:**
 - Modify: `ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/agent/AgentSample.java`
 
-**Interfaces（参考 cloud-agents AgentScopeHarnessFactory）**：
+**Interfaces（参考 参考实现 AgentScopeHarnessFactory）**：
 - 演示用 `HarnessAgent.Builder` 直接构造 + `OpenAIChatModel.builder()...build()` 装配 Model + `Toolkit.registerTool()` 演示工具
 - 不再依赖 `AgentService`（改用 Agentscope 原生调用）
 
@@ -230,5 +230,5 @@ agentscope-core/harness/extensions-model-openai 已 compile；17 既有测试保
 - **公共契约零破坏**：`AgentService`/`AgentTask`/`AgentStep`/`AgentResult` 不动
 - **回退成本**：单 commit `git revert` 即可
 - **风险面**：仅 agent 模块 + samples 写入；其他 12 组件不动
-- **vs 初稿差异**：删除了错误的 `SpringAiChatModelAdapter implements Model`（实际不需要）；改为 `SpringAiToolkitBuilder` 工具类（参考 cloud-agents `AgentScopeOpenClawToolAdapter`）；删除 `PlanExecuteAgent` 与 `PlanExecuteAgentTest`（Agentscope HarnessAgent 内置 plan 逻辑）
+- **vs 初稿差异**：删除了错误的 `SpringAiChatModelAdapter implements Model`（实际不需要）；改为 `SpringAiToolkitBuilder` 工具类（参考 参考实现 `AgentScopeOpenClawToolAdapter`）；删除 `PlanExecuteAgent` 与 `PlanExecuteAgentTest`（Agentscope HarnessAgent 内置 plan 逻辑）
 - **占位扫描**：无 TODO

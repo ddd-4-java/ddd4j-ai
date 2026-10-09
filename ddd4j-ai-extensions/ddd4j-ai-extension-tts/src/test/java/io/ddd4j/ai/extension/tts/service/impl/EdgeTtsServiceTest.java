@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@link EdgeTtsService} 联机冒烟测试：需外网访问微软 Edge TTS 服务，
  * 默认禁用（CI 无外网），本地手动验证时开启。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Disabled("需要外网访问 Edge TTS 服务，本地手动验证")
 class EdgeTtsServiceTest {

@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * 4 组件委托解析器契约测试：类型路由 / 高优先级 / 空参校验 / 未就位降级语义。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class ComponentDelegationParsersTest {
 

@@ -11,7 +11,7 @@ import java.util.Objects;
  * 向量嵌入适配器：委托 Spring AI {@link EmbeddingModel}；
  * 批量请求按 batchSize 分片，避免超出供应商单批上限。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class EmbeddingModelAdapter implements EmbeddingService {
 
@@ -19,6 +19,13 @@ public class EmbeddingModelAdapter implements EmbeddingService {
 
     private final int batchSize;
 
+    /**
+     * 创建嵌入适配器。
+     *
+     * @param embeddingModel 底层嵌入模型，不允许 {@code null}
+     * @param batchSize      单批大小，小于 1 时按 1 处理
+     * @throws NullPointerException {@code embeddingModel} 为 {@code null}
+     */
     public EmbeddingModelAdapter(EmbeddingModel embeddingModel, int batchSize) {
         this.embeddingModel = Objects.requireNonNull(embeddingModel, "embeddingModel");
         this.batchSize = Math.max(1, batchSize);

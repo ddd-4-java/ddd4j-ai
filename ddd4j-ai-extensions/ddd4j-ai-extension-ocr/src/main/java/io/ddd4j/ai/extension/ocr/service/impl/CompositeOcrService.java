@@ -11,13 +11,19 @@ import java.util.List;
  * 策略组合实现：PDF 走 PDFBox 直提，其余格式走 Tika 多格式解析，
  * 端口层唯一 {@code OcrService} 入口，避免多实现注入歧义。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class CompositeOcrService implements OcrService {
 
     private final PdfBoxOcrService pdfBoxOcrService;
     private final TikaOcrService tikaOcrService;
 
+    /**
+     * 创建组合实现。
+     *
+     * @param pdfBoxOcrService PDF 提取实现，可为 {@code null}（此时全部走 Tika）
+     * @param tikaOcrService   多格式提取实现
+     */
     public CompositeOcrService(PdfBoxOcrService pdfBoxOcrService, TikaOcrService tikaOcrService) {
         this.pdfBoxOcrService = pdfBoxOcrService;
         this.tikaOcrService = tikaOcrService;

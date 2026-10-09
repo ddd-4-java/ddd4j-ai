@@ -51,7 +51,7 @@ import io.ddd4j.ai.extension.document.properties.DocumentProperties;
  * 项目 target Java 17 无法加载且无低版本可退，故按计划预留的 {@link SourceType#TIKA_FALLBACK}
  * 角色改用 Apache Tika 3.3.2（已在依赖治理中、Java 17 兼容）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public final class TikaDocumentParser implements DocumentParser {
 
@@ -63,14 +63,28 @@ public final class TikaDocumentParser implements DocumentParser {
     private final DocumentProperties properties;
     private final AsrService asrService;
 
+    /**
+     * 默认构造器：使用默认配置且不挂接语音服务。
+     */
     public TikaDocumentParser() {
         this(new DocumentProperties(), null);
     }
 
+    /**
+     * 指定配置的构造器，不挂接语音服务。
+     *
+     * @param properties 文档解析配置
+     */
     public TikaDocumentParser(DocumentProperties properties) {
         this(properties, null);
     }
 
+    /**
+     * 全参构造器。
+     *
+     * @param properties 文档解析配置
+     * @param asrService 语音服务，可为 {@code null}
+     */
     public TikaDocumentParser(DocumentProperties properties, AsrService asrService) {
         this.properties = properties;
         this.asrService = asrService;

@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * 权重策略：按模型权重比例随机分发（无权重候选退化为轮询兜底）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class WeightedStrategy implements RoutingStrategy {
 
@@ -19,10 +19,21 @@ public class WeightedStrategy implements RoutingStrategy {
     private final AtomicInteger counter = new AtomicInteger();
     private final Random random;
 
+    /**
+     * 创建权重策略（内部使用默认随机源）。
+     *
+     * @param weights 模型 id → 权重，{@code null} 按空表处理
+     */
     public WeightedStrategy(Map<String, Integer> weights) {
         this(weights, new Random());
     }
 
+    /**
+     * 创建权重策略（注入随机源，便于测试）。
+     *
+     * @param weights 模型 id → 权重，{@code null} 按空表处理
+     * @param random  随机源
+     */
     WeightedStrategy(Map<String, Integer> weights, Random random) {
         this.weights = weights == null ? Map.of() : Map.copyOf(weights);
         this.random = random;

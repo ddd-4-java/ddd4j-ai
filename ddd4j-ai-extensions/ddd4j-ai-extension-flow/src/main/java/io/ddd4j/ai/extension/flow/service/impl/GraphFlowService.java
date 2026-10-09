@@ -29,7 +29,7 @@ import java.util.concurrent.CompletableFuture;
  *   <li>BRANCH 节点：按 inputKey 的 state 值经 branches 映射路由（未命中抛异常）</li>
  * </ul>
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class GraphFlowService implements FlowService {
 
@@ -37,10 +37,23 @@ public class GraphFlowService implements FlowService {
     private final List<ToolCallback> toolCallbacks;
     private final io.ddd4j.ai.extension.agent.service.AgentService agentService;
 
+    /**
+     * 创建服务（不挂接智能体服务，AGENT 节点不可用）。
+     *
+     * @param chatService   对话端口
+     * @param toolCallbacks 工具回调集合，{@code null} 按空处理
+     */
     public GraphFlowService(ChatService chatService, List<ToolCallback> toolCallbacks) {
         this(chatService, toolCallbacks, null);
     }
 
+    /**
+     * 创建服务。
+     *
+     * @param chatService   对话端口
+     * @param toolCallbacks 工具回调集合，{@code null} 按空处理
+     * @param agentService  智能体服务，可为 {@code null}
+     */
     public GraphFlowService(ChatService chatService, List<ToolCallback> toolCallbacks,
                             io.ddd4j.ai.extension.agent.service.AgentService agentService) {
         this.chatService = chatService;

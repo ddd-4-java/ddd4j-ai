@@ -5,7 +5,7 @@ import reactor.core.publisher.Flux;
 /**
  * 文本转语音端口：合成完整音频字节或流式输出。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface TtsService {
 

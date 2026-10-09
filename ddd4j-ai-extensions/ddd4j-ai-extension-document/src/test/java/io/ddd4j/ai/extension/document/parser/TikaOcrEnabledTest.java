@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * {@link TikaDocumentParser} OCR 开关测试：默认关闭 / 开启无 tesseract 优雅降级 / 图像元数据解析。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class TikaOcrEnabledTest {
 

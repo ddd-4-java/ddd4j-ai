@@ -24,11 +24,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 向量数据库组件 pgvector 容器集成测试（镜像 pgvector/pgvector:pg16，经 PostgreSQLContainer 驱动）：
  * 真实 PgVectorStore 后端验证 VectorStoreAdapter 的入库/检索/删除。无 Docker 自动跳过。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Testcontainers(disabledWithoutDocker = true)
 class PgVectorStoreIntegrationTest {
 
+    // 测试镜像来源: https://testcontainers.com/modules/pgvector/
+    // 本测试经官方 PostgreSQL 模块驱动 pgvector 兼容镜像（asCompatibleSubstituteFor("postgres")）
     @Container
     static final PostgreSQLContainer<?> PGVECTOR = new PostgreSQLContainer<>(
             DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));

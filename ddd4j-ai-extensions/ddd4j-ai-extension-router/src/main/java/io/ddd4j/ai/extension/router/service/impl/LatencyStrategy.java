@@ -11,9 +11,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * 延迟策略：优先选择最近响应最快（记录耗时最小）的模型；尚无记录时轮询兜底。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class LatencyStrategy implements RoutingStrategy {
+
+    /**
+     * 默认构造器（延迟表在实例内部维护，无外部依赖）。
+     */
+    public LatencyStrategy() {
+    }
 
     private final ConcurrentHashMap<String, Long> latencies = new ConcurrentHashMap<>();
     private final AtomicInteger counter = new AtomicInteger();

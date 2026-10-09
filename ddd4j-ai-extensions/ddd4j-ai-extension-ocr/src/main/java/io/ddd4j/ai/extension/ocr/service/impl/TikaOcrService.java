@@ -18,12 +18,17 @@ import java.util.List;
  * 多格式解析：基于 Apache Tika 自动探测 Office / HTML / PDF / 图像等格式，
  * 提取嵌入式文本与元数据；{@code ocrEnabled} 时启用 Tesseract OCR 扫描图像。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class TikaOcrService implements OcrService {
 
     private final boolean ocrEnabled;
 
+    /**
+     * 创建 Tika 提取实现。
+     *
+     * @param ocrEnabled 是否启用 Tesseract OCR 扫描图像
+     */
     public TikaOcrService(boolean ocrEnabled) {
         this.ocrEnabled = ocrEnabled;
     }

@@ -1,17 +1,17 @@
 package io.ddd4j.ai.core;
 
 /**
- * Minimal AI invocation handler contract.
+ * 最小化的 AI 调用处理契约：接收请求并返回规范化响应。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface AiHandler extends AiComponent {
 
     /**
-     * Handles a request and returns a normalized response.
+     * 处理一次 AI 调用请求并返回规范化响应。
      *
-     * @param request request
-     * @return response
+     * @param request 调用请求，不允许为 {@code null}
+     * @return 规范化响应
      */
     AiResponse handle(AiRequest request);
 }

@@ -29,7 +29,7 @@ import java.util.List;
  * if (!tail.isEmpty()) ttsService.streamSynthesize(tail, voice).subscribe();
  * }</pre>
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public final class TextChunker {
 
@@ -56,10 +56,23 @@ public final class TextChunker {
         this.buffer = new StringBuilder();
     }
 
+    /**
+     * 创建分块器。
+     *
+     * @param maxChars 最大 chunk 字符数（{@code >= 1}）
+     * @param minChars 最小切分阈值（{@code [0, maxChars]}）
+     * @return 分块器实例
+     * @throws IllegalArgumentException 参数越界
+     */
     public static TextChunker create(int maxChars, int minChars) {
         return new TextChunker(maxChars, minChars);
     }
 
+    /**
+     * 创建默认分块器（24/1，与对话式 TTS 推荐值对齐）。
+     *
+     * @return 使用默认参数的分块器
+     */
     public static TextChunker defaultChunker() {
         return new TextChunker(DEFAULT_MAX_CHARS, DEFAULT_MIN_CHARS);
     }
@@ -123,7 +136,11 @@ public final class TextChunker {
         return remaining;
     }
 
-    /** 当前缓冲长度（用于监控 / 调试）。 */
+    /**
+     * 当前缓冲长度（用于监控 / 调试）。
+     *
+     * @return 缓冲中的字符数
+     */
     public int pendingSize() {
         return buffer.length();
     }

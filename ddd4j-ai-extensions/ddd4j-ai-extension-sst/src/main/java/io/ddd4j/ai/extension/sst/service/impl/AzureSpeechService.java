@@ -17,16 +17,19 @@ import java.util.Objects;
 import java.util.concurrent.Future;
 
 /**
- * @Title: AzureSpeechService
- * @Package com.easy.learn.tts
- * @Author: czq
- * @Date: 2024年06月27日 9:47
- * @Desc:
+ * 云语音服务实现：基于订阅密钥初始化语音配置，提供文本转语音与语音转文本能力。
+ *
+ * @author ddd4j
  */
-
 @Slf4j
 @Component
 public class AzureSpeechService implements SpeechService<SpeechConfig>, InitializingBean {
+
+    /**
+     * 默认构造器（依赖字段由 Spring 注入）。
+     */
+    public AzureSpeechService() {
+    }
 
 //    @Value("${tts.azure.speech.key:bc0f7f96d1854214832adca4e143b3d5}")
 //    private String speechKey;
@@ -62,6 +65,11 @@ public class AzureSpeechService implements SpeechService<SpeechConfig>, Initiali
 
     }
 
+    /**
+     * 构建一次性的语音识别配置（带 1 秒分段静音超时）。
+     *
+     * @return 新建的语音配置
+     */
     public SpeechConfig getDefaultSpeechSTTConfig() {
         String speechKey = azureSpeechProperties.getKey();
         String speechRegion = azureSpeechProperties.getRegion();

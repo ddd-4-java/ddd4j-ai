@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * {@link AzureSpeechProperties} 配置绑定测试：校验 {@code azure.speech.*} 前缀到字段的映射。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class AzureSpeechPropertiesTest {
 

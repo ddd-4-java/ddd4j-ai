@@ -14,7 +14,7 @@ import static org.mockito.Mockito.mock;
  * 调度器装配测试：xxl-job 条件装配 / 未配置回退 / 自定义调度器优先。
  * 执行需 ddd4j.ai.agent.api-key（HarnessAgent 链路依赖 Model）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class AgentSchedulerAutoConfigurationTest {
 

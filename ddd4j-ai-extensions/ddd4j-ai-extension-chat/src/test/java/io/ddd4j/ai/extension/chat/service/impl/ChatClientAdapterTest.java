@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
  * {@link ChatClientAdapter} 单元测试：mock ChatClient 链式调用，
  * 验证单轮转发、多轮记忆读写、AiHandler 直通、流式与缺失记忆的错误。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class ChatClientAdapterTest {
 

@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Bean;
 /**
  * 向量嵌入自动装配：依赖业务侧模型 starter 提供的 {@link EmbeddingModel}。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @AutoConfiguration(afterName = {
         "org.springframework.ai.model.ollama.autoconfigure.OllamaEmbeddingAutoConfiguration",
@@ -26,6 +26,19 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(EmbeddingProperties.class)
 public class EmbeddingAutoConfiguration {
 
+    /**
+     * 默认构造器（自动装配类无状态）。
+     */
+    public EmbeddingAutoConfiguration() {
+    }
+
+    /**
+     * 装配向量嵌入服务（适配业务侧 {@link EmbeddingModel}，按 batchSize 分片）。
+     *
+     * @param embeddingModel 业务侧提供的嵌入模型
+     * @param properties     嵌入配置属性
+     * @return 向量嵌入服务 Bean
+     */
     @Bean
     @ConditionalOnMissingBean(EmbeddingService.class)
     public EmbeddingService embeddingService(EmbeddingModel embeddingModel, EmbeddingProperties properties) {

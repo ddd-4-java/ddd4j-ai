@@ -6,7 +6,7 @@ import reactor.core.publisher.Flux;
 /**
  * 多模型路由端口：按策略在候选模型池中选择并转发请求。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface ChatRouter {
 

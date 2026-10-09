@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * {@link PdfBoxOcrService} 单元测试：本地生成真实 PDF 验证文本直提（无需 Docker）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class PdfBoxOcrServiceTest {
 

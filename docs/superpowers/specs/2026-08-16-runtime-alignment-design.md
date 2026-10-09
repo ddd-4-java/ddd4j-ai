@@ -1,7 +1,7 @@
 # ddd4j-ai 运行时版本线对齐设计（boot 4.x / FW 7 / Spring AI 2.0 完整启用）
 
 - 日期：2026-08-16
-- 作者：PartMe.AI
+- 作者：ddd4j
 - 状态：已确认（当日实施）
 - 范围：`ddd4j-ai` 父链版本对齐 + Spring Framework 7 覆盖策略 + Spring AI 2.0 真实模型链路启用
 - 关联文档：`2026-08-07-ddd4j-ai-architecture-design.md` §9.4（兼容性约束来源）

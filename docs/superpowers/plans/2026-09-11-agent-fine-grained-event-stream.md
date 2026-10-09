@@ -15,8 +15,8 @@
 以下为 spec 的项目级约束，**每个任务都隐含包含**，逐字生效：
 
 - **Java 17**，两条线均为 `<java.version>17</java.version>`；record / lambda / switch 表达式可用。
-- **构建工具按线区分**：`feature/2.0.x` 的 `modelVersion=4.1.0` + `<subprojects>`，**必须**用 Maven 4（`/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn`，Maven 3 会报 `Malformed POM: Unrecognised tag: 'subprojects'`）；`feature/1.0.x` 的 `modelVersion=4.0.0`，用 Maven 3。
-- **JAVA_HOME 必须为 JDK 17**：`/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home`。系统默认 JDK 是 26 / 21，不设会编译目标错位。
+- **构建工具按线区分**：`feature/2.0.x` 的 `modelVersion=4.1.0` + `<subprojects>`，**必须**用 Maven 4（`<maven4-bin>/mvn`，Maven 3 会报 `Malformed POM: Unrecognised tag: 'subprojects'`）；`feature/1.0.x` 的 `modelVersion=4.0.0`，用 Maven 3。
+- **JAVA_HOME 必须为 JDK 17**：`<jdk17-home>`。系统默认 JDK 是 26 / 21，不设会编译目标错位。
 - **本项不改动任何 pom**（spec §7）。两线差异仅在 pom 语法与 `revision`，本项不碰它们。
 - **两线的 `AgentService.java` 与 `AgentScopeAgentAdapter.java` 必须保持逐字节相同**（spec §2 F4，移植前实测为空 diff）。移植后须再次用空 diff 验证。
 - **1.0.x 的 tts 扩展是旧版**（无 `bridge/`、`chunk/`、`metrics/`、`router/`）——**Task 3 不移植到 1.0.x**。
@@ -70,9 +70,9 @@
 - [ ] **Step 2: 运行测试确认失败**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent -am \
   -Denforcer.skip=true -DskipITs test
 ```
@@ -112,9 +112,9 @@ import io.agentscope.core.event.AgentEvent;
 - [ ] **Step 4: 运行测试确认通过**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent -am \
   -Denforcer.skip=true -DskipITs test
 ```
@@ -124,7 +124,7 @@ Expected: `Tests run: 6, Failures: 0, Errors: 0`（`AgentServiceContractTest` �
 - [ ] **Step 5: 提交**
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 git add \
   ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/service/AgentService.java \
   ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/service/AgentServiceContractTest.java
@@ -225,9 +225,9 @@ import static org.mockito.Mockito.verify;
 - [ ] **Step 2: 运行测试确认失败**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent -am \
   -Denforcer.skip=true -DskipITs test
 ```
@@ -267,9 +267,9 @@ import io.agentscope.core.event.AgentEvent;
 - [ ] **Step 4: 运行测试确认通过**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent -am \
   -Denforcer.skip=true -DskipITs test
 ```
@@ -279,7 +279,7 @@ Expected: `AgentScopeAgentAdapterTest` 原 7 例 + 新 4 例 = 11 例全绿；`A
 - [ ] **Step 5: 核实 streamEvents 是否为阻塞包装（spec §9 风险）**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
+export JAVA_HOME=<jdk17-home>
 javap -c -p -cp ~/.m2/repository/io/agentscope/agentscope-harness/2.0.2/agentscope-harness-2.0.2.jar \
   io.agentscope.harness.agent.HarnessAgent 2>/dev/null | grep -A 25 "streamEvents"
 ```
@@ -291,7 +291,7 @@ Expected: 方法体为 reactive 链，**不含** `block()` 或 `subscribe()`。
 - [ ] **Step 6: 提交**
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 git add \
   ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/agent/AgentScopeAgentAdapter.java \
   ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/agent/AgentScopeAgentAdapterTest.java
@@ -357,9 +357,9 @@ import io.agentscope.core.event.AgentEvent;
 - [ ] **Step 2: 运行测试**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-tts -am \
   -Denforcer.skip=true -DskipITs test
 ```
@@ -371,7 +371,7 @@ Expected: PASS（`TextDeltaTtsBridgeTest` 原 8 例 + 新 1 例 = 9 例）。
 - [ ] **Step 3: 提交**
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 git add \
   ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/test/java/io/ddd4j/ai/extension/tts/bridge/TextDeltaTtsBridgeTest.java
 git commit -m "test(tts): assert TextDeltaTtsBridge against a real TextBlockDeltaEvent
@@ -422,7 +422,7 @@ ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension
 - [ ] **Step 3: 用 Maven 3 构建并测试**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
+export JAVA_HOME=<jdk17-home>
 cd <1.0.x worktree 路径>
 mvn -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent -am \
   -Denforcer.skip=true -DskipITs test
@@ -433,7 +433,7 @@ Expected: 与 2.0.x 相同的用例数全绿（`AgentServiceContractTest` 6 例�
 - [ ] **Step 4: 验证两线关键文件逐字节相同**
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 A=ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent
 B=ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent
 for f in $A/service/AgentService.java $A/agent/AgentScopeAgentAdapter.java \
@@ -480,7 +480,7 @@ git push origin feature/1.0.x
 `feature/2.0.x` 侧同样推送 Task 1+2+3 的 3 个提交：
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 git fetch github feature/2.0.x && git fetch origin feature/2.0.x
 git push github feature/2.0.x
 git push origin feature/2.0.x

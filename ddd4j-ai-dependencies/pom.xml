@@ -51,6 +51,46 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- 0-1. Testcontainers 家族基线钉版 1.21.4：BOM import 置于本 pom 最前，
+                 压过下方 Boot 4.0.7 所带 testcontainers-bom 2.0.5（2.0 线已把 ollama/mysql
+                 等构件改名为 testcontainers-* 前缀，导致 org.testcontainers:ollama 无版本可管理）；
+                 同时以下方直接条目覆盖上游 ddd4j-dependencies 继承的 junit-jupiter 1.20.6 /
+                 postgresql 1.20.6 / testcontainers 2.0.3 散条目，保证核心与模块同版。
+                 版本来源考证: ddd4j-boot-dependencies:4.0.x.20260630-SNAPSHOT 属性
+                 spring-boot-testcontainers.version=1.21.4（家族统一 testcontainers 版本）；
+                 本 pom 直接条目优先于继承与 BOM import，故 5 个在用构件统一解析到 1.21.4。 -->
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>mysql</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>ollama</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
             <!-- 0. Jackson 版本治理（项目规范）：2.0.x 线基于 Jackson 3（tools.jackson），
                  import tools.jackson:jackson-bom；dependencies 直接使用组件不写版本号。 -->
             <dependency>

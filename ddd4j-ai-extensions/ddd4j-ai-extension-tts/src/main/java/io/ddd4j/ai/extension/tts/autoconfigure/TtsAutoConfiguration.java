@@ -39,7 +39,7 @@ import java.util.Map;
  *   <li>{@link TtsMetrics}（可选注入用于查询/重置）</li>
  * </ul>
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @AutoConfiguration
 @ConditionalOnClass(TTS.class)
@@ -47,10 +47,19 @@ import java.util.Map;
 @EnableConfigurationProperties(TtsProperties.class)
 public class TtsAutoConfiguration {
 
+    /**
+     * 默认构造器（自动装配类无状态）。
+     */
+    public TtsAutoConfiguration() {
+    }
+
     private static final Logger log = LoggerFactory.getLogger(TtsAutoConfiguration.class);
 
     /**
      * Edge TTS 后端 Bean（always-on 默认后端）。
+     *
+     * @param properties TTS 配置属性（读取默认音色）
+     * @return Edge TTS 后端 Bean
      */
     @Bean(name = "edgeTtsService")
     @ConditionalOnMissingBean(name = "edgeTtsService")
@@ -64,6 +73,10 @@ public class TtsAutoConfiguration {
      *
      * <p>使用 {@code @ConditionalOnExpression} 确保无 api-key 时整个 Bean 不被创建，
      * 避免 Spring 不接受 {@code @Bean} 返回 null 的限制。
+     *
+     * @param properties     TTS 配置属性（api-key / 模型 / 音色）
+     * @param metricsProvider TTFA 指标提供器，缺失时内部新建
+     * @return DashScope Realtime TTS 后端 Bean
      */
     @Bean(name = "dashScopeRealtimeTtsService")
     @ConditionalOnMissingBean(name = "dashScopeRealtimeTtsService")
@@ -84,6 +97,8 @@ public class TtsAutoConfiguration {
 
     /**
      * TTFA 指标 Bean（共享）。
+     *
+     * @return TTFA 指标 Bean
      */
     @Bean
     @ConditionalOnMissingBean
@@ -94,6 +109,10 @@ public class TtsAutoConfiguration {
 
     /**
      * 多后端路由器 Bean：按 primary 顺序装配 fallback 链路，主后端失败时自动降级。
+     *
+     * @param ttsServiceBeans 容器内全部 TTS 后端
+     * @param properties      TTS 配置属性（决定 primary 顺序）
+     * @return TTS 路由器 Bean
      */
     @Bean
     @ConditionalOnMissingBean(TtsRouter.class)

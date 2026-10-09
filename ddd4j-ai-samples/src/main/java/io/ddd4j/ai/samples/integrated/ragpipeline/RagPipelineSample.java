@@ -28,6 +28,15 @@ public class RagPipelineSample {
     private final RagService ragService;
     private final ChatService chatService;
 
+    /**
+     * 构造 RagPipelineSample。
+     *
+     * @param documentReader 文档读取服务
+     * @param embeddingService 向量嵌入服务
+     * @param vectorDbService 向量库服务
+     * @param ragService RAG 检索服务
+     * @param chatService 对话服务
+     */
     public RagPipelineSample(DocumentReader documentReader, EmbeddingService embeddingService,
                              VectorDbService vectorDbService, RagService ragService, ChatService chatService) {
         this.documentReader = documentReader;
@@ -39,6 +48,9 @@ public class RagPipelineSample {
 
     /**
      * 文档摄取：解析文件 → 提取文本 → 向量化 → 存入向量库 → 注入 RAG 知识库。
+     *
+     * @param file 文件
+     * @throws Exception 执行过程中出现异常时抛出
      */
     public void ingestDocument(File file) throws Exception {
         var doc = documentReader.read(file);
@@ -48,6 +60,9 @@ public class RagPipelineSample {
 
     /**
      * RAG 问答：检索知识库 → 上下文注入 → LLM 生成回答。
+     *
+     * @param question 用户提问内容
+     * @return 文本结果
      */
     public String askWithRag(String question) {
         return ragService.query(question);
@@ -55,6 +70,9 @@ public class RagPipelineSample {
 
     /**
      * RAG 流式问答：逐 token 返回（适合 SSE）。
+     *
+     * @param question 用户提问内容
+     * @return 响应式数据流
      */
     public Flux<String> askWithRagStream(String question) {
         return ragService.queryStream(question);
@@ -62,6 +80,9 @@ public class RagPipelineSample {
 
     /**
      * 直接检索（不含 LLM 生成）：返回最相关的文档片段。
+     *
+     * @param query 检索问题
+     * @return 结果列表
      */
     public List<Document> searchKnowledge(String query) {
         return vectorDbService.search(query, 5, null);

@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * RAG 管道实现：组合 chat / vectordb 端口与可插拔 {@link Reranker}。
  * 摄取 = 分块（可配）→ 入库；查询 = 检索 → 重排 → 模板增强 → 生成。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class RagPipeline implements RagService {
 
@@ -31,6 +31,15 @@ public class RagPipeline implements RagService {
 
     private final RagProperties properties;
 
+    /**
+     * 创建 RAG 管道。
+     *
+     * @param chatService     对话端口，不允许 {@code null}
+     * @param vectorDbService 向量库端口，不允许 {@code null}
+     * @param reranker        重排器，不允许 {@code null}
+     * @param properties      RAG 配置属性，不允许 {@code null}
+     * @throws NullPointerException 任一组件为 {@code null}
+     */
     public RagPipeline(ChatService chatService, VectorDbService vectorDbService,
                        Reranker reranker, RagProperties properties) {
         this.chatService = Objects.requireNonNull(chatService, "chatService");

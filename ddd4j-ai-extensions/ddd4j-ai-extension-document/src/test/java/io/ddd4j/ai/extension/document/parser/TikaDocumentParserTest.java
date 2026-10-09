@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * {@link TikaDocumentParser} 单元测试：兜底语义 / 空参校验 / 纯文本与 HTML 端到端解析。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class TikaDocumentParserTest {
 

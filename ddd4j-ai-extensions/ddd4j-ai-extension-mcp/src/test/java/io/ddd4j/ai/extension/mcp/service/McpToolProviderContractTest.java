@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * {@link McpToolProvider} 端口契约测试：验证工具定义/调用约束。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class McpToolProviderContractTest {
 

@@ -16,13 +16,21 @@ import java.util.concurrent.TimeUnit;
  * 多模型路由实现：持有 ChatClient 池（bean 名 → 客户端），按策略选中模型后转发请求，
  * 并把单轮响应耗时回写策略（供延迟策略学习）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class MultiModelChatRouter implements ChatRouter {
 
     private final Map<String, ChatClient> clients;
     private final RoutingStrategy strategy;
 
+    /**
+     * 创建多模型路由器。
+     *
+     * @param clients 模型 id → ChatClient 映射，不允许为空
+     * @param strategy 路由策略，不允许 {@code null}
+     * @throws IllegalArgumentException {@code clients} 为 {@code null} 或空
+     * @throws NullPointerException {@code strategy} 为 {@code null}
+     */
     public MultiModelChatRouter(Map<String, ChatClient> clients, RoutingStrategy strategy) {
         if (clients == null || clients.isEmpty()) {
             throw new IllegalArgumentException("clients must not be empty");

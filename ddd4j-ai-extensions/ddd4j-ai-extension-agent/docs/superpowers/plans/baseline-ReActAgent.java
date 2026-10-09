@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  * {@code Action Input: <json>} 行原样交给 {@link ToolCallback#call(String)}），
  * 否则视为最终答案。循环步数由 {@code maxIterations} 约束，超限抛异常防死循环。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class ReActAgent implements AgentService {
 

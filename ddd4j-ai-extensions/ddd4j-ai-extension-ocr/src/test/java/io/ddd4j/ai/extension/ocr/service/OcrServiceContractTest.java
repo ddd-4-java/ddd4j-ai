@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * {@link OcrService} 端口契约测试：验证文本提取 / 文档提取 / 异常传播语义。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class OcrServiceContractTest {
 

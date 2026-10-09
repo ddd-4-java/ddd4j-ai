@@ -16,10 +16,16 @@ import io.ddd4j.ai.extension.document.MediaType;
  * <p>契约占位：待 {@code io.github.easy4j:easypdf-core} 发布后激活委托实现；
  * 当前 {@link #parse} 抛 {@link UnsupportedOperationException} 触发门面降级到通用兜底。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @ConditionalOnClass(name = "io.github.easy4j.pdf.core.convert.HtmlPdfConverter")
 public class EasypdfDocumentParser implements DocumentParser {
+
+    /**
+     * 默认构造器（解析器无状态，委托实现待组件发布后激活）。
+     */
+    public EasypdfDocumentParser() {
+    }
 
     @Override
     public MediaType supports() {

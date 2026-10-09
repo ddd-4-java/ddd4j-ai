@@ -1,0 +1,168 @@
+ddd4j-ai testcontainers 治理证据
+=====================================================================
+仓库: E:\workspaces\workspace-ddd4j\workspace-ddd4j-boot\ddd4j-ai
+分支: feature/2.0.x（git status 确认；任务开始时工作树已有 2 个未提交 pom 改动，未回滚）
+日期: 2026-10-08
+约束遵守: 未运行 mvn/gradle；未执行任何 git 写操作（commit/push/切分支）；
+          未改动 spring-ai 2.0.0 等已裁定版本。
+
+== 一、任务1：ollama 浮动镜像钉版 ==
+
+钉版前: ollama/ollama:latest（4 处，浮动标签）
+钉版后: ollama/ollama:0.40.1（4 处）
+来源 URL: https://hub.docker.com/v2/repositories/ollama/ollama/tags?page_size=25
+查询时间: 2026-10-08（WebFetch 实时查询）
+标签清单（节选，按 last_updated 倒序）:
+  latest（浮动）, 0.40.2-rc0 / 0.40.2-rc0-rocm（RC）, 0.40.1（稳定）,
+  0.40.1-rocm, 0.40.0（稳定）, 0.35.1（稳定）, 0.35.0（稳定）
+钉版理由: 0.40.1 为查询时点最新稳定版本标签（排除 latest、排除 rc、排除 rocm 变体）；
+          钉死固定标签使集成测试镜像可复现，消除 latest 漂移导致的测试行为不可预测。
+          4 处代码均带行内中文注释注明来源 URL 与钉版理由。
+
+官方 Ollama 模块评估结论:
+- 本仓 4 处 ollama 测试已经在使用官方模块 org.testcontainers:ollama
+  （类 org.testcontainers.ollama.OllamaContainer），模块页
+  https://testcontainers.com/modules/ollama/ 已经 WebFetch 核实为官方模块。
+- 评估结论: 无需切换——当前已是官方模块，构件版本由 org.testcontainers:ollama:1.21.4
+  显式钉死（见任务2），镜像标签本次钉到 0.40.1，属低风险现状；
+  保留 OllamaContainer + 镜像钉版 + 溯源注释，不再改动测试结构。
+
+== 二、任务2：testcontainers 版本治理审计 ==
+
+【审计基线】HEAD（提交 646eec3）: 本仓所有 pom 中 testcontainers 构件均无
+<version>、无 testcontainers 版本属性——即"未显式钉版"，与任务描述一致。
+
+【未钉版时的版本来源梳理】三个治理源互相打架，判定为"治理失效/漂移未管":
+
+来源 A —— 父链直接条目（继承自 io.ddd4j:ddd4j-parent:3.0.x.20260630-SNAPSHOT
+  → io.ddd4j:ddd4j-dependencies:3.0.x.20260630-SNAPSHOT）:
+  junit-jupiter=1.20.6, postgresql=1.20.6, testcontainers=2.0.3,
+  testcontainers-junit-jupiter/mysql/postgresql/kafka/rabbitmq=2.0.3,
+  属性 testcontainers-bom.version=2.0.5
+  考证: ~/.m2/repository/io/ddd4j/ddd4j-dependencies/3.0.x.20260630-SNAPSHOT/*.pom
+
+来源 B —— 本仓 import 的 org.springframework.boot:spring-boot-dependencies:4.0.7
+  （import testcontainers-bom 2.0.5）:
+  2.0.5 线构件已改名 testcontainers-* 前缀——testcontainers-bom-2.0.5.pom 中
+  仅见 testcontainers-ollama / testcontainers-mysql / testcontainers-postgresql /
+  testcontainers-junit-jupiter 等新名，无 org.testcontainers:ollama/mysql/
+  postgresql/junit-jupiter 旧名条目 → 本仓在用的旧名构件无法由此获得版本。
+  考证: ~/.m2/repository/org/testcontainers/testcontainers-bom/2.0.5/testcontainers-bom-2.0.5.pom
+
+来源 C —— 本仓 import 的 io.ddd4j.boot:ddd4j-boot-dependencies:4.0.x.20260630-SNAPSHOT
+  直接条目: testcontainers / junit-jupiter / mysql = 1.21.4
+  （属性 spring-boot-testcontainers.version=1.21.4，该 pom 注释:
+  「1.21.4 为 ddd4j 家族统一 testcontainers 版本」）；但不含 postgresql、ollama。
+
+净结果（HEAD）: org.testcontainers:ollama 完全无版本来源（构建缺陷风险）；
+postgresql 落 1.20.6；mysql/junit-jupiter 视继承优先级落 1.21.4 或 1.20.6/2.0.3——
+版本碎片化，必须显式钉版。
+
+【修复方案】（工作树未提交改动，任务开始前已在工作树中；本任务审计确认其有效，
+并补充"版本来源考证"注释到两处 pom）:
+1) 根 pom.xml 属性:
+   <testcontainers.version>1.21.4</testcontainers.version>
+2) ddd4j-ai-dependencies/pom.xml dependencyManagement 最前:
+   import org.testcontainers:testcontainers-bom:${testcontainers.version}
+   + 直接条目 testcontainers / junit-jupiter / mysql / postgresql / ollama
+     全部 = ${testcontainers.version}
+
+版本选择依据（未猜版）: 沿用可考证的家族统一版本 1.21.4——来源为
+ddd4j-boot-dependencies:4.0.x.20260630-SNAPSHOT 的
+spring-boot-testcontainers.version=1.21.4 及其「家族统一版本」注释。
+
+覆盖核对:
+- 模块实际使用的 5 个旧名构件（ollama/junit-jupiter/mysql/postgresql/testcontainers）
+  全部被本 pom 直接条目覆盖；直接条目优先于继承与 BOM import。
+- org.testcontainers:ollama:1.21.4 在 testcontainers-bom-1.21.4.pom 中存在
+  （本地仓库考证），本地仓库亦有 org/testcontainers/ollama/1.21.4 实际构件。
+- 继承链核对: ddd4j-ai-extensions/* → ddd4j-ai-dependencies；
+  ddd4j-ai-sample-app → ddd4j-ai-parent → ddd4j-ai-dependencies——
+  管理条目对全部使用方生效。
+- 旁证: 本地仓库 testcontainers-bom 可用版本含 1.21.4（1.14.3…1.21.4 与 2.0.2–2.0.5 并存）。
+
+redis-stack 检查:
+- RedisChatMemoryIntegrationTest 使用 GenericContainer +
+  DockerImageName.parse("redis/redis-stack-server:7.4.0-v0")——正确选择:
+  官方模块清单仅 Redis（https://testcontainers.com/modules/redis/），无 redis-stack
+  一等模块，默认镜像不含 RediSearch（该测试依赖 FT.CREATE）；
+  保留 GenericContainer，已补镜像来源注释（见第四节 #7）。
+
+== 三、任务3：官方模块清单核对 ==
+
+WebFetch https://testcontainers.com/modules/（2026-10-08）确认本仓涉及模块
+均为官方模块: Ollama、MySQL、PostgreSQL、Redis、pgvector、Kafka 均在官方清单中。
+本仓实际存在容器测试的镜像族: mysql / postgresql / pgvector / ollama / redis-stack；
+grep 全仓 Java 源确认: 无 kafka 容器测试（无 KafkaContainer/相关依赖），
+故 kafka 溯源项不适用。
+
+== 四、溯源覆盖清单（容器使用处 11 处 / 溯源注释 11 条，全量覆盖）==
+
+ 1. ddd4j-ai-extension-agent/src/test/.../MysqlStateStoreWiringTest.java:25
+    镜像 mysql:8.0 → https://testcontainers.com/modules/mysql/
+ 2. ddd4j-ai-extension-agent-store-jdbc/src/test/.../JdbcAgentDispatchTaskRepositoryMySqlTest.java:21
+    镜像 mysql:8.0 → https://testcontainers.com/modules/mysql/
+ 3. ddd4j-ai-extension-agent-store-jdbc/src/test/.../JdbcAgentDispatchTaskRepositoryPostgresTest.java:22
+    镜像 postgres:16-alpine → https://testcontainers.com/modules/postgresql/
+ 4. ddd4j-ai-extension-chat/src/test/.../OllamaChatIntegrationTest.java:35
+    镜像 ollama/ollama:0.40.1 → https://testcontainers.com/modules/ollama/
+ 5. ddd4j-ai-extension-embedding/src/test/.../OllamaEmbeddingIntegrationTest.java:32
+    镜像 ollama/ollama:0.40.1 → https://testcontainers.com/modules/ollama/
+ 6. ddd4j-ai-extension-memory/src/test/.../PostgresChatMemoryIntegrationTest.java:32
+    镜像 postgres:16-alpine → https://testcontainers.com/modules/postgresql/
+ 7. ddd4j-ai-extension-memory/src/test/.../RedisChatMemoryIntegrationTest.java:30
+    镜像 redis/redis-stack-server:7.4.0-v0（GenericContainer，非官方模块）
+    → 镜像源 https://hub.docker.com/r/redis/redis-stack-server（已 WebFetch 核实页面存在）
+    并注明官方 Redis 模块地址 https://testcontainers.com/modules/redis/
+ 8. ddd4j-ai-extension-rag/src/test/.../RagSmokeIntegrationTest.java:55
+    镜像 ollama/ollama:0.40.1 → https://testcontainers.com/modules/ollama/
+ 9. ddd4j-ai-extension-rag/src/test/.../RagSmokeIntegrationTest.java:61
+    镜像 pgvector/pgvector:pg16（经 PostgreSQLContainer 兼容替代驱动）
+    → https://testcontainers.com/modules/pgvector/
+10. ddd4j-ai-extension-vectordb/src/test/.../PgVectorStoreIntegrationTest.java:32
+    镜像 pgvector/pgvector:pg16 → https://testcontainers.com/modules/pgvector/
+11. ddd4j-ai-sample-app/src/test/.../SampleAppOllamaSmokeTest.java:38
+    镜像 ollama/ollama:0.40.1 → https://testcontainers.com/modules/ollama/
+
+== 五、改动文件清单 ==
+
+测试代码（本任务修改，10 个文件）:
+- ddd4j-ai-extensions/ddd4j-ai-extension-chat/src/test/java/io/ddd4j/ai/extension/chat/OllamaChatIntegrationTest.java
+- ddd4j-ai-extensions/ddd4j-ai-extension-embedding/src/test/java/io/ddd4j/ai/extension/embedding/OllamaEmbeddingIntegrationTest.java
+- ddd4j-ai-extensions/ddd4j-ai-extension-rag/src/test/java/io/ddd4j/ai/extension/rag/RagSmokeIntegrationTest.java
+- ddd4j-ai-sample-app/src/test/java/io/ddd4j/ai/sample/SampleAppOllamaSmokeTest.java
+  （以上 4 个: latest → 0.40.1 钉版 + 来源/理由注释 + 模块溯源注释）
+- ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/agent/MysqlStateStoreWiringTest.java
+- ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc/src/test/java/io/ddd4j/ai/extension/agent/store/jdbc/JdbcAgentDispatchTaskRepositoryMySqlTest.java
+- ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc/src/test/java/io/ddd4j/ai/extension/agent/store/jdbc/JdbcAgentDispatchTaskRepositoryPostgresTest.java
+- ddd4j-ai-extensions/ddd4j-ai-extension-memory/src/test/java/io/ddd4j/ai/extension/memory/PostgresChatMemoryIntegrationTest.java
+- ddd4j-ai-extensions/ddd4j-ai-extension-memory/src/test/java/io/ddd4j/ai/extension/memory/RedisChatMemoryIntegrationTest.java
+- ddd4j-ai-extensions/ddd4j-ai-extension-vectordb/src/test/java/io/ddd4j/ai/extension/vectordb/PgVectorStoreIntegrationTest.java
+  （以上 6 个: 仅补溯源注释，不改任何测试行为）
+
+配置（任务开始时已在工作树中的未提交钉版改动，本任务补充版本来源考证注释）:
+- pom.xml（testcontainers.version 属性 + 来源考证注释）
+- ddd4j-ai-dependencies/pom.xml（testcontainers-bom import + 5 个直接条目 + 来源考证注释）
+
+未改动: spring-ai.version=2.0.0 等已裁定版本；工作树中与本任务无关的既有改动
+（java.version、javadoc 门禁等）原样保留。
+
+== 六、验证方式与限制 ==
+
+- 按约束未运行 mvn/gradle（构建由编排者统一执行）→ 本证据基于:
+  WebFetch 实时查询（Docker Hub 标签 API、testcontainers 官方模块清单、Docker Hub 镜像页）、
+  本地仓库 ~/.m2 内 POM 与构件的静态考证、grep 全仓交叉核对。
+- 机械校验点:
+  * grep 全仓 Java 源 ":latest" 残留 = 0
+  * 容器使用处（new MySQLContainer / new PostgreSQLContainer / new OllamaContainer /
+    GenericContainer<>）= 11 处；含"测试镜像来源"注释 = 11 条，一一对应
+- 红线扫描: 已按邻接拼接方式构造候选模式对本仓（java/xml/md/properties/yml，
+  排除 target/.git）扫描，未见命中；输出与本证据均不回显任何模式内容。
+  如编排者持有确切模式清单，请以编排者侧终检为准。
+
+== 七、遗留事项（TODO/观察项）==
+
+- 镜像浮动标签观察项（非本任务要求，仅记录）: mysql:8.0 / postgres:16-alpine /
+  pgvector:pg16 为浮动小版本标签，如需进一步可复现性可钉 digest 或补丁版本；
+  redis-stack 已钉 7.4.0-v0，ollama 本次已钉 0.40.1。
+- 依赖调解与容器测试的实际运行验证由编排者统一构建执行（本任务未运行 mvn）。

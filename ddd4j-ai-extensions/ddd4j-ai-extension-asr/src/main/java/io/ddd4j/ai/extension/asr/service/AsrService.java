@@ -5,7 +5,7 @@ import java.io.File;
 /**
  * 语音转文本端口：离线 Whisper 转写字节流或文件。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface AsrService {
 

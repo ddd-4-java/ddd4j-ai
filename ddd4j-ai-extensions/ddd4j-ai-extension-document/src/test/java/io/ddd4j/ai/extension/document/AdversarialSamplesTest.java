@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
  * 对抗样本回归：空文件 / 截断 PDF / 损坏 zip / 深嵌套 / 高压缩比 / 空表格 ——
  * 全部「受控返回」（明确异常或降级成功），绝不挂死或静默 NPE。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class AdversarialSamplesTest {
 

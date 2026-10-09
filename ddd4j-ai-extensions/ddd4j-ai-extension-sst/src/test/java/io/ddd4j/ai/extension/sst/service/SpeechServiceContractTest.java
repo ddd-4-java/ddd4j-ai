@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@link SpeechService} 端口契约测试：以测试桩验证回调路径（onSuccess/onFail/onCancel）
  * 与泛型配置端口的调用语义，约束所有实现应遵循的行为。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class SpeechServiceContractTest {
 

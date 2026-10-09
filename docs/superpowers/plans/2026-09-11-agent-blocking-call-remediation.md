@@ -13,8 +13,8 @@
 ## Global Constraints
 
 - **Java 17**；两条线均 `<java.version>17</java.version>`。
-- **构建**：`feature/2.0.x` 用 `/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn`（`modelVersion 4.1.0`，Maven 3 报 `Malformed POM`）；`feature/1.0.x` 用 Maven 3。
-- **JAVA_HOME 必须为 JDK 17**：`/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home`。
+- **构建**：`feature/2.0.x` 用 `<maven4-bin>/mvn`（`modelVersion 4.1.0`，Maven 3 报 `Malformed POM`）；`feature/1.0.x` 用 Maven 3。
+- **JAVA_HOME 必须为 JDK 17**：`<jdk17-home>`。
 - **不引入 `spring-webflux`**（spec §3 非目标）：本项只需 `reactor-core` 的 `Schedulers`，已在依赖中。验证非阻塞行为用 `Schedulers.parallel()` 订阅即可。
 - **测试断言统一用 `.block()` / `.blockLast()` + AssertJ，不用 `StepVerifier`**：实测依赖树显示 agent 与 flow 模块只有 `reactor-core`、**无 `reactor-test`**。为避免为测试新增依赖，本项所有用例改用等价的阻塞断言（`assertThatThrownBy` 等）。计划正文示例若出现 `StepVerifier`，以本约束为准改写。
 - **`thenReturn` 必须加类型见证**：`Mono.just(new AssistantMessage(...))` 会推断为 `Mono<AssistantMessage>`，而 Mockito 的 `thenReturn` 形参是 `Mono<Msg>` → **编译失败**。统一写成 `Mono.<Msg>just(...)`（`delayElement` 会保留类型参数）。Task 3/4/5 的示例均需如此。
@@ -108,9 +108,9 @@ class BlockingCallGuardTest {
 - [ ] **Step 2: 运行测试确认失败**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent \
   -Dtest=BlockingCallGuardTest -DfailIfNoSpecifiedTests=false \
   -Denforcer.skip=true -DskipITs test
@@ -132,7 +132,7 @@ import reactor.core.scheduler.Schedulers;
  * <p>Reactor 只在调用**真的需要等待**时才做 NonBlocking 检查，故本守卫的失败
  * 无法被"瞬时完成的 mock"掩盖——也正因如此，触发它必须让调用真正耗时。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public final class BlockingCallGuard {
 
@@ -164,7 +164,7 @@ public final class BlockingCallGuard {
 - [ ] **Step 5: 提交**
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 git add \
   ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/util/BlockingCallGuard.java \
   ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/util/BlockingCallGuardTest.java
@@ -220,9 +220,9 @@ the caller should use instead."
 - [ ] **Step 2: 运行测试确认失败**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent \
   -Dtest=AgentServiceContractTest -DfailIfNoSpecifiedTests=false \
   -Denforcer.skip=true -DskipITs test
@@ -268,7 +268,7 @@ import reactor.core.scheduler.Schedulers;
 - [ ] **Step 5: 提交**
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 git add \
   ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/service/AgentService.java \
   ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/service/AgentServiceContractTest.java
@@ -338,9 +338,9 @@ path without any change."
 - [ ] **Step 2: 运行测试确认失败**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent \
   -Dtest=AgentScopeAgentAdapterTest -DfailIfNoSpecifiedTests=false \
   -Denforcer.skip=true -DskipITs test
@@ -407,7 +407,7 @@ import io.ddd4j.ai.extension.agent.util.BlockingCallGuard;
 - [ ] **Step 5: 提交**
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 git add \
   ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/agent/AgentScopeAgentAdapter.java \
   ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/agent/AgentScopeAgentAdapterTest.java
@@ -476,9 +476,9 @@ an actionable message."
 - [ ] **Step 2: 运行测试确认失败**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent \
   -Dtest=AgentPlanOrchestratorTest -DfailIfNoSpecifiedTests=false \
   -Denforcer.skip=true -DskipITs test
@@ -584,7 +584,7 @@ Expected: 编译失败，`找不到符号: 方法 dispatchAllAsync(String)`。
 - [ ] **Step 5: 提交**
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 git add \
   ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/dispatch/AgentPlanOrchestrator.java \
   ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent/dispatch/AgentPlanOrchestratorTest.java
@@ -657,9 +657,9 @@ non-blocking thread they now fail with a message naming the async alternative."
 - [ ] **Step 2: 运行测试确认失败**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-flow \
   -Dtest=GraphFlowServiceTest -DfailIfNoSpecifiedTests=false \
   -Denforcer.skip=true -DskipITs test
@@ -710,7 +710,7 @@ Expected: 新用例 FAIL，错误链含 `block()/blockFirst()/blockLast() are bl
 - [ ] **Step 5: 提交**
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 git add \
   ddd4j-ai-extensions/ddd4j-ai-extension-flow/src/main/java/io/ddd4j/ai/extension/flow/service/impl/GraphFlowService.java \
   ddd4j-ai-extensions/ddd4j-ai-extension-flow/src/test/java/io/ddd4j/ai/extension/flow/service/impl/GraphFlowServiceTest.java
@@ -736,7 +736,7 @@ subscribed on Schedulers.parallel(), which failed before this change."
 - [ ] **Step 1: 确认前置是否解除**
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/.codex-worktrees/ddd4j-ai-1.0.x 2>/dev/null \
+cd <workspace>/workspace-ddd4j-boot/.codex-worktrees/ddd4j-ai-1.0.x 2>/dev/null \
   && mvn -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent -am -Denforcer.skip=true -DskipITs test 2>&1 | tail -20 \
   || echo "worktree 不存在，需先创建"
 ```
@@ -747,7 +747,7 @@ cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/.codex-worktrees
 - [ ] **Step 2: 套用补丁（用 `git checkout <branch> -- <paths>` 保证内容恒定）**
 
 ```bash
-W=/Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/.codex-worktrees/ddd4j-ai-1.0.x
+W=<workspace>/workspace-ddd4j-boot/.codex-worktrees/ddd4j-ai-1.0.x
 cd $W
 A=ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent
 B=ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent
@@ -768,8 +768,8 @@ git status --short
 - [ ] **Step 3: 用 Maven 3 构建并测试**
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/.codex-worktrees/ddd4j-ai-1.0.x
+export JAVA_HOME=<jdk17-home>
+cd <workspace>/workspace-ddd4j-boot/.codex-worktrees/ddd4j-ai-1.0.x
 mvn -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent,ddd4j-ai-extensions/ddd4j-ai-extension-flow \
   -Denforcer.skip=true -DskipITs test
 ```
@@ -779,7 +779,7 @@ Expected: 与 2.0.x 相同的用例数全绿。
 - [ ] **Step 4: 验证两线关键文件逐字节相同**
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 A=ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent
 B=ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/test/java/io/ddd4j/ai/extension/agent
 F=ddd4j-ai-extensions/ddd4j-ai-extension-flow/src/main/java/io/ddd4j/ai/extension/flow/service/impl
@@ -817,7 +817,7 @@ git push github feature/1.0.x && git push origin feature/1.0.x
 2.0.x 侧推送 Task 1-5 的提交：
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 git fetch github feature/2.0.x && git fetch origin feature/2.0.x
 git push github feature/2.0.x && git push origin feature/2.0.x
 ```

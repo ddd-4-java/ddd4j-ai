@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 /**
  * {@link GraphFlowService} 单元测试：真实 StateGraph 执行（fake 对话 + mock 工具，无需 Docker）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class GraphFlowServiceTest {
 

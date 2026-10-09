@@ -15,10 +15,16 @@ import io.ddd4j.ai.extension.document.MediaType;
  * easyexcel 委托解析器（高质量优先）：XLSX 1:1 结构还原（表格保真）。
  * <p>契约占位：待 {@code io.github.easy4j:easyexcel-core} 发布后激活委托实现。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @ConditionalOnClass(name = "io.github.easy4j.excel.core.convert.XlsxToMarkdownConverter")
 public class EasyexcelDocumentParser implements DocumentParser {
+
+    /**
+     * 默认构造器（解析器无状态，委托实现待组件发布后激活）。
+     */
+    public EasyexcelDocumentParser() {
+    }
 
     @Override
     public MediaType supports() {

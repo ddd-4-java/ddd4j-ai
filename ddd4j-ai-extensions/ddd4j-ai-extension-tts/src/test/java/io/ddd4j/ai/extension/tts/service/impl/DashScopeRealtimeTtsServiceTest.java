@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@link DashScopeRealtimeTtsService} 单元测试：通过 {@link FakeDashScopeRealtimeClient}
  * 控制 SDK 行为，验证流式音频桥接 / TTFA 记录 / 异常传播。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class DashScopeRealtimeTtsServiceTest {
 

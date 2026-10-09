@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
  * {@link RagPipeline} 单元测试：mock chat/vectordb 端口与 Reranker，
  * 验证摄取分块、检索→重排→增强生成链路。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class RagPipelineTest {
 

@@ -14,9 +14,15 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * <p>线程安全：所有字段均为 {@link AtomicLong}，多线程并发安全。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public final class TtsMetrics {
+
+    /**
+     * 默认构造器（统计字段在实例内部初始化）。
+     */
+    public TtsMetrics() {
+    }
 
     private final AtomicLong samples = new AtomicLong();
     private final AtomicLong totalNanos = new AtomicLong();
@@ -38,19 +44,39 @@ public final class TtsMetrics {
         maxNanos.updateAndGet(prev -> Math.max(prev, elapsedNanos));
     }
 
+    /**
+     * 采样数量。
+     *
+     * @return 已记录的有效样本数
+     */
     public long sampleCount() {
         return samples.get();
     }
 
+    /**
+     * 最小首块延迟。
+     *
+     * @return 最小耗时（纳秒），无样本时为 0
+     */
     public long minNanos() {
         long m = minNanos.get();
         return m == Long.MAX_VALUE ? 0 : m;
     }
 
+    /**
+     * 最大首块延迟。
+     *
+     * @return 最大耗时（纳秒）
+     */
     public long maxNanos() {
         return maxNanos.get();
     }
 
+    /**
+     * 平均首块延迟。
+     *
+     * @return 平均耗时（纳秒），无样本时为 0
+     */
     public long avgNanos() {
         long n = samples.get();
         if (n == 0) {

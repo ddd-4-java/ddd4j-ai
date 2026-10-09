@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 格式能力矩阵端到端测试：真实 {@link DocumentReader} 上下文覆盖
  * txt / html / csv / png / wav / pdf / docx（对齐 markitdown 支持面，本地构造样本，无 Docker/外网）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @SpringBootTest(classes = DocumentAutoConfiguration.class)
 class FormatMatrixIntegrationTest {

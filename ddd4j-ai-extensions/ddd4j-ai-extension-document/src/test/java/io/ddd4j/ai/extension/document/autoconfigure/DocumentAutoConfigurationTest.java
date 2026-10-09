@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * {@link DocumentAutoConfiguration} 装配测试：默认装配 / 关闭回退 / 特性开关。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class DocumentAutoConfigurationTest {
 

@@ -9,9 +9,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * 轮询策略：候选模型依次循环，保证负载均匀分布。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class RoundRobinStrategy implements RoutingStrategy {
+
+    /**
+     * 默认构造器（计数器在实例内部维护）。
+     */
+    public RoundRobinStrategy() {
+    }
 
     private final AtomicInteger counter = new AtomicInteger();
 

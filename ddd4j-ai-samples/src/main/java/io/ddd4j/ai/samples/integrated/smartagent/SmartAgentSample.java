@@ -28,6 +28,14 @@ public class SmartAgentSample {
     private final RagService ragService;
     private final DocumentReader documentReader;
 
+    /**
+     * 构造 SmartAgentSample。
+     *
+     * @param harnessAgent 智能体执行器
+     * @param mcpToolProvider MCP 工具提供者
+     * @param ragService RAG 检索服务
+     * @param documentReader 文档读取服务
+     */
     public SmartAgentSample(HarnessAgent harnessAgent, McpToolProvider mcpToolProvider,
                             RagService ragService, DocumentReader documentReader) {
         this.harnessAgent = harnessAgent;
@@ -38,6 +46,9 @@ public class SmartAgentSample {
 
     /**
      * 基础智能体：HarnessAgent 直接执行（含内置 ReAct 循环、工具调用、记忆）。
+     *
+     * @param instruction 指令内容
+     * @return 最终回答文本
      */
     public String run(String instruction) {
         return harnessAgent.call(new UserMessage(instruction)).block().getTextContent();
@@ -45,6 +56,9 @@ public class SmartAgentSample {
 
     /**
      * 带知识库的智能体：先检索相关知识注入上下文，再让智能体推理。
+     *
+     * @param question 用户提问内容
+     * @return 文本结果
      */
     public String runWithKnowledge(String question) {
         String context = ragService.query(question);
@@ -54,6 +68,10 @@ public class SmartAgentSample {
 
     /**
      * 文档理解 + 智能体：读取文档内容作为上下文，让智能体分析。
+     *
+     * @param file 文件
+     * @return 文本结果
+     * @throws Exception 执行过程中出现异常时抛出
      */
     public String analyzeDocument(File file) throws Exception {
         var doc = documentReader.read(file);
@@ -64,6 +82,8 @@ public class SmartAgentSample {
 
     /**
      * 列出当前可用的 MCP 工具（供前端展示或调试）。
+     *
+     * @return 结果列表
      */
     public List<Map<String, Object>> availableTools() {
         return mcpToolProvider.availableTools().stream()
@@ -76,6 +96,9 @@ public class SmartAgentSample {
 
     /**
      * 异步执行（Mono 语义）。
+     *
+     * @param instruction 指令内容
+     * @return 响应式回答流
      */
     public Mono<String> runAsync(String instruction) {
         return harnessAgent.call(new UserMessage(instruction))

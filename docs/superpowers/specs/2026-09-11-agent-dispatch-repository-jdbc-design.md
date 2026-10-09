@@ -1,7 +1,7 @@
 # Agent 派发任务仓储 JDBC 持久化设计（ddd4j-ai-extension-agent-store-jdbc）
 
 - 日期：2026-09-11
-- 作者：PartMe.AI
+- 作者：ddd4j
 - 状态：待实施（结构已定：独立扩展模块 + 本批只做 JDBC）
 - 范围：新增 `ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc` 模块
 - 分支：`feature/2.0.x`（实施与验证）+ `feature/1.0.x`（同补丁移植，前提见 §10）
@@ -201,10 +201,10 @@ CREATE INDEX IF NOT EXISTS idx_ddd4j_ai_dispatch_plan ON ddd4j_ai_agent_dispatch
 ### 构建与验证命令
 
 ```bash
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+export JAVA_HOME=<jdk17-home>
+cd <repo-root>
 # 2.0.x 用 Maven 4；新增模块后先 install 依赖它的 agent 扩展，否则 -pl 解析不到
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc -am \
   -Denforcer.skip=true -DskipITs test
 ```

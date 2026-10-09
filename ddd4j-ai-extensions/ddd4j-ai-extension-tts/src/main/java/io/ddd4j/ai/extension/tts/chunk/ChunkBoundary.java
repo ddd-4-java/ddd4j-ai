@@ -5,7 +5,7 @@ package io.ddd4j.ai.extension.tts.chunk;
  *
  * <p>借鉴自 agentscope-cpp 的 TextChunker 切分规则（{@code src/core/audio/text_chunker.h}）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public final class ChunkBoundary {
 

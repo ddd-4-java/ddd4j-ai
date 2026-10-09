@@ -15,10 +15,16 @@ import io.ddd4j.ai.extension.document.MediaType;
  * easydoc 委托解析器（高质量优先）：DOCX 1:1 结构还原。
  * <p>契约占位：待 {@code io.github.easy4j:easydoc-core} 发布后激活委托实现。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @ConditionalOnClass(name = "io.github.easy4j.doc.xhtml.markdown.DocxToMarkdownConverter")
 public class EasydocDocumentParser implements DocumentParser {
+
+    /**
+     * 默认构造器（解析器无状态，委托实现待组件发布后激活）。
+     */
+    public EasydocDocumentParser() {
+    }
 
     @Override
     public MediaType supports() {

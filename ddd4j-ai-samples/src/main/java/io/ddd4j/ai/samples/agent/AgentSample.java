@@ -13,23 +13,38 @@ import reactor.core.publisher.Mono;
  * {@code ddd4j.ai.agent.api-key} + {@code ddd4j.ai.agent.model-name}（OpenAI 兼容协议，
  * 或业务侧注入 {@code io.agentscope.core.model.Model} Bean）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Component
 public class AgentSample {
 
     private final HarnessAgent harnessAgent;
 
+    /**
+     * 构造 AgentSample。
+     *
+     * @param harnessAgent 智能体执行器
+     */
     public AgentSample(HarnessAgent harnessAgent) {
         this.harnessAgent = harnessAgent;
     }
 
-    /** 同步执行：返回最终回答文本。 */
+    /**
+     * 同步执行：返回最终回答文本。
+     *
+     * @param instruction 指令内容
+     * @return 最终回答文本
+     */
     public String run(String instruction) {
         return harnessAgent.call(new UserMessage(instruction)).block().getTextContent();
     }
 
-    /** 异步执行：返回响应式回答。 */
+    /**
+     * 异步执行：返回响应式回答。
+     *
+     * @param instruction 指令内容
+     * @return 响应式回答流
+     */
     public Mono<String> runAsync(String instruction) {
         return harnessAgent.call(new UserMessage(instruction))
                 .map(message -> message.getTextContent());

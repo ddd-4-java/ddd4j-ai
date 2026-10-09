@@ -6,17 +6,21 @@ import java.io.InputStream;
 /**
  * 文档解析器 SPI：按媒体类型路由，{@code order()} 决定优先级（数值大者优先）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface DocumentParser {
 
     /**
      * 本解析器负责的媒体类型；{@link MediaType#UNKNOWN} 表示通用兜底（匹配任意类型）。
+     *
+     * @return 本解析器支持的媒体类型
      */
     MediaType supports();
 
     /**
      * 优先级：数值大者优先尝试；默认 0（通用兜底）。
+     *
+     * @return 优先级数值
      */
     default int order() {
         return 0;
@@ -25,6 +29,8 @@ public interface DocumentParser {
     /**
      * 解析文件为统一文档模型。
      *
+     * @param file 待解析的文件
+     * @return 规范化后的文档模型
      * @throws Exception 解析失败 / 委托未就位（{@link UnsupportedOperationException} 触发降级）
      */
     Document parse(File file) throws Exception;
@@ -32,6 +38,9 @@ public interface DocumentParser {
     /**
      * 解析输入流为统一文档模型（文件名用于媒体类型判定）。
      *
+     * @param in       待解析的输入流
+     * @param filename 原始文件名（用于媒体类型判定）
+     * @return 规范化后的文档模型
      * @throws Exception 解析失败 / 委托未就位
      */
     Document parse(InputStream in, String filename) throws Exception;

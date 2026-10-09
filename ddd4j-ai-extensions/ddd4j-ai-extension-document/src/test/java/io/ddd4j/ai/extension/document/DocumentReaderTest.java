@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * {@link DocumentReader} 门面单元测试：优先级路由 / 未就位降级 / 空参校验。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class DocumentReaderTest {
 

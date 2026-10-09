@@ -13,11 +13,12 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * <p>类名必须以 {@code Test} 结尾——本仓 surefire 无 failsafe，叫 {@code *IT} 会静默不运行。
  * 无 Docker 时按 Testcontainers 语义跳过。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Testcontainers
 class JdbcAgentDispatchTaskRepositoryMySqlTest extends AgentDispatchTaskRepositoryContract {
 
+    // 测试镜像来源: https://testcontainers.com/modules/mysql/
     @Container
     static final MySQLContainer<?> MYSQL = new MySQLContainer<>("mysql:8.0");
 

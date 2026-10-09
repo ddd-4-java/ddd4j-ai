@@ -21,6 +21,13 @@ public class DocUnderstandingSample {
     private final OcrService ocrService;
     private final ChatService chatService;
 
+    /**
+     * 构造 DocUnderstandingSample。
+     *
+     * @param documentReader 文档读取服务
+     * @param ocrService OCR 识别服务
+     * @param chatService 对话服务
+     */
     public DocUnderstandingSample(DocumentReader documentReader, OcrService ocrService,
                                   ChatService chatService) {
         this.documentReader = documentReader;
@@ -30,6 +37,11 @@ public class DocUnderstandingSample {
 
     /**
      * 文档问答：读取文件内容 → 拼接为提问上下文 → LLM 回答。
+     *
+     * @param file 文件
+     * @param question 用户提问内容
+     * @return 文本结果
+     * @throws Exception 执行过程中出现异常时抛出
      */
     public String askAboutPdf(File file, String question) throws Exception {
         var doc = documentReader.read(file);
@@ -40,6 +52,11 @@ public class DocUnderstandingSample {
 
     /**
      * 图片 OCR + 文字问答：提取图片文字 → 拼接提问 → LLM 回答。
+     *
+     * @param image 图片数据
+     * @param question 用户提问内容
+     * @return 文本结果
+     * @throws Exception 执行过程中出现异常时抛出
      */
     public String extractAndAsk(InputStream image, String question) throws Exception {
         String text = ocrService.extractText(image, null);
@@ -50,6 +67,10 @@ public class DocUnderstandingSample {
 
     /**
      * 文档摘要：读取文件 → 生成摘要（自动以"请总结"为提问）。
+     *
+     * @param file 文件
+     * @return 文本结果
+     * @throws Exception 执行过程中出现异常时抛出
      */
     public String summarizeDocument(File file) throws Exception {
         var doc = documentReader.read(file);

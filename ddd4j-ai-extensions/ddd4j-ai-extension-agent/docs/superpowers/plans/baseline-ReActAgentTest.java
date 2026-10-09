@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 /**
  * {@link ReActAgent} 单元测试：工具调用循环 / 直达答案 / 超限兜底 / 未知工具。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class ReActAgentTest {
 

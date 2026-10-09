@@ -9,7 +9,7 @@ import org.springframework.ai.chat.memory.ChatMemory;
  * 一方面复用其成熟的 add/get/clear 语义，另一方面使本端口可直接喂给
  * {@code MessageChatMemoryAdvisor} 等 Spring AI 生态组件。存储后端与窗口策略由实现决定。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface MemoryService extends ChatMemory {
 

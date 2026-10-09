@@ -39,7 +39,7 @@ import static org.mockito.Mockito.when;
  * 验证 afterPropertiesSet / tts / text2Voice / voice2TextFromWavByteArray 的成功与失败分支。
  * 环境无法加载 Azure SDK native 库时整类跳过。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class AzureSpeechServiceTest {
 

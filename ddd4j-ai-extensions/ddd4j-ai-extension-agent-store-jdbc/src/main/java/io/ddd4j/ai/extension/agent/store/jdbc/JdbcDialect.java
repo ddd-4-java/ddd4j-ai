@@ -21,18 +21,25 @@ import java.util.List;
  *
  * <p>探测失败或未知产品名时回落到 H2 兼容写法（{@code MERGE INTO}）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public enum JdbcDialect {
 
+    /** MySQL（含 MariaDB，按产品名关键字匹配）。 */
     MYSQL,
+    /** PostgreSQL。 */
     POSTGRESQL,
+    /** H2（默认回落方言，采用 {@code MERGE INTO} 语法）。 */
     H2;
 
     private static final String TABLE = "ddd4j_ai_agent_dispatch_task";
     private static final String INDEX = "idx_ddd4j_ai_dispatch_plan";
 
-    /** MySQL：大文本用 MEDIUMTEXT（16MB）；其余用 TEXT（PostgreSQL/H2 的 TEXT 无实际上限）。 */
+    /**
+     * 返回本方言建表时大文本列应使用的 SQL 类型。
+     *
+     * @return MySQL 返回 {@code MEDIUMTEXT}（16MB）；其余返回 {@code TEXT}（PostgreSQL/H2 的 TEXT 无实际上限）
+     */
     public String textType() {
         return this == MYSQL ? "MEDIUMTEXT" : "TEXT";
     }
@@ -42,6 +49,8 @@ public enum JdbcDialect {
      *
      * <p>MySQL 因不支持 {@code CREATE INDEX IF NOT EXISTS} 而把索引内联在建表语句里，
      * 故只有一条语句；PostgreSQL / H2 为两条。
+     *
+     * @return 按执行顺序排列的 DDL 语句列表
      */
     public List<String> ddlStatements() {
         String columns = "id VARCHAR(64) NOT NULL, "
@@ -64,6 +73,8 @@ public enum JdbcDialect {
      * 按主键幂等写入（upsert）。
      *
      * <p>参数顺序固定为：{@code id, plan_id, instruction, status, result, created_at}。
+     *
+     * @return 当前方言的 upsert SQL 语句
      */
     public String upsertSql() {
         String columns = "(id, plan_id, instruction, status, result, created_at)";
@@ -80,7 +91,12 @@ public enum JdbcDialect {
         };
     }
 
-    /** 按数据库产品名选择方言；未知或 null 回落 H2 兼容写法。 */
+    /**
+     * 按数据库产品名选择方言；未知或 {@code null} 回落 H2 兼容写法。
+     *
+     * @param productName 数据库产品名（如 {@code MySQL}、{@code PostgreSQL}），可为 {@code null}
+     * @return 匹配到的方言，无法识别时返回 {@link #H2}
+     */
     public static JdbcDialect forProductName(String productName) {
         if (productName == null) {
             return H2;
@@ -95,7 +111,13 @@ public enum JdbcDialect {
         return H2;
     }
 
-    /** 从连接元数据探测方言。 */
+    /**
+     * 从连接元数据探测方言。
+     *
+     * @param dataSource 用于读取元数据的数据源
+     * @return 探测到的方言
+     * @throws IllegalStateException 连接或读取元数据失败时抛出
+     */
     public static JdbcDialect from(DataSource dataSource) {
         try (Connection connection = dataSource.getConnection()) {
             return forProductName(connection.getMetaData().getDatabaseProductName());

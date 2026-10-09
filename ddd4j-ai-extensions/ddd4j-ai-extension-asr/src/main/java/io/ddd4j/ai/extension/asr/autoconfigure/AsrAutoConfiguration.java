@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Bean;
 /**
  * 语音识别自动装配：模型文件路径来自配置，引擎实例化懒加载于首次转写。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @AutoConfiguration
 @ConditionalOnClass(WhisperContext.class)
@@ -22,6 +22,18 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(AsrProperties.class)
 public class AsrAutoConfiguration {
 
+    /**
+     * 默认构造器（自动装配类无状态）。
+     */
+    public AsrAutoConfiguration() {
+    }
+
+    /**
+     * 装配基于 whisper.cpp 的 {@link AsrService}（模型懒加载于首次转写）。
+     *
+     * @param properties 语音识别配置属性
+     * @return 语音识别服务 Bean
+     */
     @Bean
     @ConditionalOnMissingBean(AsrService.class)
     public AsrService asrService(AsrProperties properties) {

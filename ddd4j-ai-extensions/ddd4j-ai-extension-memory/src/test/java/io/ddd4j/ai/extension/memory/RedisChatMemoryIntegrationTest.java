@@ -21,12 +21,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 会话记忆 Redis 容器集成测试（镜像 redis:7，无专用 Testcontainers 模块，用 GenericContainer）：
  * 官方 RedisChatMemoryRepository 作为存储后端，验证 WindowMemoryService 持久化往返。无 Docker 自动跳过。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Testcontainers(disabledWithoutDocker = true)
 class RedisChatMemoryIntegrationTest {
 
     // 官方 RedisChatMemoryRepository 需要 RediSearch（FT.CREATE 建索引），普通 redis 镜像不含该模块
+    // 测试镜像来源: https://hub.docker.com/r/redis/redis-stack-server （非官方模块：redis-stack 无一等模块，
+    // 官方仅 https://testcontainers.com/modules/redis/ 且其默认镜像不含 RediSearch，故保留 GenericContainer 钉版镜像）
     @Container
     static final GenericContainer<?> REDIS = new GenericContainer<>(
             DockerImageName.parse("redis/redis-stack-server:7.4.0-v0"))

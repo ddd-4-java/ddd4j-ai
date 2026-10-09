@@ -5,7 +5,7 @@ import java.util.Map;
 /**
  * 工作流节点类型。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public enum FlowNodeType {
 

@@ -10,7 +10,7 @@ import reactor.core.publisher.Flux;
  * <p>设计对偶于 ddd4j-ai 的 {@code MultiModelChatRouter}（router 扩展）——
  * 不同之处在于：Router 是按"主备降级"而非"轮询加权"选择后端。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface TtsRouter extends TtsService {
 

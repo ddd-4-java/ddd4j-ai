@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
  * {@link TikaDocumentParser} 音频语音转写测试（mock AsrService，不依赖 whisper native）：
  * 对齐 markitdown 的音频转写能力，Tika 底座负责音频元数据、asr 组件负责语音文本。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class TikaAudioTranscriptionTest {
 

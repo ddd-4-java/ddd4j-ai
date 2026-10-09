@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * 模型选择策略：从候选模型 id 列表中选一个。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface RoutingStrategy {
 

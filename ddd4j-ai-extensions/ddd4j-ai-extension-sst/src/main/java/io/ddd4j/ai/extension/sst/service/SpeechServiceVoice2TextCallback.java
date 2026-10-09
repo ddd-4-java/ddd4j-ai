@@ -6,20 +6,23 @@ package io.ddd4j.ai.extension.sst.service;
 public interface SpeechServiceVoice2TextCallback {
 
     /**
-     * 错误
-     * @param reason
+     * 识别失败。
+     *
+     * @param reason 失败原因
      */
     void onFail(String reason);
 
     /**
-     * 取消
-     * @param reason
+     * 识别被取消。
+     *
+     * @param reason 取消原因
      */
     void onCancel(String reason);
 
     /**
-     * 成功返回
-     * @param text
+     * 识别成功。
+     *
+     * @param text 识别出的文本
      */
     void onSuccess(String text);
 

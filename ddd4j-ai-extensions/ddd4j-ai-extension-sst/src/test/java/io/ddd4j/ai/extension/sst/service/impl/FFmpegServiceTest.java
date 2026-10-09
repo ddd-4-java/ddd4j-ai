@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * {@link FFmpegService} 端到端转换测试：依赖宿主机安装 ffmpeg；
  * 无 ffmpeg 的环境自动跳过（对应 plan 中 {@code Assumptions.assumeTrue} 约定）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class FFmpegServiceTest {
 

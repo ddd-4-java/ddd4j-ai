@@ -1,7 +1,7 @@
 # Agent 细粒度事件流设计（streamEvents）
 
 - 日期：2026-09-11
-- 作者：PartMe.AI
+- 作者：ddd4j
 - 状态：待实施（设计已评审通过）
 - 范围：`ddd4j-ai-extension-agent` —— 在 `AgentService` SPI 暴露 Agentscope 细粒度事件流
 - 分支：`feature/2.0.x`（实施与验证）+ `feature/1.0.x`（同补丁移植）
@@ -231,8 +231,8 @@ AgentTask.instruction
 
 ```bash
 # feature/2.0.x —— Maven 4 + JDK 17（modelVersion 4.1.0，Maven 3 会报 Malformed POM）
-export JAVA_HOME=/Users/wandl/Library/Java/JavaVirtualMachines/corretto-17.0.20.1/Contents/Home
-/Users/wandl/tools/apache-maven-4.0.0-rc-6/bin/mvn \
+export JAVA_HOME=<jdk17-home>
+<maven4-bin>/mvn \
   -pl ddd4j-ai-extensions/ddd4j-ai-extension-agent -am \
   -Denforcer.skip=true -DskipITs test
 

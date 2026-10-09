@@ -9,9 +9,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * FFmpeg 音频转码服务：通过管道（pipe:0/pipe:1）执行进程内字节流格式转换。
+ *
+ * @author ddd4j
+ */
 @Service
 @Slf4j
 public class FFmpegService {
+
+    /**
+     * 默认构造器（转码命令在方法内构建）。
+     */
+    public FFmpegService() {
+    }
 
     private byte[] ffmpegConvertBytes(String[] command, byte[] sourceAry) throws IOException, InterruptedException {
         log.info(StringUtils.join(command));
@@ -83,6 +94,14 @@ public class FFmpegService {
     private String ffmpegBin = "ffmpeg";
 
 
+    /**
+     * 将 WAV 字节流转码为 MP3（192kbps / 44100Hz / 单声道）。
+     *
+     * @param sourceAry 源 WAV 字节流
+     * @return 转码后的 MP3 字节流
+     * @throws IOException 读写管道失败
+     * @throws InterruptedException 等待进程被中断
+     */
     public byte[] convertWavToMp3FromByteAry(byte[] sourceAry) throws IOException, InterruptedException {
         // 构建FFmpeg命令
         String[] command = {
@@ -100,6 +119,14 @@ public class FFmpegService {
     }
 
 
+    /**
+     * 将任意音频字节流转码为 WAV（16000Hz / 单声道）。
+     *
+     * @param sourceAry 源音频字节流
+     * @return 转码后的 WAV 字节流
+     * @throws IOException 读写管道失败
+     * @throws InterruptedException 等待进程被中断
+     */
     public byte[] convertAudioToWavFromByteAry(byte[] sourceAry) throws IOException, InterruptedException {
         // 构建FFmpeg命令
         String[] command = {
@@ -116,6 +143,14 @@ public class FFmpegService {
     }
 
 
+    /**
+     * 将输入流音频转码为 WAV（16000Hz / 单声道）。
+     *
+     * @param inputStream 源音频输入流（方法内关闭）
+     * @return 转码后的 WAV 字节流
+     * @throws IOException 读写管道失败
+     * @throws InterruptedException 等待进程被中断
+     */
     public byte[] convertAudioToWavFromInputStream(InputStream inputStream) throws IOException, InterruptedException {
         // 构建FFmpeg命令
         String[] command = {

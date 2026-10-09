@@ -16,7 +16,7 @@ import java.util.Optional;
  *
  * <p>方言差异全部交给 {@link JdbcDialect}，本类不含任何方言分支。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class JdbcAgentDispatchTaskRepository implements AgentDispatchTaskRepository {
 
@@ -32,6 +32,8 @@ public class JdbcAgentDispatchTaskRepository implements AgentDispatchTaskReposit
     private final JdbcDialect dialect;
 
     /**
+     * 创建 JDBC 派发任务仓储，并按需执行方言对应的自动建表。
+     *
      * @param dataSource 业务提供的连接池数据源
      * @param dialect    数据库方言
      * @param autoDdl    是否自动建表（{@code false} 时由业务自行管理表结构）

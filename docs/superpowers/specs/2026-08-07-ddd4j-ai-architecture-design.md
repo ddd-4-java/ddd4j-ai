@@ -1,7 +1,7 @@
 # Ddd4j AI 整体架构与组件契约设计
 
 - 日期：2026-08-07
-- 作者：PartMe.AI
+- 作者：ddd4j
 - 状态：设计已确认（core 契约与 BOM 治理已落地，模块命名规范于 `3fbd757` 定型）
 - 范围：ddd4j-ai 全项目 —— 架构理念、Maven 模块拓扑、组件契约（core 五类）、COLA 分层约定、依赖与版本治理、组件状态总表
 - 关联文档：各组件设计文档见 `docs/superpowers/specs/` 同目录；实施路线见 `docs/superpowers/plans/`

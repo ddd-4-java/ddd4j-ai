@@ -6,7 +6,7 @@ package io.ddd4j.ai.extension.agent.service;
  * @param type    步骤类型：plan / thought / action / observation / execution / result
  * @param content 步骤内容
  * @param index   步骤序号（0 起）
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public record AgentStep(String type, String content, int index) {
 

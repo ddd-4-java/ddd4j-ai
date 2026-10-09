@@ -27,6 +27,14 @@ public class KnowledgeBaseSample {
     private final EmbeddingService embeddingService;
     private final VectorDbService vectorDbService;
 
+    /**
+     * 构造 KnowledgeBaseSample。
+     *
+     * @param documentReader 文档读取服务
+     * @param ocrService OCR 识别服务
+     * @param embeddingService 向量嵌入服务
+     * @param vectorDbService 向量库服务
+     */
     public KnowledgeBaseSample(DocumentReader documentReader, OcrService ocrService,
                                EmbeddingService embeddingService, VectorDbService vectorDbService) {
         this.documentReader = documentReader;
@@ -37,6 +45,9 @@ public class KnowledgeBaseSample {
 
     /**
      * 文档入库：解析文件 → 提取文本 → 向量化 → 存入向量库。
+     *
+     * @param file 文件
+     * @throws Exception 执行过程中出现异常时抛出
      */
     public void ingestFile(File file) throws Exception {
         var doc = documentReader.read(file);
@@ -46,6 +57,9 @@ public class KnowledgeBaseSample {
 
     /**
      * 批量文档入库。
+     *
+     * @param files 文件列表
+     * @throws Exception 执行过程中出现异常时抛出
      */
     public void ingestFiles(List<File> files) throws Exception {
         for (File file : files) {
@@ -55,6 +69,9 @@ public class KnowledgeBaseSample {
 
     /**
      * 图片 OCR 入库：提取图片中的文字 → 向量化 → 存入向量库。
+     *
+     * @param imageStream 图片输入流
+     * @throws Exception 执行过程中出现异常时抛出
      */
     public void ingestImage(InputStream imageStream) throws Exception {
         String text = ocrService.extractText(imageStream, null);
@@ -65,6 +82,10 @@ public class KnowledgeBaseSample {
 
     /**
      * 知识检索：返回最相关的文档片段（topK 可配）。
+     *
+     * @param query 检索问题
+     * @param topK 返回条数上限
+     * @return 结果列表
      */
     public List<Document> search(String query, int topK) {
         return vectorDbService.search(query, topK, null);
@@ -72,6 +93,8 @@ public class KnowledgeBaseSample {
 
     /**
      * 获取向量维度信息。
+     *
+     * @return 数值结果
      */
     public int embeddingDimensions() {
         return embeddingService.dimensions();

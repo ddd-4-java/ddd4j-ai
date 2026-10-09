@@ -5,7 +5,7 @@ package io.ddd4j.ai.extension.document;
  *
  * @param alt 替代文本
  * @param src 图片地址
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public record DocumentImage(String alt, String src) {
 }

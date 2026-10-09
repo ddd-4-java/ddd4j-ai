@@ -20,7 +20,7 @@ import javax.sql.DataSource;
  * <p>不配置 {@code ddd4j.ai.agent.dispatch.repository} 时本类整体退让，
  * 由 agent 扩展既有的内存实现接管——既有用户零影响。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @AutoConfiguration
 @ConditionalOnClass(JdbcTemplate.class)
@@ -29,7 +29,18 @@ import javax.sql.DataSource;
 public class JdbcDispatchRepositoryAutoConfiguration {
 
     /**
-     * @param autoDdl {@code ddd4j.ai.agent.dispatch.auto-ddl}，默认 {@code true}
+     * 默认构造器（自动装配类无状态，由 Spring 容器管理）。
+     */
+    public JdbcDispatchRepositoryAutoConfiguration() {
+    }
+
+    /**
+     * 注册 JDBC 派发任务仓储：方言由实际 DataSource 推断，
+     * 是否按建表语句自动初始化由 {@code ddd4j.ai.agent.dispatch.auto-ddl} 控制（默认 {@code true}）。
+     *
+     * @param dataSource   数据源
+     * @param environment  环境配置，用于读取 {@code ddd4j.ai.agent.dispatch.auto-ddl}
+     * @return 派发任务仓储实例
      */
     @Bean
     @ConditionalOnMissingBean(AgentDispatchTaskRepository.class)

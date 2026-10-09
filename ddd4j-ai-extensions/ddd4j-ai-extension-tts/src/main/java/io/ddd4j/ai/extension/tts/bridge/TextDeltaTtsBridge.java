@@ -35,7 +35,7 @@ import java.util.Objects;
  *   <li>其他事件类型（工具调用、思考块等）忽略。</li>
  * </ol>
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class TextDeltaTtsBridge {
 
@@ -44,12 +44,24 @@ public class TextDeltaTtsBridge {
     private final TextChunker chunker;
     private final TtsService tts;
 
+    /**
+     * 创建桥接器。
+     *
+     * @param chunker 文本分块器，不允许 {@code null}
+     * @param tts     TTS 后端，不允许 {@code null}
+     * @throws NullPointerException {@code chunker}/{@code tts} 为 {@code null}
+     */
     public TextDeltaTtsBridge(TextChunker chunker, TtsService tts) {
         this.chunker = Objects.requireNonNull(chunker, "chunker");
         this.tts = Objects.requireNonNull(tts, "tts");
     }
 
-    /** 便捷工厂：使用默认 chunker (24/1)。 */
+    /**
+     * 便捷工厂：使用默认 chunker (24/1)。
+     *
+     * @param tts TTS 后端，不允许 {@code null}
+     * @return 使用默认分块器的桥接器
+     */
     public static TextDeltaTtsBridge withDefaults(TtsService tts) {
         return new TextDeltaTtsBridge(TextChunker.defaultChunker(), tts);
     }
@@ -116,6 +128,10 @@ public class TextDeltaTtsBridge {
 
     /**
      * 单段文本版（不订阅事件流，直接把文本送 TTS）—— 主要用于测试与短文本场景。
+     *
+     * @param text  待合成文本
+     * @param voice TTS 音色（{@code null} 用默认音色）
+     * @return 音频字节流
      */
     public Flux<byte[]> synthesize(String text, String voice) {
         return tts.streamSynthesize(text, voice);
@@ -126,7 +142,11 @@ public class TextDeltaTtsBridge {
         chunker.reset();
     }
 
-    /** 当前 chunker 缓冲长度（用于调试）。 */
+    /**
+     * 当前 chunker 缓冲长度（用于调试）。
+     *
+     * @return 缓冲中的字符数
+     */
     public int pendingChunks() {
         return chunker.pendingSize();
     }

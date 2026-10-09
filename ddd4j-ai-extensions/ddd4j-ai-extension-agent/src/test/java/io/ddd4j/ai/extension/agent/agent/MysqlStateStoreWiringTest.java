@@ -17,11 +17,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * mysql 状态持久化接线测试：真实 MySQL 容器验证 {@link MysqlAgentStateStore}
  * 保存/读取 roundtrip（autoCreate 建库建表）。无 Docker 时优雅跳过。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Testcontainers(disabledWithoutDocker = true)
 class MysqlStateStoreWiringTest {
 
+    // 测试镜像来源: https://testcontainers.com/modules/mysql/
     @Container
     static final MySQLContainer<?> MYSQL = new MySQLContainer<>("mysql:8.0");
 

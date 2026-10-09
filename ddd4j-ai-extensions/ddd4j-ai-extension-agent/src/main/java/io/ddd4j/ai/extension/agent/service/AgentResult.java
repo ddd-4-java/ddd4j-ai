@@ -8,10 +8,13 @@ import java.util.List;
  * @param output         最终答案
  * @param steps          执行轨迹（thought/action/observation/result）
  * @param conversationId 会话标识（与任务一致）
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public record AgentResult(String output, List<AgentStep> steps, String conversationId) {
 
+    /**
+     * 紧凑构造器：对执行轨迹做防御性复制。
+     */
     public AgentResult {
         steps = List.copyOf(steps);
     }

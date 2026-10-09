@@ -16,12 +16,17 @@ import java.util.stream.Collectors;
  * <p>本类不强依赖任一具体传输（stdio/SSE/Streamable-HTTP），而是从 Spring 容器
  * 解析已注册的 {@code McpSyncClient}（同步）与 {@code McpAsyncClient}（异步）bean。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class SpringAiMcpToolProvider implements McpToolProvider {
 
     private final List<Object> clients;
 
+    /**
+     * 创建实现：解析容器内全部 MCP 客户端，无客户端时使用空列表。
+     *
+     * @param mcpClientsProvider MCP 客户端列表提供器，不允许 {@code null}
+     */
     public SpringAiMcpToolProvider(ObjectProvider<List<Object>> mcpClientsProvider) {
         List<Object> resolved = mcpClientsProvider.getIfAvailable(Collections::emptyList);
         this.clients = resolved != null ? resolved : Collections.emptyList();

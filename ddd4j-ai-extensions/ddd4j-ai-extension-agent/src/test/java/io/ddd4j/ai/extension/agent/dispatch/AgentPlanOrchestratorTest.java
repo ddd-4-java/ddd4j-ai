@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 /**
  * {@link AgentPlanOrchestrator} 单元测试：提交/并行派发/合并/失败处理。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class AgentPlanOrchestratorTest {
 

@@ -1,7 +1,7 @@
 # ASR 自动语音识别组件设计
 
 - 日期：2026-08-12
-- 作者：PartMe.AI
+- 作者：ddd4j
 - 状态：已实施（2026-08-25 组件补全批次）
 - 范围：`ddd4j-ai-extension-asr` —— 离线/本地自动语音识别
 - 关联文档：整体架构见 `2026-08-07-ddd4j-ai-architecture-design.md`；与 sst 在线方案互补

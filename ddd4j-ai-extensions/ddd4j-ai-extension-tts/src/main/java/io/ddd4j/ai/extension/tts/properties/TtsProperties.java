@@ -29,13 +29,20 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *         enabled: true
  * }</pre>
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Getter
 @Setter
 @ConfigurationProperties(prefix = TtsProperties.PREFIX)
 public class TtsProperties {
 
+    /**
+     * 默认构造器（配置属性类由 Spring 绑定）。
+     */
+    public TtsProperties() {
+    }
+
+    /** 配置属性前缀。 */
     public static final String PREFIX = "ddd4j.ai.tts";
 
     /** 是否启用 TTS 组件自动装配。 */
@@ -59,7 +66,11 @@ public class TtsProperties {
     /** TTFA 指标配置。 */
     private Metrics metrics = new Metrics();
 
-    /** 当前主后端类型枚举（字符串解析失败时使用默认）。 */
+    /**
+     * 解析当前主后端类型（字符串解析失败时回退默认 EDGE）。
+     *
+     * @return 主后端类型枚举
+     */
     public PrimaryType resolvedPrimary() {
         if (primary == null || primary.isBlank()) {
             return PrimaryType.EDGE;
@@ -67,18 +78,38 @@ public class TtsProperties {
         return PrimaryType.fromString(primary.trim().toLowerCase());
     }
 
+    /**
+     * Edge TTS 后端配置。
+     */
     @Getter
     @Setter
     public static class Edge {
+
+        /**
+         * 默认构造器（配置属性类由 Spring 绑定）。
+         */
+        public Edge() {
+        }
+
         /** 是否启用 Edge 后端（默认 true）。 */
         private boolean enabled = true;
         /** 默认音色 shortName（Edge TTS 音色，如 zh-CN-XiaoxiaoNeural）。 */
         private String defaultVoice = "zh-CN-XiaoxiaoNeural";
     }
 
+    /**
+     * DashScope Qwen3-TTS Realtime 后端配置。
+     */
     @Getter
     @Setter
     public static class DashScope {
+
+        /**
+         * 默认构造器（配置属性类由 Spring 绑定）。
+         */
+        public DashScope() {
+        }
+
         /** 是否启用 DashScope 后端（默认 true；无 api-key 时实际不会为不启用 Bean）。 */
         private boolean enabled = true;
         /** DashScope 控制台申请的 API Key。 */
@@ -91,26 +122,57 @@ public class TtsProperties {
         private int connectTimeoutSeconds = 10;
     }
 
+    /**
+     * 文本分块配置。
+     */
     @Getter
     @Setter
     public static class Chunker {
+
+        /**
+         * 默认构造器（配置属性类由 Spring 绑定）。
+         */
+        public Chunker() {
+        }
+
         /** 最大 chunk 字符数（达到此长度强制切分，默认 24 与 agentscope-cpp 对齐）。 */
         private int maxChars = 24;
         /** 最小 chunk 字符数（小于此长度不切，避免太碎）。 */
         private int minChars = 1;
     }
 
+    /**
+     * TTFA 指标配置。
+     */
     @Getter
     @Setter
     public static class Metrics {
+
+        /**
+         * 默认构造器（配置属性类由 Spring 绑定）。
+         */
+        public Metrics() {
+        }
+
         /** 是否启用 TTFA 采样与 Logger 输出。 */
         private boolean enabled = true;
     }
 
+    /**
+     * 主后端类型枚举。
+     */
     public enum PrimaryType {
+        /** 免费在线 Edge 后端。 */
         EDGE,
+        /** DashScope 高性能后端。 */
         DASHSCOPE;
 
+        /**
+         * 按名称解析枚举，无法识别时回退 {@link #EDGE}。
+         *
+         * @param s 后端名称（大小写不敏感）
+         * @return 解析出的枚举，识别失败为 {@link #EDGE}
+         */
         public static PrimaryType fromString(String s) {
             try {
                 return PrimaryType.valueOf(s.toUpperCase());

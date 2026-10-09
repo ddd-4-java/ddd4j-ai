@@ -10,7 +10,7 @@ import java.util.List;
  * 后端由实现委托的 {@link org.springframework.ai.vectorstore.VectorStore} 决定
  * （业务侧引入任意 spring-ai-starter-vector-store-* 即可）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface VectorDbService {
 

@@ -6,12 +6,14 @@ import java.util.List;
  * MCP 工具提供端口：屏蔽 Spring AI MCP 客户端/服务端协议细节，
  * 业务侧仅面对统一的工具发现/调用契约。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface McpToolProvider {
 
     /**
      * 列出所有可发现的工具定义。
+     *
+     * @return 工具定义列表，无可发现工具时返回空列表
      */
     List<ToolDefinition> availableTools();
 

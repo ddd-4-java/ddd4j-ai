@@ -29,14 +29,17 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * 验证「引依赖即装配」的开箱体验（chat 单轮/多轮 + RAG 摄取/问答）。
  * 无 Docker 或模型拉取失败时自动跳过。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest(properties = "ddd4j.ai.rag.chunking=false")
 class SampleAppOllamaSmokeTest {
 
+    // 测试镜像来源: https://testcontainers.com/modules/ollama/
+    // 镜像钉版 ollama/ollama:0.40.1（来源: https://hub.docker.com/v2/repositories/ollama/ollama/tags?page_size=25，
+    // 2026-10-08 查询确认 0.40.1 为最新稳定版；钉死非 latest 标签消除浮动镜像导致的测试不可复现）
     @Container
-    static final OllamaContainer OLLAMA = new OllamaContainer(DockerImageName.parse("ollama/ollama:latest"));
+    static final OllamaContainer OLLAMA = new OllamaContainer(DockerImageName.parse("ollama/ollama:0.40.1"));
 
     @DynamicPropertySource
     static void ollamaEndpoint(DynamicPropertyRegistry registry) {
@@ -45,10 +48,14 @@ class SampleAppOllamaSmokeTest {
 
     @BeforeAll
     static void pullModels() throws Exception {
-        assumeTrue(OLLAMA.execInContainer("ollama", "pull", "qwen2.5:0.5b").getExitCode() == 0,
-                "ollama pull qwen2.5:0.5b 失败，跳过示例应用冒烟");
-        assumeTrue(OLLAMA.execInContainer("ollama", "pull", "all-minilm").getExitCode() == 0,
-                "ollama pull all-minilm 失败，跳过示例应用冒烟");
+        try {
+            assumeTrue(OLLAMA.execInContainer("ollama", "pull", "qwen2.5:0.5b").getExitCode() == 0,
+                    "ollama pull qwen2.5:0.5b 失败，跳过示例应用冒烟");
+            assumeTrue(OLLAMA.execInContainer("ollama", "pull", "all-minilm").getExitCode() == 0,
+                    "ollama pull all-minilm 失败，跳过示例应用冒烟");
+        } catch (Exception e) {
+            assumeTrue(false, "ollama pull 异常（视为网络受限跳过）：" + e);
+        }
     }
 
     @Autowired
@@ -77,7 +84,7 @@ class SampleAppOllamaSmokeTest {
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
     void ragIngestThenQueryAnswersFromKnowledge() {
         ragService.ingest(List.of(new Document(
-                "灵犀计划是 PartMe.AI 团队 2026 年启动的内部代号，目标是让 ddd4j 框架家族达到人类架构师的产出水准。",
+                "灵犀计划是 ddd4j 团队 2026 年启动的内部代号，目标是让 ddd4j 框架家族达到人类架构师的产出水准。",
                 Map.of("source", "smoke"))));
 
         String answer = ragService.query("灵犀计划是什么？");

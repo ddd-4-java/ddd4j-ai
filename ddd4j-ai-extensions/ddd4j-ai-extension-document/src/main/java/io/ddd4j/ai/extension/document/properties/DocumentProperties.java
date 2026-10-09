@@ -7,13 +7,20 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * 文档读取组件配置（前缀 {@code ddd4j.ai.document}）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Getter
 @Setter
 @ConfigurationProperties(prefix = DocumentProperties.PREFIX)
 public class DocumentProperties {
 
+    /**
+     * 默认构造器（配置属性类由 Spring 绑定）。
+     */
+    public DocumentProperties() {
+    }
+
+    /** 配置属性前缀。 */
     public static final String PREFIX = "ddd4j.ai.document";
 
     /**

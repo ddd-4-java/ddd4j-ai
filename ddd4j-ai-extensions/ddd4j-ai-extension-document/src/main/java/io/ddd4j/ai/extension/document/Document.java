@@ -11,7 +11,7 @@ package io.ddd4j.ai.extension.document;
  * @param images       文档级图片（src 为 base64 data URL 或 URL）
  * @param fullMarkdown 完整 Markdown 文本（智能体主消费形态）
  * @param metadata     附加元数据（页数、标题等）
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public record Document(
         String title,
@@ -23,6 +23,9 @@ public record Document(
         String fullMarkdown,
         java.util.Map<String, Object> metadata) {
 
+    /**
+     * 紧凑构造器：对集合字段做防御性复制，元数据 {@code null} 时以空 Map 替代。
+     */
     public Document {
         sections = java.util.List.copyOf(sections);
         tables = java.util.List.copyOf(tables);

@@ -13,23 +13,39 @@ import java.util.Map;
  * <p>前提：业务服务引入 {@code spring-ai-starter-mcp-client} 与 MCP Server 连接配置
  * （参考 Spring AI MCP 文档），再引入 {@code ddd4j-ai-extension-mcp}。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Component
 public class McpSample {
 
     private final McpToolProvider toolProvider;
 
+    /**
+     * 构造 McpSample。
+     *
+     * @param toolProvider 工具提供者
+     */
     public McpSample(McpToolProvider toolProvider) {
         this.toolProvider = toolProvider;
     }
 
-    /** 列出全部可用 MCP 工具（供 LLM 提示词注入 / 诊断）。 */
+    /**
+     * 列出全部可用 MCP 工具（供 LLM 提示词注入 / 诊断）。
+     *
+     * @return 结果列表
+     */
     public List<ToolDefinition> availableTools() {
         return toolProvider.availableTools();
     }
 
-    /** 调用指定工具并返回执行结果。 */
+    /**
+     * 调用指定工具并返回执行结果。
+     *
+     * @param toolName 工具名称
+     * @param arguments 工具入参
+     * @return 执行结果
+     * @throws Exception 执行过程中出现异常时抛出
+     */
     public Object invoke(String toolName, Map<String, Object> arguments) throws Exception {
         return toolProvider.invokeTool(toolName, arguments);
     }

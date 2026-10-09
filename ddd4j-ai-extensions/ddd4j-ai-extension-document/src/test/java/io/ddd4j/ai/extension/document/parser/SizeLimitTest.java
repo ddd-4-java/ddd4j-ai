@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * {@link TikaDocumentParser} 文件大小上限测试：超限拒绝（File/Stream 两入口）+ 不限制回归。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class SizeLimitTest {
 

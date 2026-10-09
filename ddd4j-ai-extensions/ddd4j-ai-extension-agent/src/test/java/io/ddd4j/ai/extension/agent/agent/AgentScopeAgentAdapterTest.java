@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
  * {@link AgentScopeAgentAdapter} 单元测试：把 Agentscope {@link HarnessAgent} 包装为
  * ddd4j-ai-extension-agent 的 {@link io.ddd4j.ai.extension.agent.service.AgentService} SPI。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class AgentScopeAgentAdapterTest {
 

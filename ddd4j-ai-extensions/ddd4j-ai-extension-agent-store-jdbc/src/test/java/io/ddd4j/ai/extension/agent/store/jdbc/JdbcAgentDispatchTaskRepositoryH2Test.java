@@ -16,7 +16,7 @@ import javax.sql.DataSource;
  * {@code JdbcAgentDispatchTaskRepositoryMySqlTest} / {@code ...PostgresTest}）；
  * 若把核心断言只压在容器上，无 Docker 的机器会静默跳过，得到骗人的绿灯。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class JdbcAgentDispatchTaskRepositoryH2Test extends AgentDispatchTaskRepositoryContract {
 

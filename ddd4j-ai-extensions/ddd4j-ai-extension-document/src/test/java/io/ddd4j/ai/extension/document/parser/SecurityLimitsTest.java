@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
  * {@link TikaDocumentParser} 安全限额测试：深嵌套容器 / 嵌入图片数量与单图大小上限
  * （zip 炸弹与图片轰炸攻击面防护）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class SecurityLimitsTest {
 

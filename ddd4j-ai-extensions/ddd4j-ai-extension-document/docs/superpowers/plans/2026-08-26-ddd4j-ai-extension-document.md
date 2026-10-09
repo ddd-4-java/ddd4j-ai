@@ -23,7 +23,7 @@
 - 委托实现：4 个 `*DocumentParser` 包装 easypdf/easydoc/easyexcel/easyodf（这些组件已发布到 Maven Central 后启用；当前为契约占位）
 - 切换策略：默认走"高质量"（委托组件 → 失败回退 markitdown4j）；`@ConditionalOnProperty("ddd4j.ai.document.high-quality")` 控制
 
-代码位置：`/Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai/ddd4j-ai-extensions/ddd4j-ai-extension-document/`，遵循 ddd4j-ai-extension-rag 同构（`pom.xml` + `autoconfigure/` + `properties/` + `service/` + `service/impl/`）。
+代码位置：`<repo-root>/ddd4j-ai-extensions/ddd4j-ai-extension-document/`，遵循 ddd4j-ai-extension-rag 同构（`pom.xml` + `autoconfigure/` + `properties/` + `service/` + `service/impl/`）。
 
 **Tech Stack:** markitdown4j 1.0.0（core + 14 converters，全 MIT）、Apache Tika 3.3.2（已管）、Spring AI Commons 2.0.0、Spring Boot AutoConfigure。
 
@@ -109,7 +109,7 @@ class DocumentTest {
 
 - [x] **Step 3: 运行测试确认失败**
 
-Run: `cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai/ddd4j-ai-extensions && ./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=DocumentTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "BUILD|ERROR" | head -3`
+Run: `cd <repo-root>/ddd4j-ai-extensions && ./mvnw -pl ddd4j-ai-extension-document -am test -Dtest=DocumentTest -Dsurefire.failIfNoSpecifiedTests=false 2>&1 | grep -E "BUILD|ERROR" | head -3`
 
 - [x] **Step 4: 创建 pom.xml（14 个 markitdown4j 依赖 + Tika + Spring AI）+ 7 个 model 文件**
 
@@ -167,7 +167,7 @@ Expected: PASS（2 tests）
 - [x] **Step 6: Commit**
 
 ```bash
-cd /Users/wandl/workspaces/workspace-ddd4j/workspace-ddd4j-boot/ddd4j-ai
+cd <repo-root>
 git add ddd4j-ai-extensions/pom.xml ddd4j-ai-extensions/ddd4j-ai-extension-document/
 git commit -m "feat(extension): add ddd4j-ai-extension-document module with Document POJO and SourceType tracking"
 ```

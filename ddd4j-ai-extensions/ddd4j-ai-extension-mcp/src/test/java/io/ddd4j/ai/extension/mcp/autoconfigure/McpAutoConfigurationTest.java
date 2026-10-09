@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * {@link McpAutoConfiguration} 装配测试：客户端 bean 存在时激活，否则不注册。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class McpAutoConfigurationTest {
 

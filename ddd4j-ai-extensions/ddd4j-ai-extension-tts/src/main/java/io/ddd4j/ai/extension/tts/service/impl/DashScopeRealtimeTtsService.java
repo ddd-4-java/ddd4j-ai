@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * <p>{@link #synthesize(String, String)} 单元素版聚合 {@link #streamSynthesize(String, String)} 的所有字节，
  * 保留向后兼容。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class DashScopeRealtimeTtsService implements TtsService {
 
@@ -41,6 +41,14 @@ public class DashScopeRealtimeTtsService implements TtsService {
     private final TtsMetrics metrics;
     private final String defaultVoice;
 
+    /**
+     * 创建 Realtime TTS 实现。
+     *
+     * @param client       DashScope Realtime 客户端，不允许 {@code null}
+     * @param metrics      TTFA 指标采样器，不允许 {@code null}
+     * @param defaultVoice 默认音色（voice 为空时使用）
+     * @throws NullPointerException {@code client}/{@code metrics} 为 {@code null}
+     */
     public DashScopeRealtimeTtsService(DashScopeRealtimeClient client,
                                        TtsMetrics metrics,
                                        String defaultVoice) {
@@ -49,7 +57,15 @@ public class DashScopeRealtimeTtsService implements TtsService {
         this.defaultVoice = defaultVoice;
     }
 
-    /** 工厂方法：构造时直接创建 DashScope SDK 客户端（用于 AutoConfiguration）。 */
+    /**
+     * 工厂方法：构造时直接创建 DashScope SDK 客户端（用于 AutoConfiguration）。
+     *
+     * @param apiKey  DashScope API key
+     * @param model   TTS 模型名
+     * @param voice   默认音色 shortName
+     * @param metrics TTFA 指标采样器
+     * @return Realtime TTS 实现
+     */
     public static DashScopeRealtimeTtsService create(String apiKey,
                                                       String model,
                                                       String voice,
@@ -180,7 +196,11 @@ public class DashScopeRealtimeTtsService implements TtsService {
         return null;
     }
 
-    /** 当前 TTS 指标快照（用于运维 / 测试断言）。 */
+    /**
+     * 当前 TTS 指标快照（用于运维 / 测试断言）。
+     *
+     * @return TTFA 指标采样器
+     */
     public TtsMetrics getMetrics() {
         return metrics;
     }
@@ -190,7 +210,11 @@ public class DashScopeRealtimeTtsService implements TtsService {
         client.close();
     }
 
-    /** 默认音色的 getter（用于配置同步 / 测试断言）。 */
+    /**
+     * 默认音色 getter（用于配置同步 / 测试断言）。
+     *
+     * @return 默认音色 shortName
+     */
     public String getDefaultVoice() {
         return defaultVoice;
     }

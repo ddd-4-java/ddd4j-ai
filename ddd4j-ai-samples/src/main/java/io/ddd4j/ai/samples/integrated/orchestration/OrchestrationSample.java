@@ -27,6 +27,13 @@ public class OrchestrationSample {
     private final AgentService agentService;
     private final ChatRouter chatRouter;
 
+    /**
+     * 构造 OrchestrationSample。
+     *
+     * @param flowService 工作流服务
+     * @param agentService 智能体任务服务
+     * @param chatRouter 多模型路由器
+     */
     public OrchestrationSample(FlowService flowService, AgentService agentService,
                                ChatRouter chatRouter) {
         this.flowService = flowService;
@@ -36,6 +43,9 @@ public class OrchestrationSample {
 
     /**
      * 顺序工作流：LLM 节点 A → LLM 节点 B（B 的 prompt 引用 A 的结果）。
+     *
+     * @return 结果键值对
+     * @throws Exception 执行过程中出现异常时抛出
      */
     public Map<String, Object> runSequentialFlow() throws Exception {
         FlowDefinition definition = FlowDefinition.builder()
@@ -60,6 +70,9 @@ public class OrchestrationSample {
 
     /**
      * Agent 节点工作流：LLM 分析 → Agent 执行任务 → LLM 总结。
+     *
+     * @return 结果键值对
+     * @throws Exception 执行过程中出现异常时抛出
      */
     public Map<String, Object> runAgentNodeFlow() throws Exception {
         FlowDefinition definition = FlowDefinition.builder()
@@ -90,6 +103,9 @@ public class OrchestrationSample {
 
     /**
      * 路由工作流：按策略选择模型执行任务。
+     *
+     * @param task 任务描述
+     * @return 文本结果
      */
     public String routeAndExecute(String task) {
         return chatRouter.route(AiRequest.of(task));
@@ -97,6 +113,10 @@ public class OrchestrationSample {
 
     /**
      * Agent 直接执行（绕过 workflow，单次任务）。
+     *
+     * @param instruction 指令内容
+     * @return 文本结果
+     * @throws Exception 执行过程中出现异常时抛出
      */
     public String agentDirect(String instruction) throws Exception {
         return agentService.execute(AgentTask.of(instruction)).output();

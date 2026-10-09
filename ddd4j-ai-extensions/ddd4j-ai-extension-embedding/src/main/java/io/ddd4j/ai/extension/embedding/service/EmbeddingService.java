@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * 向量嵌入端口：单条与批量文本向量化。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface EmbeddingService {
 

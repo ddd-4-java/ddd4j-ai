@@ -16,13 +16,13 @@ import reactor.core.publisher.Mono;
 
 /**
  * ddd4j-ai-extension-chat 暴露的 Spring AI {@link ToolCallback} 到 Agentscope
- * {@link AgentTool} 的适配器（参考 cloud-agents {@code AgentScopeOpenClawToolAdapter}）。
+ * {@link AgentTool} 的适配器。
  * <p>
  * 调用映射：{@code ToolCallback.call(inputJson)} → JSON 解析为 Map → Agentscope
  * {@link ToolCallParam#getInput()}；结果字符串 → {@link ToolResultBlock#text(String)}；
  * 异常 → {@link ToolResultBlock#error(String)}。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public final class SpringAiToolkitBuilder {
 
@@ -33,7 +33,10 @@ public final class SpringAiToolkitBuilder {
 
     /**
      * 把 Spring AI 工具回调注册到 Agentscope Toolkit 工厂方法。
-     * 单个工具注册失败时记录 WARN 跳过（不中断整个 Toolkit 装配），与 cloud-agents 行为一致。
+     * 单个工具注册失败时记录 WARN 跳过，不中断整个 Toolkit 装配。
+     *
+     * @param callbacks Spring AI 工具回调列表，为 {@code null} 或空时直接返回
+     * @param toolkit   目标 Toolkit，不允许为 {@code null}
      */
     public static void registerSpringAiTools(List<ToolCallback> callbacks,
                                             io.agentscope.core.tool.Toolkit toolkit) {

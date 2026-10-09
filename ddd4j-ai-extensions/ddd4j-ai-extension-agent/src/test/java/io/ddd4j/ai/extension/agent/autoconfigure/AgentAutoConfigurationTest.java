@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 /**
  * {@link AgentAutoConfiguration} 装配测试：缺凭证回退 / 配凭证装配 / 业务覆盖。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class AgentAutoConfigurationTest {
 

@@ -1,7 +1,7 @@
 # OCR 文档/图像识别组件设计
 
 - 日期：2026-08-12
-- 作者：PartMe.AI
+- 作者：ddd4j
 - 状态：已实施（2026-08-25 组件补全批次）
 - 范围：`ddd4j-ai-extension-ocr` —— 文档/图像文字识别
 - 关联文档：整体架构见 `2026-08-07-ddd4j-ai-architecture-design.md`；可接入 rag 作为文档摄取前置

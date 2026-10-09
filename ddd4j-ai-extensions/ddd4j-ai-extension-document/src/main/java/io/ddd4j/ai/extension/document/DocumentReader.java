@@ -11,12 +11,17 @@ import java.util.Objects;
 /**
  * 智能体文档读取统一门面：按媒体类型路由到解析器，委托未就位时自动降级到通用兜底。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public final class DocumentReader {
 
     private final List<DocumentParser> parsers;
 
+    /**
+     * 创建读取门面：解析器按 {@link DocumentParser#order()} 降序排列。
+     *
+     * @param parsers 可用的解析器列表
+     */
     public DocumentReader(List<DocumentParser> parsers) {
         this.parsers = parsers.stream()
                 .sorted(Comparator.comparingInt(DocumentParser::order).reversed())
@@ -26,6 +31,8 @@ public final class DocumentReader {
     /**
      * 读取文件为统一文档模型。
      *
+     * @param file 待读取的文件
+     * @return 规范化后的文档模型
      * @throws Exception 解析失败；无可用解析器抛 {@link UnsupportedOperationException}
      */
     public Document read(File file) throws Exception {
@@ -35,6 +42,11 @@ public final class DocumentReader {
 
     /**
      * 读取输入流为统一文档模型（文件名用于媒体类型判定）。
+     *
+     * @param in       待读取的输入流
+     * @param filename 原始文件名（用于媒体类型判定）
+     * @return 规范化后的文档模型
+     * @throws Exception 解析失败；无可用解析器抛 {@link UnsupportedOperationException}
      */
     public Document read(InputStream in, String filename) throws Exception {
         Objects.requireNonNull(in, "in must not be null");
@@ -43,6 +55,10 @@ public final class DocumentReader {
 
     /**
      * 读取 URL 指向的文档。
+     *
+     * @param url 文档地址
+     * @return 规范化后的文档模型
+     * @throws Exception 打开流或解析失败
      */
     public Document read(URL url) throws Exception {
         Objects.requireNonNull(url, "url must not be null");
@@ -53,6 +69,10 @@ public final class DocumentReader {
 
     /**
      * 读取路径指向的文档。
+     *
+     * @param path 文件路径
+     * @return 规范化后的文档模型
+     * @throws Exception 解析失败；无可用解析器抛 {@link UnsupportedOperationException}
      */
     public Document read(Path path) throws Exception {
         Objects.requireNonNull(path, "path must not be null");

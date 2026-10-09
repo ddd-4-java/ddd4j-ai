@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
  * {@link TextDeltaTtsBridge} 集成测试：用 Mockito mock AgentEvent 与 TtsService，
  * 验证流式切片 → TTS 调用 → 音频拼接的正确性。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class TextDeltaTtsBridgeTest {
 

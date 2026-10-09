@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 /**
  * {@link WhisperCppAsrService} 单元测试：native 库可用性探测 + 模型缺失错误路径。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class WhisperCppAsrServiceTest {
 

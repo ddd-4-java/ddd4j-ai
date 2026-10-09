@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * {@link FlowAutoConfiguration} 装配测试：缺依赖回退 / 默认装配 / 关闭回退。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class FlowAutoConfigurationTest {
 

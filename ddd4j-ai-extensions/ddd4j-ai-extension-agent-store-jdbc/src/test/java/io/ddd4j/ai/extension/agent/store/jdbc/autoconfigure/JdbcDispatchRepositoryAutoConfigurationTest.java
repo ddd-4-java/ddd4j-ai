@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * <p>覆盖 4 个分支：属性开+DataSource 有 / 属性缺 / DataSource 缺 / {@code auto-ddl=false}。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class JdbcDispatchRepositoryAutoConfigurationTest {
 

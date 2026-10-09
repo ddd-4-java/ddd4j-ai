@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * {@link EmbeddingService} 端口契约测试：以确定性桩验证单条/批量/维度语义。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class EmbeddingServiceContractTest {
 

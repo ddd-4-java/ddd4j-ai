@@ -15,7 +15,7 @@ import static org.mockito.Mockito.when;
 /**
  * {@link PlanExecuteAgent} 单元测试：计划解析 / 分步执行聚合 / 无计划兜底。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class PlanExecuteAgentTest {
 

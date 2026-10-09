@@ -17,7 +17,7 @@ import static org.mockito.Mockito.when;
 /**
  * {@link MultiModelChatRouter} 单元测试：按策略分发到对应 ChatClient，并回写耗时。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class MultiModelChatRouterTest {
 

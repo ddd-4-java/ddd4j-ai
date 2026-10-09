@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * 摄取知识文档（all-minilm 嵌入 + pgvector 入库）→ 检索 → qwen2.5:0.5b 增强生成。
  * 无 Docker 或模型拉取失败时自动跳过。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Testcontainers(disabledWithoutDocker = true)
 class RagSmokeIntegrationTest {
@@ -52,9 +52,13 @@ class RagSmokeIntegrationTest {
 
     private static final String EMBEDDING_MODEL = "all-minilm";
 
+    // 测试镜像来源: https://testcontainers.com/modules/ollama/
+    // 镜像钉版 ollama/ollama:0.40.1（来源: https://hub.docker.com/v2/repositories/ollama/ollama/tags?page_size=25，
+    // 2026-10-08 查询确认 0.40.1 为最新稳定版；钉死非 latest 标签消除浮动镜像导致的测试不可复现）
     @Container
-    static final OllamaContainer OLLAMA = new OllamaContainer(DockerImageName.parse("ollama/ollama:latest"));
+    static final OllamaContainer OLLAMA = new OllamaContainer(DockerImageName.parse("ollama/ollama:0.40.1"));
 
+    // 测试镜像来源: https://testcontainers.com/modules/pgvector/
     @Container
     static final PostgreSQLContainer<?> PGVECTOR = new PostgreSQLContainer<>(
             DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
@@ -76,12 +80,16 @@ class RagSmokeIntegrationTest {
                 "类路径缺少 FW7 的 org.springframework.core.retry（父链为 FW 6.2），跳过 RAG 联合冒烟");
 
         // 容器内预拉嵌入与对话模型；网络受限时整组测试跳过
-        var pullEmbedding = OLLAMA.execInContainer("ollama", "pull", EMBEDDING_MODEL);
-        assumeTrue(pullEmbedding.getExitCode() == 0,
-                "ollama pull " + EMBEDDING_MODEL + " 失败，跳过 RAG 联合冒烟");
-        var pullChat = OLLAMA.execInContainer("ollama", "pull", CHAT_MODEL);
-        assumeTrue(pullChat.getExitCode() == 0,
-                "ollama pull " + CHAT_MODEL + " 失败，跳过 RAG 联合冒烟");
+        try {
+            var pullEmbedding = OLLAMA.execInContainer("ollama", "pull", EMBEDDING_MODEL);
+            assumeTrue(pullEmbedding.getExitCode() == 0,
+                    "ollama pull " + EMBEDDING_MODEL + " 失败，跳过 RAG 联合冒烟");
+            var pullChat = OLLAMA.execInContainer("ollama", "pull", CHAT_MODEL);
+            assumeTrue(pullChat.getExitCode() == 0,
+                    "ollama pull " + CHAT_MODEL + " 失败，跳过 RAG 联合冒烟");
+        } catch (Exception e) {
+            assumeTrue(false, "ollama pull 异常（视为网络受限跳过）：" + e);
+        }
 
         OllamaApi api = OllamaApi.builder().baseUrl(OLLAMA.getEndpoint()).build();
         OllamaEmbeddingModel embeddingModel = OllamaEmbeddingModel.builder()
@@ -120,7 +128,7 @@ class RagSmokeIntegrationTest {
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
     void ingestThenQueryAnswersFromKnowledgeBase() {
         rag.ingest(List.of(new Document("""
-                灵犀计划是 PartMe.AI 团队 2026 年启动的内部代号，目标是让 ddd4j 框架家族
+                灵犀计划是 ddd4j 团队 2026 年启动的内部代号，目标是让 ddd4j 框架家族
                 在金融级业务系统中达到人类架构师的产出水准。灵犀计划分为三个阶段：
                 契约定型、能力补齐、生态扩展。
                 """, Map.of("source", "internal-wiki"))));
@@ -128,7 +136,7 @@ class RagSmokeIntegrationTest {
         String answer = rag.query("灵犀计划是什么？");
 
         assertThat(answer).isNotBlank();
-        assertTrue(answer.contains("灵犀") || answer.contains("PartMe"),
+        assertTrue(answer.contains("灵犀"),
                 "回答应引用知识库内容，实际回答：" + answer);
     }
 

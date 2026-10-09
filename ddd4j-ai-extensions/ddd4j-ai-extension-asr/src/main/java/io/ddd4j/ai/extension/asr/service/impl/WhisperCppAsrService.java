@@ -13,13 +13,18 @@ import java.nio.file.Files;
 /**
  * Whisper.cpp 离线转写实现（JNA 绑定）：模型懒加载，音频自动重采样为 16kHz 单声道。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class WhisperCppAsrService implements AsrService {
 
     private final String modelPath;
     private volatile WhisperCpp whisper;
 
+    /**
+     * 创建转写服务（模型在首次转写时懒加载）。
+     *
+     * @param modelPath Whisper 模型文件路径（ggml 格式）
+     */
     public WhisperCppAsrService(String modelPath) {
         this.modelPath = modelPath;
     }

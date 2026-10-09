@@ -6,10 +6,15 @@ package io.ddd4j.ai.extension.agent.service;
  * @param type    步骤类型：plan / thought / action / observation / execution / result
  * @param content 步骤内容
  * @param index   步骤序号（0 起）
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public record AgentStep(String type, String content, int index) {
 
+    /**
+     * 紧凑构造器：校验步骤类型不允许为空白。
+     *
+     * @throws IllegalArgumentException 当 {@code type} 为 {@code null} 或空白时抛出
+     */
     public AgentStep {
         if (type == null || type.isBlank()) {
             throw new IllegalArgumentException("type must not be blank");

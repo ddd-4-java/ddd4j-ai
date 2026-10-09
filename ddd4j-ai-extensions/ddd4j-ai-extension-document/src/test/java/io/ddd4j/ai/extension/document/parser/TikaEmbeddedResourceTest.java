@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@link TikaDocumentParser} 嵌入资源提取测试（对齐 markitdown 的图片提取）：
  * 容器文档（docx）内嵌图片 → base64 data URL。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class TikaEmbeddedResourceTest {
 

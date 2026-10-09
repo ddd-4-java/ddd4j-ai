@@ -14,9 +14,15 @@ import java.util.List;
  * PDF 专用文本提取：基于 Apache PDFBox 直接抽取嵌入式文本层，
  * 不依赖 Tika 解析链，适合大批量 PDF 的高吞吐直提。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class PdfBoxOcrService implements OcrService {
+
+    /**
+     * 默认构造器（无状态提取器）。
+     */
+    public PdfBoxOcrService() {
+    }
 
     @Override
     public String extractText(InputStream input, MediaType mediaType) throws Exception {

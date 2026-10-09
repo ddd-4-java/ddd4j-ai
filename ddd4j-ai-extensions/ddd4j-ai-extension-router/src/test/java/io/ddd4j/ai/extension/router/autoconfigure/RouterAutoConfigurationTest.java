@@ -16,7 +16,7 @@ import static org.mockito.Mockito.mock;
 /**
  * {@link RouterAutoConfiguration} 装配测试：缺客户端回退 / 默认轮询 / 策略属性切换 / 关闭回退。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class RouterAutoConfigurationTest {
 

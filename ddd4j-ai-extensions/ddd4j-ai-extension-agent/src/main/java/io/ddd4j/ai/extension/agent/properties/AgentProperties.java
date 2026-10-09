@@ -7,13 +7,20 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * 智能体组件配置（前缀 {@code ddd4j.ai.agent}）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Getter
 @Setter
 @ConfigurationProperties(prefix = AgentProperties.PREFIX)
 public class AgentProperties {
 
+    /**
+     * 默认构造器（配置属性类由 Spring 绑定）。
+     */
+    public AgentProperties() {
+    }
+
+    /** 配置属性前缀。 */
     public static final String PREFIX = "ddd4j.ai.agent";
 
     /**
@@ -77,6 +84,12 @@ public class AgentProperties {
     @Getter
     @Setter
     public static class SubagentSpec {
+
+        /**
+         * 默认构造器（配置属性类由 Spring 绑定）。
+         */
+        public SubagentSpec() {
+        }
 
         /** 子智能体名称（唯一标识）。 */
         private String name;

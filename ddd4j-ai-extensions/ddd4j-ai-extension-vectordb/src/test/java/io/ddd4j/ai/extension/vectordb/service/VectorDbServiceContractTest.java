@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@link VectorDbService} 端口契约测试：以 SimpleVectorStore（内存实现）验证
  * 入库/检索/删除/metadata 过滤语义。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class VectorDbServiceContractTest {
 

@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * 路由策略单元测试：轮询均匀 / 权重倾斜 / 延迟优先 / 空候选兜底。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class RoutingStrategyTest {
 

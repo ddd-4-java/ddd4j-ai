@@ -24,7 +24,7 @@ import reactor.core.scheduler.Schedulers;
  * <p>这是「自主规划→拆分→派发→合并」引擎的执行半边；计划的产生（plan mode / LLM 结构化输出）
  * 由调用方（或 Agentscope PlanMode）负责，本类消费结构化的任务指令列表。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class AgentPlanOrchestrator {
 
@@ -33,6 +33,12 @@ public class AgentPlanOrchestrator {
     private final HarnessAgent harnessAgent;
     private final AgentDispatchTaskRepository repository;
 
+    /**
+     * 创建计划编排器。
+     *
+     * @param harnessAgent 执行子任务的核心智能体
+     * @param repository   派发任务仓储
+     */
     public AgentPlanOrchestrator(HarnessAgent harnessAgent, AgentDispatchTaskRepository repository) {
         this.harnessAgent = Objects.requireNonNull(harnessAgent, "harnessAgent");
         this.repository = Objects.requireNonNull(repository, "repository");
@@ -41,7 +47,9 @@ public class AgentPlanOrchestrator {
     /**
      * 提交计划：为每条任务指令创建 PENDING 任务行。
      *
-     * @return planId
+     * @param goal            计划总体目标
+     * @param taskInstructions 子任务指令列表，不允许为空
+     * @return 新建的计划 id
      */
     public String submitPlan(String goal, List<String> taskInstructions) {
         Objects.requireNonNull(goal, "goal");
@@ -64,6 +72,7 @@ public class AgentPlanOrchestrator {
     /**
      * 非阻塞派发：为 WebFlux / Reactor 消费方提供的正规入口。全程不经过 {@code .block()}。
      *
+     * @param planId 计划 id
      * @return planId → 各任务执行结果（taskId → result/error）
      */
     public Mono<Map<String, String>> dispatchAllAsync(String planId) {
@@ -100,6 +109,7 @@ public class AgentPlanOrchestrator {
      * <p>同步入口：在 Reactor 非阻塞线程上会抛出带指引的异常，请改用
      * {@link #dispatchAllAsync(String)}。
      *
+     * @param planId 计划 id
      * @return planId → 各任务执行结果（taskId → result/error）
      */
     public Map<String, String> dispatchAll(String planId) {
@@ -107,7 +117,12 @@ public class AgentPlanOrchestrator {
         return dispatchAllAsync(planId).block();
     }
 
-    /** 查看计划下全部任务（诊断/测试用）。 */
+    /**
+     * 查看计划下全部任务（诊断/测试用）。
+     *
+     * @param planId 计划 id
+     * @return 该计划的任务快照列表
+     */
     public List<AgentDispatchTask> tasksOf(String planId) {
         BlockingCallGuard.requireBlockingCapableThread("tasksOf 在 reactive 线程上不可用（无 async 版本）");
         return List.copyOf(repository.findByPlanId(planId));
@@ -115,6 +130,9 @@ public class AgentPlanOrchestrator {
 
     /**
      * 非阻塞合并：全部 DONE 时让父智能体 synthesis；有非 DONE 任务则错误终止。
+     *
+     * @param planId 计划 id
+     * @return 合并后的最终答案
      */
     public Mono<String> mergeResultsAsync(String planId) {
         Objects.requireNonNull(planId, "planId");
@@ -145,6 +163,9 @@ public class AgentPlanOrchestrator {
     /**
      * 合并结果（同步入口）：在 Reactor 非阻塞线程上会抛出带指引的异常，
      * 请改用 {@link #mergeResultsAsync(String)}。
+     *
+     * @param planId 计划 id
+     * @return 合并后的最终答案
      */
     public String mergeResults(String planId) {
         BlockingCallGuard.requireBlockingCapableThread("mergeResultsAsync(planId)");

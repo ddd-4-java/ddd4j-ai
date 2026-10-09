@@ -12,12 +12,18 @@ import java.util.List;
  * 存储后端由构造传入的 {@link ChatMemoryRepository} 决定
  * （内存 / 官方 JDBC / Redis repository 等均可），窗口大小可配。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class WindowMemoryService implements MemoryService {
 
     private final MessageWindowChatMemory delegate;
 
+    /**
+     * 创建窗口记忆服务。
+     *
+     * @param repository 存储后端，不允许 {@code null}
+     * @param windowSize 窗口大小（每个会话保留的最近消息条数）
+     */
     public WindowMemoryService(ChatMemoryRepository repository, int windowSize) {
         this.delegate = MessageWindowChatMemory.builder()
                 .chatMemoryRepository(repository)

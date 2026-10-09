@@ -33,7 +33,7 @@ import java.util.Objects;
  * TtsRouter router = new FallbackTtsRouter(backends);
  * }</pre>
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public class FallbackTtsRouter implements TtsRouter {
 
@@ -42,6 +42,12 @@ public class FallbackTtsRouter implements TtsRouter {
     private final List<String> backendNames;
     private final List<TtsService> backends;
 
+    /**
+     * 创建降级路由器（按 Map 迭代顺序作为降级顺序）。
+     *
+     * @param backends 后端名 → 后端实现，不允许为空
+     * @throws IllegalArgumentException {@code backends} 为 {@code null} 或空
+     */
     public FallbackTtsRouter(Map<String, TtsService> backends) {
         Objects.requireNonNull(backends, "backends");
         if (backends.isEmpty()) {
@@ -99,7 +105,12 @@ public class FallbackTtsRouter implements TtsRouter {
                 });
     }
 
-    /** 公开构造器（无后端顺序保证），仅供测试。 */
+    /**
+     * 公开工厂（无后端顺序保证），仅供测试。
+     *
+     * @param backends 可变后端列表，不允许为空
+     * @return 降级路由器
+     */
     public static FallbackTtsRouter of(TtsService... backends) {
         java.util.LinkedHashMap<String, TtsService> map = new java.util.LinkedHashMap<>();
         for (int i = 0; i < backends.length; i++) {

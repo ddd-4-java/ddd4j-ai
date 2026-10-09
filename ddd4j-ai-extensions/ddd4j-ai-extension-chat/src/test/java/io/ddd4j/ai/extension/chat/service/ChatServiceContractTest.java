@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * {@link ChatService} 端口契约测试：以回声桩验证单轮/多轮/流式语义。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class ChatServiceContractTest {
 

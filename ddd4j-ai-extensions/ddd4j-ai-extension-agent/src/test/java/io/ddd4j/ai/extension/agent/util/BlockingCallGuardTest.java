@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * <p>注意：本模块 classpath 无 {@code reactor-test}，故断言用 {@code .block()} + AssertJ
  * 而非 {@code StepVerifier}，避免为测试新增依赖。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class BlockingCallGuardTest {
 

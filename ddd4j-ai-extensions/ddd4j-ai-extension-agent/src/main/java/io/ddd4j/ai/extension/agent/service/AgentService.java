@@ -11,7 +11,7 @@ import reactor.core.scheduler.Schedulers;
  * 自 2026-09-02 起默认实现为 Agentscope {@code HarnessAgent}（薄包装），
  * 原有自实现 ReAct/Plan-Execute 已移除（基线快照见 plans/baseline-*.java）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface AgentService {
 

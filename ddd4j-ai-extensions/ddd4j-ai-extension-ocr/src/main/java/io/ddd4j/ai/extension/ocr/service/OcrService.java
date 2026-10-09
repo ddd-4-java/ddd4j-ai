@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * 文档/图像识别端口：从字节流按媒体类型提取文本或结构化文档。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface OcrService {
 

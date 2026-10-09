@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *        {@code dispatchAll} 的重试路径依赖此语义）</li>
  * </ul>
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public abstract class AgentDispatchTaskRepositoryContract {
 

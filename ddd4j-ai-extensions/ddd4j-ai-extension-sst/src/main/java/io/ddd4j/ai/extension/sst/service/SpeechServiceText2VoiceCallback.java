@@ -6,20 +6,23 @@ package io.ddd4j.ai.extension.sst.service;
 public interface SpeechServiceText2VoiceCallback {
 
     /**
-     * 取消
-     * @param reason
+     * 合成被取消。
+     *
+     * @param reason 取消原因
      */
     void onCancel(String reason);
 
     /**
-     * 转换成功
-     * @param audioData
+     * 合成成功。
+     *
+     * @param audioData 合成音频字节流
      */
     void onSuccess(byte[] audioData);
 
     /**
-     * 失败
-     * @param reason
+     * 合成失败。
+     *
+     * @param reason 失败原因
      */
     void onFail(String reason);
 }

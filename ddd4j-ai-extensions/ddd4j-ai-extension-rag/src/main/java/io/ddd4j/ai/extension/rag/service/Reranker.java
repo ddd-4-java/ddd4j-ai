@@ -8,7 +8,7 @@ import java.util.List;
  * 检索结果重排扩展点：对初筛片段做二次排序/过滤（如按相关度模型、业务规则）。
  * 默认实现为直通（{@link NoopReranker}）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface Reranker {
 

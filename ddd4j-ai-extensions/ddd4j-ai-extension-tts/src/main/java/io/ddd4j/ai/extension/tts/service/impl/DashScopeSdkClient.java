@@ -29,7 +29,7 @@ import java.util.function.Consumer;
  * client.finish();
  * }</pre>
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 final class DashScopeSdkClient implements DashScopeRealtimeClient {
 

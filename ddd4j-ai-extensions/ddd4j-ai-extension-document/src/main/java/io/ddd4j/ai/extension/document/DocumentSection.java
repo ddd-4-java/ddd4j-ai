@@ -11,7 +11,7 @@ import java.util.List;
  * @param children 子章节
  * @param tables  章节内表格
  * @param images  章节内图片
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public record DocumentSection(
         String title,
@@ -21,6 +21,9 @@ public record DocumentSection(
         List<DocumentTable> tables,
         List<DocumentImage> images) {
 
+    /**
+     * 紧凑构造器：对子章节、表格、图片列表做防御性复制。
+     */
     public DocumentSection {
         children = List.copyOf(children);
         tables = List.copyOf(tables);

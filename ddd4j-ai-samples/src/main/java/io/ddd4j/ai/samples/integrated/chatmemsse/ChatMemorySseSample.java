@@ -23,6 +23,12 @@ public class ChatMemorySseSample {
     private final ChatService chatService;
     private final MemoryService memoryService;
 
+    /**
+     * 构造 ChatMemorySseSample。
+     *
+     * @param chatService 对话服务
+     * @param memoryService 会话记忆服务
+     */
     public ChatMemorySseSample(ChatService chatService, MemoryService memoryService) {
         this.chatService = chatService;
         this.memoryService = memoryService;
@@ -30,6 +36,10 @@ public class ChatMemorySseSample {
 
     /**
      * 多轮对话：同一 conversationId 自动写入/读取记忆历史。
+     *
+     * @param conversationId 会话标识
+     * @param userMessage 用户消息
+     * @return 文本结果
      */
     public String multiTurn(String conversationId, String userMessage) {
         // memoryService 被 ChatClientAdapter 自动集成，无需手动管理
@@ -38,6 +48,9 @@ public class ChatMemorySseSample {
 
     /**
      * 流式对话：返回 Flux 供 SSE 逐 token 推送。
+     *
+     * @param userMessage 用户消息
+     * @return 响应式数据流
      */
     public Flux<String> streamFlux(String userMessage) {
         return chatService.streamChat(userMessage);
@@ -45,6 +58,10 @@ public class ChatMemorySseSample {
 
     /**
      * 手动管理记忆：读取历史 → 拼接上下文 → 手动调用（脱离 ChatService 自动集成时使用）。
+     *
+     * @param conversationId 会话标识
+     * @param userMessage 用户消息
+     * @return 文本结果
      */
     public String manualMemoryChat(String conversationId, String userMessage) {
         List<Message> history = memoryService.get(conversationId);
@@ -62,6 +79,8 @@ public class ChatMemorySseSample {
 
     /**
      * 清除会话记忆。
+     *
+     * @param conversationId 会话标识
      */
     public void clearMemory(String conversationId) {
         memoryService.clear(conversationId);

@@ -1,0 +1,378 @@
+ddd4j-ai feature/2.0.x javadoc 检查门禁 + 全量规范补注 证据文件
+=====================================================================
+仓库: E:\workspaces\workspace-ddd4j\workspace-ddd4j-boot\ddd4j-ai
+分支: feature/2.0.x（git status 确认，未切分支）
+日期: 2026-10-09
+约束遵守:
+  - 未运行 mvn / gradle（门禁 Maven 侧行为为静态考证；javadoc CLI 为等价自查）
+  - javadoc CLI 自检使用 JAVA_HOME=D:/Java/jdk-21.0.4，仅作自查参考
+  - 未执行任何 git 写操作（commit / push / 切分支 / 暂存）
+  - 未触碰 CODEOWNERS / .github / FUNDING.yml（工作树中该 3 项 M 为并行红线智能体
+    所改，git status 核验后原样保留；红线成果见同目录 redline-cleanup-evidence-20261009.txt）
+  - 任务开始时已存在的未提交 pom 改动（testcontainers 钉版 + javadoc 门禁雏形 +
+    java.version 等）全部读懂后在其基础上完善，未推倒重来
+  - 红线纪律: 全部输出仅用角色名（旧教育品牌 / 旧家族名 / 旧应用名 / 旧中文品牌），
+    扫描模式运行时派生，展示前过 mask()，本文件全文为掩码形态
+
+== 一、任务1：javadoc 门禁清单与 diff 摘要 ==
+
+【工作树 vs HEAD 的 pom diff 统计】（git diff HEAD --stat）
+  pom.xml                       | 64 ++++++++++++++++++++++++++++++++++++++++++++-  （门禁主体，本任务核心）
+  ddd4j-ai-sdk-deps/pom.xml     | 15 ++++++++++-                                （纯依赖聚合模块豁免，见清单 #10）
+  ddd4j-ai-dependencies/pom.xml | 40 +++++++++++++++++++++++++++++               （testcontainers 钉版，前序任务，非本任务）
+
+【根 pom.xml 门禁改动摘要】（git diff HEAD -- pom.xml 关键行）
+  属性（properties）:
+    + <javadoc.doclint>all</javadoc.doclint>
+    + <javadoc.failOnWarning>true</javadoc.failOnWarning>
+    + <javadoc.failOnError>true</javadoc.failOnError>
+    + <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
+      （沿用家族父链 io.ddd4j:ddd4j:3.0.x 已验证版本，本地仓库 ~/.m2 已有 3.12.0 构件，
+        避免版本降级漂移）
+  pluginManagement / maven-javadoc-plugin:
+    + <doclint>${javadoc.doclint}</doclint>
+    + <failOnWarnings>${javadoc.failOnWarning}</failOnWarnings>   （注意复数拼写 failOnWarnings）
+    + <failOnError>${javadoc.failOnError}</failOnError>
+    + <release>17</release>
+    + <additionalOptions><additionalOption>-Xmaxwarns</additionalOption>
+                         <additionalOption>1000000</additionalOption></additionalOptions>
+    + execution id=attach-javadocs: phase=verify, goal=jar
+  build/plugins:
+    + 裸引用 maven-javadoc-plugin（无 configuration），使门禁对全部子模块继承生效
+
+【门禁清单逐项核验】
+  #1  javadoc.doclint=all                          ✓ 属性 javadoc.doclint=all，
+                                                    <doclint>${javadoc.doclint}</doclint> 引用生效
+  #2  javadoc.failOnWarning=true                  ✓ 属性 + <failOnWarnings> 走属性开关
+  #3  javadoc.failOnError=true                    ✓ 显式 true；父链 io.ddd4j:ddd4j:3.0.x
+                                                    pluginManagement 的 failOnError=false（假绿源）
+                                                    被本仓 pluginManagement 同名元素覆盖（子级主导合并）
+  #4  pluginManagement 属性开关 + release 17     ✓ 见上方摘要；<release>17</release> 与任务要求一致
+  #5  -Xmaxwarns 1000000                          ✓ additionalOptions 显式放大；
+                                                    javadoc 默认 -Xmaxwarns=100，超限静默截断会假绿
+  #6  execution attach-javadocs 绑定 package→verify ✓ 本仓 execution 同 id 覆盖父链
+                                                    attach-javadocs@package 绑定，phase=verify、goal=jar；
+                                                    report 目标不失败构建，未被用作门禁
+  #7  删除 -Xdoclint:none / <doclint>none</doclint> 双重关闭
+      - 仓内全量扫描: grep -rn -e doclint -e additionalparam -e Xdoclint（pom.xml/xml/md）
+        → 命中全部为 "doclint all / failOnWarnings / failOnWarning" 注释与配置，
+          无任何 none 形态；grep -rn '<profiles>' --include=pom.xml → 仓内 0 命中（本仓无 profile）
+      - 父链考证: ~/.m2/repository/io/ddd4j/ddd4j/3.0.x.../ddd4j-3.0.x...pom 存在
+        profile disable-javadoc-doclint（属性 additionalparam=-Xdoclint:none，JDK [1.8,) 激活），
+        但 javadoc 插件 plugin.xml（3.12.0）中不存在 additionalparam 参数（grep 0 命中），
+        仓内也无任何 ${additionalparam} 引用 → 该属性为惰性遗留，不构成实际关闭；
+        真正生效的开关是本仓显式 <doclint>all</doclint>。
+        （该 profile 位于远程父 POM，按约束不改 ~/.m2 构件，以本仓显式配置压过。）
+  #8  packaging=pom 模块被 JavadocJar 自动跳过（属正常）
+      - 本仓 pom packaging 模块 5 个: 根 pom / ddd4j-ai-bom / ddd4j-ai-dependencies /
+        ddd4j-ai-parent / ddd4j-ai-extensions（聚合器）→ 自动跳过，属任务认可的正常形态
+  #9  多模块继承生效（静态考证，未运行 mvn）
+      - 根 pom build/plugins 裸引用 + pluginManagement 主导配置；
+        父链 io.ddd4j:ddd4j build/plugins 对本插件亦为无配置裸引用（pom L354）；
+        → jar packaging 的 19 个子模块（core / samples / sample-app / sdk-deps +
+        15 个 extension）全部继承门禁配置与 attach-javadocs@verify 执行
+  #10 sdk-deps 豁免（唯一 skip，带中文注释与实测依据）
+      - ddd4j-ai-sdk-deps/pom.xml: <skip>true</skip>，注释「纯依赖聚合模块（无 public 实现类）」
+      - 实测依据: javadoc CLI 以门禁同参单独处理该模块唯一源文件
+        （src/main/java/io/ddd4j/ai/sdk/package-info.java）→
+        「错误: 找不到可以文档化的公共或受保护的类」，REAL_EXIT=1；
+        若不豁免，failOnError=true 会把该模块误杀为构建失败。
+      - 该模块源文件本身仍纳入本任务全量自查（见第四节），注释合规性未失去验证。
+
+【负向探针记录】（探针为任务临时目录构造文件，非仓库文件；已留证并删除，见第六节）
+  探针A —— 缺注释（构造无任何 javadoc 的公共类/构造器/方法）:
+    命令: javadoc -Xdoclint:all -Xmaxwarns 1000000 --release 17 -quiet -d <out> p/Probe.java
+    结果: 4 个警告 ——
+      「警告: 没有注释」×4（类 / 构造器 doThing / getNum 等公共成员）; 输出「4 个警告」; EXIT=0
+    加 -Werror 复跑: 「错误: 发现警告, 但指定了 -Werror」，1 个错误 + 4 个警告，REAL_EXIT=1
+    → 证明: doclint missing 组对缺注释产生告警；maven 侧 failOnWarnings=true 与 -Werror 等价拦截。
+  探针B —— 有注释但缺标签（类有注释、方法缺 @param/@return、类缺构造器注释）:
+    结果: 4 个警告 ——
+      「a没有 @param」「b没有 @param」「没有 @return」「使用不提供注释的默认构造器」; EXIT=0
+    → 证明: 缺参说明、缺返回说明、默认构造器缺注释三类 missing 告警全部可被门禁捕获。
+  假绿反例（同类探针，记录教训）:
+    - 未提供完整 classpath 时，javadoc 输入存在「程序包不存在/找不到符号」错误则 doclint
+      告警不再输出（router 模块实测: 40 错误 / 0 警告 → 看似 0 告警实为假绿）。
+    - 因此本任务全部自查与基线盘点均构建完整 -classpath（~/.m2 全量 6957 个 jar
+      + 19 个模块 target/classes）后执行，杜绝该假绿路径。
+
+== 二、任务2：全量规范补注（统计与按批清单）==
+
+【统计】
+  src/main/java 源文件总数（HEAD 与工作树一致）: 159
+  - 本任务补注并已提交到工作树: 146（git status M，按 30 文件/批共 5 批: 30+30+30+30+26）
+  - 未改动: 13（全部为 package-info.java，HEAD 版本已含中文 javadoc
+    （逐文件核验 git show HEAD:<f> 中文行数=2），合规无需补注）
+  覆盖范围: 全部公共/受保护类型与成员；类型中文用途注释；方法逐参 @param、
+  非 void @return、声明的检查异常 @throws；复杂逻辑段落注释；getter/setter 一行注释；
+  不改任何业务逻辑（仅注释；record 紧凑构造器、枚举、接口等均按 javadoc 规范补齐）。
+  测试源码按任务要求不强求（javadoc 门禁亦仅检查 main 源）。
+
+【按模块分布】（146 文件）
+  ddd4j-ai-samples 21 | extension-document 17 | extension-agent 14 | extension-tts 13 |
+  extension-sst 13 | extension-router 8 | extension-flow 8 | extension-rag 6 |
+  extension-ocr 6 | extension-asr 6 | extension-embedding 5 | core 5 |
+  extension-vectordb 4 | extension-memory 4 | extension-mcp 4 | extension-chat 4 |
+  extension-agent-store-jdbc 4 | sample-app 3 | sdk-deps 1
+
+【未改动即合规的 13 个 package-info.java】（HEAD 已有中文 javadoc，git show 核验）
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/package-info.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-asr/src/main/java/io/ddd4j/ai/extension/asr/package-info.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-chat/src/main/java/io/ddd4j/ai/extension/chat/package-info.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-flow/src/main/java/io/ddd4j/ai/extension/flow/package-info.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-mcp/src/main/java/io/ddd4j/ai/extension/mcp/package-info.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-memory/src/main/java/io/ddd4j/ai/extension/memory/package-info.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-ocr/src/main/java/io/ddd4j/ai/extension/ocr/package-info.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-rag/src/main/java/io/ddd4j/ai/extension/rag/package-info.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-router/src/main/java/io/ddd4j/ai/extension/router/package-info.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-sst/src/main/java/io/ddd4j/ai/extension/sst/package-info.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/main/java/io/ddd4j/ai/extension/tts/package-info.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-vectordb/src/main/java/io/ddd4j/ai/extension/vectordb/package-info.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/package-info.java
+
+【按批补注文件清单】（146 文件，B01-B05，每批 ≤30）
+
+--- 批次 B01（30 文件）---
+  ddd4j-ai-core/src/main/java/io/ddd4j/ai/core/AiComponent.java
+  ddd4j-ai-core/src/main/java/io/ddd4j/ai/core/AiHandler.java
+  ddd4j-ai-core/src/main/java/io/ddd4j/ai/core/AiRequest.java
+  ddd4j-ai-core/src/main/java/io/ddd4j/ai/core/AiResponse.java
+  ddd4j-ai-core/src/main/java/io/ddd4j/ai/core/package-info.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc/src/main/java/io/ddd4j/ai/extension/agent/store/jdbc/JdbcAgentDispatchTaskRepository.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc/src/main/java/io/ddd4j/ai/extension/agent/store/jdbc/JdbcDialect.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc/src/main/java/io/ddd4j/ai/extension/agent/store/jdbc/autoconfigure/JdbcDispatchRepositoryAutoConfiguration.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent-store-jdbc/src/main/java/io/ddd4j/ai/extension/agent/store/jdbc/package-info.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/agent/AgentExecutionException.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/agent/AgentScopeAgentAdapter.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/agent/SpringAiToolkitBuilder.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/autoconfigure/AgentAutoConfiguration.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/dispatch/AgentDispatchTask.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/dispatch/AgentDispatchTaskRepository.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/dispatch/AgentPlanOrchestrator.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/dispatch/InMemoryAgentDispatchTaskRepository.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/properties/AgentProperties.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/service/AgentResult.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/service/AgentService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/service/AgentStep.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/service/AgentTask.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/util/BlockingCallGuard.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-asr/src/main/java/io/ddd4j/ai/extension/asr/autoconfigure/AsrAutoConfiguration.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-asr/src/main/java/io/ddd4j/ai/extension/asr/properties/AsrProperties.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-asr/src/main/java/io/ddd4j/ai/extension/asr/service/AsrService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-asr/src/main/java/io/ddd4j/ai/extension/asr/service/AudioFormat.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-asr/src/main/java/io/ddd4j/ai/extension/asr/service/impl/WavConverter.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-asr/src/main/java/io/ddd4j/ai/extension/asr/service/impl/WhisperCppAsrService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-chat/src/main/java/io/ddd4j/ai/extension/chat/autoconfigure/ChatAutoConfiguration.java
+
+--- 批次 B02（30 文件）---
+  ddd4j-ai-extensions/ddd4j-ai-extension-chat/src/main/java/io/ddd4j/ai/extension/chat/properties/ChatProperties.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-chat/src/main/java/io/ddd4j/ai/extension/chat/service/ChatService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-chat/src/main/java/io/ddd4j/ai/extension/chat/service/impl/ChatClientAdapter.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-document/src/main/java/io/ddd4j/ai/extension/document/Document.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-document/src/main/java/io/ddd4j/ai/extension/document/DocumentImage.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-document/src/main/java/io/ddd4j/ai/extension/document/DocumentParser.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-document/src/main/java/io/ddd4j/ai/extension/document/DocumentReader.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-document/src/main/java/io/ddd4j/ai/extension/document/DocumentSection.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-document/src/main/java/io/ddd4j/ai/extension/document/DocumentTable.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-document/src/main/java/io/ddd4j/ai/extension/document/DocumentTooLargeException.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-document/src/main/java/io/ddd4j/ai/extension/document/MediaType.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-document/src/main/java/io/ddd4j/ai/extension/document/SourceType.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-document/src/main/java/io/ddd4j/ai/extension/document/autoconfigure/DocumentAutoConfiguration.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-document/src/main/java/io/ddd4j/ai/extension/document/parser/EasydocDocumentParser.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-document/src/main/java/io/ddd4j/ai/extension/document/parser/EasyexcelDocumentParser.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-document/src/main/java/io/ddd4j/ai/extension/document/parser/EasyodfDocumentParser.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-document/src/main/java/io/ddd4j/ai/extension/document/parser/EasypdfDocumentParser.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-document/src/main/java/io/ddd4j/ai/extension/document/parser/MarkdownStructureHandler.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-document/src/main/java/io/ddd4j/ai/extension/document/parser/TikaDocumentParser.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-document/src/main/java/io/ddd4j/ai/extension/document/properties/DocumentProperties.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-embedding/src/main/java/io/ddd4j/ai/extension/embedding/autoconfigure/EmbeddingAutoConfiguration.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-embedding/src/main/java/io/ddd4j/ai/extension/embedding/package-info.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-embedding/src/main/java/io/ddd4j/ai/extension/embedding/properties/EmbeddingProperties.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-embedding/src/main/java/io/ddd4j/ai/extension/embedding/service/EmbeddingService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-embedding/src/main/java/io/ddd4j/ai/extension/embedding/service/impl/EmbeddingModelAdapter.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-flow/src/main/java/io/ddd4j/ai/extension/flow/autoconfigure/FlowAutoConfiguration.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-flow/src/main/java/io/ddd4j/ai/extension/flow/properties/FlowProperties.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-flow/src/main/java/io/ddd4j/ai/extension/flow/service/FlowDefinition.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-flow/src/main/java/io/ddd4j/ai/extension/flow/service/FlowEdge.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-flow/src/main/java/io/ddd4j/ai/extension/flow/service/FlowNodeSpec.java
+
+--- 批次 B03（30 文件）---
+  ddd4j-ai-extensions/ddd4j-ai-extension-flow/src/main/java/io/ddd4j/ai/extension/flow/service/FlowNodeType.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-flow/src/main/java/io/ddd4j/ai/extension/flow/service/FlowService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-flow/src/main/java/io/ddd4j/ai/extension/flow/service/impl/GraphFlowService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-mcp/src/main/java/io/ddd4j/ai/extension/mcp/autoconfigure/McpAutoConfiguration.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-mcp/src/main/java/io/ddd4j/ai/extension/mcp/service/McpToolProvider.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-mcp/src/main/java/io/ddd4j/ai/extension/mcp/service/ToolDefinition.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-mcp/src/main/java/io/ddd4j/ai/extension/mcp/service/impl/SpringAiMcpToolProvider.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-memory/src/main/java/io/ddd4j/ai/extension/memory/autoconfigure/MemoryAutoConfiguration.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-memory/src/main/java/io/ddd4j/ai/extension/memory/properties/MemoryProperties.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-memory/src/main/java/io/ddd4j/ai/extension/memory/service/MemoryService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-memory/src/main/java/io/ddd4j/ai/extension/memory/service/impl/WindowMemoryService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-ocr/src/main/java/io/ddd4j/ai/extension/ocr/autoconfigure/OcrAutoConfiguration.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-ocr/src/main/java/io/ddd4j/ai/extension/ocr/properties/OcrProperties.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-ocr/src/main/java/io/ddd4j/ai/extension/ocr/service/OcrService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-ocr/src/main/java/io/ddd4j/ai/extension/ocr/service/impl/CompositeOcrService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-ocr/src/main/java/io/ddd4j/ai/extension/ocr/service/impl/PdfBoxOcrService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-ocr/src/main/java/io/ddd4j/ai/extension/ocr/service/impl/TikaOcrService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-rag/src/main/java/io/ddd4j/ai/extension/rag/autoconfigure/RagAutoConfiguration.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-rag/src/main/java/io/ddd4j/ai/extension/rag/properties/RagProperties.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-rag/src/main/java/io/ddd4j/ai/extension/rag/service/NoopReranker.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-rag/src/main/java/io/ddd4j/ai/extension/rag/service/RagService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-rag/src/main/java/io/ddd4j/ai/extension/rag/service/Reranker.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-rag/src/main/java/io/ddd4j/ai/extension/rag/service/impl/RagPipeline.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-router/src/main/java/io/ddd4j/ai/extension/router/autoconfigure/RouterAutoConfiguration.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-router/src/main/java/io/ddd4j/ai/extension/router/properties/RouterProperties.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-router/src/main/java/io/ddd4j/ai/extension/router/service/ChatRouter.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-router/src/main/java/io/ddd4j/ai/extension/router/service/RoutingStrategy.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-router/src/main/java/io/ddd4j/ai/extension/router/service/impl/LatencyStrategy.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-router/src/main/java/io/ddd4j/ai/extension/router/service/impl/MultiModelChatRouter.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-router/src/main/java/io/ddd4j/ai/extension/router/service/impl/RoundRobinStrategy.java
+
+--- 批次 B04（30 文件）---
+  ddd4j-ai-extensions/ddd4j-ai-extension-router/src/main/java/io/ddd4j/ai/extension/router/service/impl/WeightedStrategy.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-sst/src/main/java/io/ddd4j/ai/extension/sst/dto/STTDto.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-sst/src/main/java/io/ddd4j/ai/extension/sst/dto/TTSDto.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-sst/src/main/java/io/ddd4j/ai/extension/sst/enums/AVFormatEnums.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-sst/src/main/java/io/ddd4j/ai/extension/sst/enums/ConvertKeyEnums.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-sst/src/main/java/io/ddd4j/ai/extension/sst/enums/TTSSTTChannel.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-sst/src/main/java/io/ddd4j/ai/extension/sst/properties/AzureSpeechProperties.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-sst/src/main/java/io/ddd4j/ai/extension/sst/service/SpeechService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-sst/src/main/java/io/ddd4j/ai/extension/sst/service/SpeechServiceText2VoiceCallback.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-sst/src/main/java/io/ddd4j/ai/extension/sst/service/SpeechServiceVoice2TextCallback.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-sst/src/main/java/io/ddd4j/ai/extension/sst/service/impl/AzureSpeechService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-sst/src/main/java/io/ddd4j/ai/extension/sst/service/impl/FFmpegService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-sst/src/main/java/io/ddd4j/ai/extension/sst/vo/STTResultVO.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-sst/src/main/java/io/ddd4j/ai/extension/sst/vo/TTSResultVO.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/main/java/io/ddd4j/ai/extension/tts/autoconfigure/TtsAutoConfiguration.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/main/java/io/ddd4j/ai/extension/tts/bridge/TextDeltaTtsBridge.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/main/java/io/ddd4j/ai/extension/tts/chunk/ChunkBoundary.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/main/java/io/ddd4j/ai/extension/tts/chunk/TextChunker.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/main/java/io/ddd4j/ai/extension/tts/metrics/TtsMetrics.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/main/java/io/ddd4j/ai/extension/tts/properties/TtsProperties.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/main/java/io/ddd4j/ai/extension/tts/router/TtsRouter.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/main/java/io/ddd4j/ai/extension/tts/router/impl/FallbackTtsRouter.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/main/java/io/ddd4j/ai/extension/tts/service/TtsService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/main/java/io/ddd4j/ai/extension/tts/service/impl/DashScopeRealtimeClient.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/main/java/io/ddd4j/ai/extension/tts/service/impl/DashScopeRealtimeTtsService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/main/java/io/ddd4j/ai/extension/tts/service/impl/DashScopeSdkClient.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-tts/src/main/java/io/ddd4j/ai/extension/tts/service/impl/EdgeTtsService.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-vectordb/src/main/java/io/ddd4j/ai/extension/vectordb/autoconfigure/VectorDbAutoConfiguration.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-vectordb/src/main/java/io/ddd4j/ai/extension/vectordb/properties/VectorDbProperties.java
+  ddd4j-ai-extensions/ddd4j-ai-extension-vectordb/src/main/java/io/ddd4j/ai/extension/vectordb/service/VectorDbService.java
+
+--- 批次 B05（26 文件）---
+  ddd4j-ai-extensions/ddd4j-ai-extension-vectordb/src/main/java/io/ddd4j/ai/extension/vectordb/service/impl/VectorStoreAdapter.java
+  ddd4j-ai-sample-app/src/main/java/io/ddd4j/ai/sample/SampleApplication.java
+  ddd4j-ai-sample-app/src/main/java/io/ddd4j/ai/sample/web/ChatController.java
+  ddd4j-ai-sample-app/src/main/java/io/ddd4j/ai/sample/web/RagController.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/agent/AgentSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/asr/AsrSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/chat/ChatSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/embedding/EmbeddingSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/flow/FlowSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/integrated/chatmemsse/ChatMemorySseSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/integrated/docunderstanding/DocUnderstandingSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/integrated/knowledgebase/KnowledgeBaseSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/integrated/multimodelrouter/MultiModelRouterSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/integrated/orchestration/OrchestrationSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/integrated/ragpipeline/RagPipelineSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/integrated/smartagent/SmartAgentSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/mcp/McpSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/memory/MemorySample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/ocr/OcrSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/rag/RagSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/router/RouterSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/sst/SstSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/tts/TtsPipelineSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/tts/TtsSample.java
+  ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/vectordb/VectorDbSample.java
+  ddd4j-ai-sdk-deps/src/main/java/io/ddd4j/ai/sdk/package-info.java
+
+
+== 三、告警递减记录 ==
+
+【基线（补注前）】方法: git archive HEAD 只读导出 159 个 main java 源到临时目录
+  （非切分支、非 git 写操作），以与门禁完全相同的参数执行 javadoc CLI:
+    javadoc -Xdoclint:all -Xmaxwarns 1000000 --release 17 -quiet
+            -classpath <完整classpath: ~/.m2 全量 6957 jar + 19 模块 target/classes>
+            -d <out> @<159 个 HEAD 源文件列表>
+  结果: REAL_EXIT=1（javadoc 自身因错误退出）;  **506 个警告 + 7 个错误**; 涉及 119 个文件。
+  警告类型分布（Top）:
+    没有注释 194 | 没有 @return 92 | 使用不提供注释的默认构造器 51 |
+    java.lang.Exception没有 @throws 26 | 参数缺 @param 约 130（question 15 / text 9 /
+    conversationId 8 / file 7 / …） | @param 没有说明 13 | 无主说明 3 | @throws 没有说明 3
+  错误 7 条明细:
+    未知标记: Title: / Package / Author: / Date: / Desc:（5 条，旧式 @Title 头注释）|
+    找不到引用（1 条 {@link FallbackTtsRouter}）| @param name 未找到（1 条）
+  → 换算成门禁语义: failOnWarnings=true + failOnError=true 下，HEAD 基线将直接构建失败。
+
+【递减轨迹】（同参、完整 classpath）
+  阶段 0（无 classpath 的错误路径，反例）: 40 错误 / 0 警告 —— doclint 被跳过的假绿，已废弃
+  阶段 1（HEAD 基线，补注前）:      506 警告 / 7 错误，EXIT=1
+  阶段 2（当前工作树，补注后）:       0 警告 / 0 错误，EXIT=0
+  → 506 → 0（告警清零），7 → 0（错误清零）。
+
+== 四、终态 0 告警（全量自查取证）==
+
+命令（对全部 159 个 main java 文件一次性执行，与门禁同参）:
+  javadoc -Xdoclint:all -Xmaxwarns 1000000 --release 17 -quiet
+          -classpath <完整classpath 同上>
+          -d <out> @<159 个绝对路径文件列表>
+结果（2026-10-09 复跑取证）:
+  FINAL_EXIT = 0
+  警告行数 = 0（grep -c '警告' = 0）
+  错误行数 = 0（grep -c '错误' = 0）
+  输出产物: index.html 已生成（28,735 字节），文档树完整。
+  覆盖核验:
+  - 源文件 159/159 全部进入参数文件（tr 后按 .java 计数 = 159 = find 全仓 main java 数）；
+  - 源包 104 个，产出文档包 89 个；差值 15 个为「仅含 package-info、无公共/受保护类」的
+    包（agent / asr / chat / embedding / flow / mcp / memory / ocr / rag / router / sst /
+    tts / vectordb / samples / sdk 各自的顶层包）——javadoc 对无文档化类的包不生成
+    package-summary 页属正常行为，且其 package-info 仍被解析校验（无告警）。
+  - 门禁同参含义: 该命令与 maven-javadoc-plugin 在 doclint=all / failOnWarnings /
+    failOnError=true / release=17 / -Xmaxwarns 1000000 下交给 javadoc 的参数等价
+    （mvn 按约束未运行，Maven 侧为静态考证）。
+
+== 五、红线品牌扫描 ==
+
+方式: 复用本仓并行红线智能体的四模式环境与掩码（.rl4-env.sh，模式值全部运行时派生，
+  命令文本与本文件均无任何连续字面量; 展示必过 mask()）:
+  扫描面: 本仓全树（含未跟踪文件），排除 .git / target，grep -I 跳过二进制
+  模式: 旧家族名 FAM / 旧应用名 APP / 旧教育品牌 E / 旧中文品牌 CN 四路合并
+结果:
+  HIT_LINES = 0（四模式合计 0 命中）
+  阳性对照: 同管线 grep 'ddd4j' → 356 文件命中（管线有效，非静默 0）
+旁证: 同目录 redline-cleanup-evidence-20261009.txt（并行红线智能体）已对本仓
+  （含 src/ 与 pom.xml，即本任务全部改动面）完成四模式全树复扫 = 0 命中;
+  本证据文件成文后按同管线复检同样为 0。
+
+== 六、临时物清理 ==
+
+  - 负向探针临时源文件与探针输出目录（任务临时目录下的 probe*/probe*/out* 系列）
+    已全部删除（rm -rf），并 grep 全仓确认仓库内无任何 Probe/TagProbe 残留文件。
+  - 基线导出目录、自查参数文件与运行日志保留在系统临时目录（仓库外），供复核复现：
+    参数文件 @列表（159 文件 + 完整 classpath）与基线/终态原始输出（GBK 原文 + UTF-8 转码）。
+  - 仓库内新增文件仅本证据文件 1 个（docs/verification/ 未跟踪目录内）。
+
+== 七、遗留事项与风险 ==
+
+  1. java.version=21 与 javadoc <release>17</release> 并存: 前者为分支既有未提交改动
+     （与 AGENTS.md 中 ddd4j-ai feature/2.0.x 对应 JDK 21 的定位一致），后者为本任务
+     明确要求的门禁形态。全部 159 源已按 --release 17 全量 javadoc 通过（0 告警 0 错误），
+     证明源码在 17 语言级/API 级兼容，二者无实际冲突；如后续统一，属编排者决策面。
+  2. sdk-deps <skip>true</skip> 是全仓唯一 javadoc 跳过点（豁免清单），依据为 javadoc CLI
+     实测「找不到可以文档化的公共或受保护的类」EXIT=1（不豁免会误杀构建）；该模块
+     源文件已纳入全量自查，合规性不失检。若未来该模块加入 public 实现类，应移除 skip。
+  3. 未运行 mvn/gradle（约束）: 门禁的 Maven 生命周期行为为静态考证 + javadoc CLI 同参
+     等价验证；最终以编排者统一构建执行为准。预期: verify 阶段 attach-javadocs(jar)
+     在 19 个 jar 模块上全量执行，doclint=all 下任何告警 → 构建失败。
+  4. 父链 io.ddd4j:ddd4j:3.0.x 的 disable-javadoc-doclint profile 属性
+     additionalparam=-Xdoclint:none 已考证为惰性遗留（插件 3.12.0 无该参数、仓内无引用），
+     不构成双重关闭; 该父 POM 属远程构件，按约束不改 ~/.m2，由本仓显式 doclint=all 压过。
+  5. 测试源码（src/test）不在门禁面（javadoc 仅处理 main 源），按任务要求不强求补注。
+  6. 基线 7 条错误中的旧式 @Title/@Author 头注释等已在补注批次中一并整改（终态 0 错误）。
+  7. 红线终检: 如编排者持有权威四模式清单，仍以编排者侧终检为准（本文件与自扫均 0 命中）。
+
+=====================================================================
+状态: 完成。门禁目标形态逐项核验通过；补注 146 + 合规 13 = 159 全覆盖；
+告警递减 506 → 0；终态同参全量自查 0 警告 / 0 错误 / EXIT=0；红线 0 命中。

@@ -9,10 +9,11 @@ import java.util.Arrays;
  * WAV/PCM 转换工具：解析 WAV 头 → 混单声道 → 重采样到 16kHz → 归一化 float[-1,1]，
  * 供 Whisper（要求 16kHz 单声道 float 采样）消费。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public final class WavConverter {
 
+    /** Whisper 要求的目标采样率（16kHz）。 */
     public static final int TARGET_SAMPLE_RATE = 16_000;
 
     private WavConverter() {
@@ -23,6 +24,7 @@ public final class WavConverter {
      *
      * @param audio    WAV 字节（或裸 PCM）
      * @param fallback 非 WAV 时的格式假设
+     * @return 重采样到 16kHz 的单声道 float 采样（取值 [-1, 1]）
      */
     public static float[] toFloatMono16k(byte[] audio, AudioFormat fallback) {
         Header header = Header.parse(audio);

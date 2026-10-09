@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * 检索增强生成端口：摄取（文档入库）与查询（检索 → 重排 → 增强生成）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface RagService {
 

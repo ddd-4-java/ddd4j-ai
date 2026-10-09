@@ -7,8 +7,7 @@
  * dreamina-java-sdk（字节跳动 Dreamina 文生图）等 AI 组件，
  * 版本由 {@code io.ddd4j.ai:ddd4j-ai-dependencies} BOM 统一管理。
  *
- * <p>原 {@code io.ddd4j:ddd4j-ai-dependencies} 模块（ddd4j 主仓）按 #841 迁移至此：
- * 包名由 {@code io.ddd4j.ai.dependencies} 改为 {@code io.ddd4j.ai.sdk}，groupId
- * 由 {@code io.ddd4j} 改为 {@code io.ddd4j.ai}，与 ddd4j-ai 项目整体保持一致。
+ * <p>包名 {@code io.ddd4j.ai.sdk} 与 groupId {@code io.ddd4j.ai}
+ * 与 ddd4j-ai 项目整体保持一致。
  */
 package io.ddd4j.ai.sdk;

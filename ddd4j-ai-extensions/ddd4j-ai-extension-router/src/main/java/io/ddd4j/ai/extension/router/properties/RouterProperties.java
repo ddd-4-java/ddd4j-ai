@@ -9,13 +9,20 @@ import java.util.Map;
 /**
  * 多模型路由组件配置（前缀 {@code ddd4j.ai.router}）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Getter
 @Setter
 @ConfigurationProperties(prefix = RouterProperties.PREFIX)
 public class RouterProperties {
 
+    /**
+     * 默认构造器（配置属性类由 Spring 绑定）。
+     */
+    public RouterProperties() {
+    }
+
+    /** 配置属性前缀。 */
     public static final String PREFIX = "ddd4j.ai.router";
 
     /**
@@ -33,9 +40,15 @@ public class RouterProperties {
      */
     private Map<String, Integer> weights = Map.of();
 
+    /**
+     * 路由策略类型。
+     */
     public enum StrategyType {
+        /** 轮询：依次循环候选模型。 */
         ROUND_ROBIN,
+        /** 权重：按权重比例随机分发。 */
         WEIGHTED,
+        /** 延迟：优先最近响应最快的模型。 */
         LATENCY
     }
 }

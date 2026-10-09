@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@link MemoryService} 端口契约测试：以窗口实现验证端口约定的会话隔离、
  * 读写往返、清空与窗口截断语义。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class MemoryServiceContractTest {
 

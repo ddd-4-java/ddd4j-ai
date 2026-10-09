@@ -13,7 +13,7 @@ import reactor.core.scheduler.Schedulers;
  * <p>{@link Schedulers#boundedElastic()} 的线程不在 Reactor NonBlocking 集合内，
  * 因此在其上阻塞是合法的，守卫会放行。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public final class BlockingCallGuard {
 

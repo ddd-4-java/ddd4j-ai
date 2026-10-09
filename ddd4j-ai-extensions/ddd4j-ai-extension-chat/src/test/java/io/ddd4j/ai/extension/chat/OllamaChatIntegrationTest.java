@@ -25,15 +25,18 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 对话组件 Ollama 容器集成测试：真实模型（qwen2.5:0.5b）验证 ChatClientAdapter 的
  * 单轮/多轮/流式/AiHandler 链路。无 Docker 或模型拉取失败时自动跳过。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @Testcontainers(disabledWithoutDocker = true)
 class OllamaChatIntegrationTest {
 
     private static final String MODEL = "qwen2.5:0.5b";
 
+    // 测试镜像来源: https://testcontainers.com/modules/ollama/
+    // 镜像钉版 ollama/ollama:0.40.1（来源: https://hub.docker.com/v2/repositories/ollama/ollama/tags?page_size=25，
+    // 2026-10-08 查询确认 0.40.1 为最新稳定版；钉死非 latest 标签消除浮动镜像导致的测试不可复现）
     @Container
-    static final OllamaContainer OLLAMA = new OllamaContainer(DockerImageName.parse("ollama/ollama:latest"));
+    static final OllamaContainer OLLAMA = new OllamaContainer(DockerImageName.parse("ollama/ollama:0.40.1"));
 
     static ChatClientAdapter adapter;
 
@@ -53,10 +56,15 @@ class OllamaChatIntegrationTest {
         org.junit.jupiter.api.Assumptions.assumeTrue(retryApiPresent,
                 "类路径缺少 FW7 的 org.springframework.core.retry（父链为 FW 6.2），跳过 Ollama 真实模型链路");
 
-        // 容器内预拉模型；网络受限时整组测试跳过
-        var pull = OLLAMA.execInContainer("ollama", "pull", MODEL);
-        org.junit.jupiter.api.Assertions.assertTrue(pull.getExitCode() == 0,
-                "ollama pull " + MODEL + " 失败：" + pull.getStderr());
+        // 容器内预拉模型；网络受限（拉取失败/超时）时按类注释约定整组跳过，而非判失败
+        try {
+            var pull = OLLAMA.execInContainer("ollama", "pull", MODEL);
+            org.junit.jupiter.api.Assumptions.assumeTrue(pull.getExitCode() == 0,
+                    "ollama pull " + MODEL + " 失败（视为网络受限跳过）：" + pull.getStderr());
+        } catch (Exception e) {
+            org.junit.jupiter.api.Assumptions.assumeTrue(false,
+                    "ollama pull " + MODEL + " 异常（视为网络受限跳过）：" + e);
+        }
         OllamaApi api = OllamaApi.builder().baseUrl(OLLAMA.getEndpoint()).build();
         OllamaChatModel chatModel = OllamaChatModel.builder()
                 .ollamaApi(api)

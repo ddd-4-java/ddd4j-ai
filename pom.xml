@@ -35,9 +35,24 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <!-- 当前项目版本号 -->
         <revision>2.0.x.20260630-SNAPSHOT</revision>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <maven.version>3.6.3</maven.version>
         <maven-dependency-check-plugin.version>12.2.2</maven-dependency-check-plugin.version>
+        <!-- Testcontainers 家族基线版本（分支统一钉版，避免上游 BOM 漂移）。
+             来源考证: io.ddd4j.boot:ddd4j-boot-dependencies:4.0.x.20260630-SNAPSHOT 属性
+             spring-boot-testcontainers.version=1.21.4，其注释声明「1.21.4 为 ddd4j 家族统一
+             testcontainers 版本」——本仓沿用该家族统一版本，不另行猜版 -->
+        <testcontainers.version>1.21.4</testcontainers.version>
+        <!-- Javadoc 门禁：默认全量强校验（doclint all 含 missing 缺失注释组 + failOnWarning + failOnError）。
+             父链 io.ddd4j:ddd4j:3.0.x 的 pluginManagement 默认 failOnError=false 会把告警异常吞掉
+             导致门禁假绿，此处必须显式置 true；-Djavadoc.failOnWarning=false / -Djavadoc.failOnError=false /
+             -Djavadoc.doclint=... 仅限缺口盘点与应急关断，MUST NOT 作为常态默认值写入 POM -->
+        <javadoc.doclint>all</javadoc.doclint>
+        <javadoc.failOnWarning>true</javadoc.failOnWarning>
+        <javadoc.failOnError>true</javadoc.failOnError>
+        <!-- 沿用家族父链（io.ddd4j:ddd4j:3.0.x）已验证的 maven-javadoc-plugin 版本，
+             本地仓库 ~/.m2 已有 3.12.0 构件，与父链 pluginManagement 版本对齐避免降级漂移 -->
+        <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
     </properties>
 
     <distributionManagement>
@@ -112,6 +127,46 @@
                     <artifactId>dependency-check-maven</artifactId>
                     <version>${maven-dependency-check-plugin.version}</version>
                 </plugin>
+                <!-- Javadoc 门禁（家族已验证形态，对齐 ddd4j-cloud / ddd4j-javalin）：
+                     doclint 全开（含 missing 缺失注释组）、任何告警/错误即构建失败。
+                     配置与 attach-javadocs 执行声明于 pluginManagement，覆盖父链
+                     io.ddd4j:ddd4j 的 failOnError=false 假绿默认值与 package 阶段绑定；
+                     本仓全部模块经继承合并生效（父链 io.ddd4j:ddd4j 的 build/plugins
+                     对本插件为无配置裸引用，本仓 pluginManagement 主导最终生效配置） -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven-javadoc-plugin.version}</version>
+                    <configuration>
+                        <charset>${project.build.sourceEncoding}</charset>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                        <docencoding>${project.build.sourceEncoding}</docencoding>
+                        <!-- doclint/failOnWarnings（注意复数拼写）/failOnError 走属性开关，
+                             默认全开强校验；父级 failOnError=false 必须被显式覆盖为 true -->
+                        <doclint>${javadoc.doclint}</doclint>
+                        <failOnWarnings>${javadoc.failOnWarning}</failOnWarnings>
+                        <failOnError>${javadoc.failOnError}</failOnError>
+                        <!-- javadoc 以 Java 17 语言级/API 级校验（本仓分支源码基线） -->
+                        <release>17</release>
+                        <!-- javadoc 默认 -Xmaxwarns=100，超过即静默截断诊断输出，
+                             ≥1000 条告警会被截断导致假绿；显式放大保证告警全量可见 -->
+                        <additionalOptions>
+                            <additionalOption>-Xmaxwarns</additionalOption>
+                            <additionalOption>1000000</additionalOption>
+                        </additionalOptions>
+                    </configuration>
+                    <executions>
+                        <!-- 执行目标（jar）绑定 verify 生命周期：缺注释/告警直接失败构建；
+                             report 目标不失败构建，不能作为门禁 -->
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
@@ -153,6 +208,13 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
+            </plugin>
+            <!-- Javadoc 门禁激活引用：版本、doclint/failOnWarnings/failOnError 开关与
+                 attach-javadocs@verify 执行均声明于上方 pluginManagement（doclint 全开、
+                 告警即失败），此处裸引用使门禁对本仓全部子模块生效 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
             </plugin>
             <!-- jar包生成插件 ：创建项目jar包 -->
             <plugin>

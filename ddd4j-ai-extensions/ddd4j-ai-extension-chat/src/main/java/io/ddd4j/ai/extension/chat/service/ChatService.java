@@ -5,7 +5,7 @@ import reactor.core.publisher.Flux;
 /**
  * 对话端口：单轮 / 多轮（会话记忆）/ 流式对话的统一入口。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface ChatService {
 

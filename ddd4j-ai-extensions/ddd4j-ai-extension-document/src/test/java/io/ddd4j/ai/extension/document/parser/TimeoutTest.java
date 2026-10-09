@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@link TikaDocumentParser} 解析超时配置测试：超时上下文注入语义 + 默认值锁定
  * （真实超时触发依赖病态样本，不稳定，故用注入语义断言）。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class TimeoutTest {
 

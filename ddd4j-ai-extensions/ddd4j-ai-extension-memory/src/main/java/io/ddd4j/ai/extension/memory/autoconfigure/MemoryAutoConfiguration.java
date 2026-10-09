@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Bean;
  * （例如业务侧引入官方 chat-memory-repository-jdbc/redis starter 提供的实现），
  * 否则回退到进程内存储。窗口策略统一为 {@link WindowMemoryService}。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 @AutoConfiguration
 @ConditionalOnClass(ChatMemoryRepository.class)
@@ -26,6 +26,19 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(MemoryProperties.class)
 public class MemoryAutoConfiguration {
 
+    /**
+     * 默认构造器（自动装配类无状态）。
+     */
+    public MemoryAutoConfiguration() {
+    }
+
+    /**
+     * 装配会话记忆服务：优先复用容器内 repository，否则回退进程内存储。
+     *
+     * @param properties 记忆配置属性
+     * @param repository 记忆仓储提供器
+     * @return 会话记忆服务 Bean
+     */
     @Bean
     @ConditionalOnMissingBean(MemoryService.class)
     public MemoryService memoryService(MemoryProperties properties,

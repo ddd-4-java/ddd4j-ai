@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * {@link TikaDocumentParser} 可观测性测试：成功解析 INFO 指标 / 降级与拒绝 WARN 事件。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class LoggingTest {
 

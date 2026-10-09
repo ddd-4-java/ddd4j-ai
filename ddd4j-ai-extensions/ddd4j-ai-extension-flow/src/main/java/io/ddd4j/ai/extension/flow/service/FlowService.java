@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * AI 工作流编排端口：声明式 DSL 编译为可执行图 + 运行入口。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public interface FlowService {
 

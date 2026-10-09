@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.within;
 /**
  * {@link WavConverter} 单元测试：WAV 头解析 / 单声道混音 / 重采样 / 归一化。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class WavConverterTest {
 

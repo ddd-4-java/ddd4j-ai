@@ -25,10 +25,9 @@ import reactor.core.publisher.Mono;
  * ddd4j-ai-extension-agent 的 {@link AgentService} SPI 实现：把 Agentscope {@link HarnessAgent}
  * 包装为业务友好的 {@link AgentResult}/{@link AgentStep}。
  * <p>
- * 参考 cloud-agents 的 `AgentScopeHarnessFactory` 模式 — 业务方构造 HarnessAgent（注入
- * Model/Toolkit/Memory/Subagents），本类仅做流式到 POJO 的桥接。
+ * 业务方构造 HarnessAgent（注入 Model/Toolkit/Memory/Subagents），本类仅做流式到 POJO 的桥接。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 public final class AgentScopeAgentAdapter implements AgentService {
 
@@ -36,6 +35,11 @@ public final class AgentScopeAgentAdapter implements AgentService {
 
     private final HarnessAgent harnessAgent;
 
+    /**
+     * 创建适配器。
+     *
+     * @param harnessAgent 业务方构造的 HarnessAgent，不允许为 {@code null}
+     */
     public AgentScopeAgentAdapter(HarnessAgent harnessAgent) {
         this.harnessAgent = Objects.requireNonNull(harnessAgent, "harnessAgent");
     }

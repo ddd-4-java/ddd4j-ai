@@ -23,7 +23,7 @@ import io.ddd4j.ai.extension.document.DocumentTable;
  * </ul>
  * 与 {@link org.apache.tika.sax.ToMarkdownContentHandler} 经 TeeContentHandler 并行消费同一事件流。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 final class MarkdownStructureHandler extends DefaultHandler {
 

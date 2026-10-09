@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * {@link TextChunker} 流式文本切分测试：覆盖标点边界 / 长度阈值 / reset / flush 等行为。
  *
- * @author <a href="https://github.com/partme-ai">PartMe.AI</a>
+ * @author ddd4j
  */
 class TextChunkerTest {
 
