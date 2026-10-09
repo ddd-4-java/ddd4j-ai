@@ -13,7 +13,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class AiHandlerContractTest {
 
-    /** 最小测试桩：透传输入并标记自身元数据。 */
+    /**
+     * 最小测试桩：透传输入并标记自身元数据。
+     */
     static final class EchoHandler implements AiHandler {
 
         static final String NAME = "test-echo-handler";

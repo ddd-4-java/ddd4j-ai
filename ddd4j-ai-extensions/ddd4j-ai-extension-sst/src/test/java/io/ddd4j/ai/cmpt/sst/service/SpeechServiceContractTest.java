@@ -15,15 +15,28 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class SpeechServiceContractTest {
 
-    /** 记录型回调桩：捕获回调结果。 */
+    /**
+     * 记录型回调桩：捕获回调结果。
+     */
     static final class RecordingText2VoiceCallback implements SpeechServiceText2VoiceCallback {
         byte[] audio;
         String failReason;
         String cancelReason;
 
-        @Override public void onCancel(String reason) { this.cancelReason = reason; }
-        @Override public void onSuccess(byte[] audioData) { this.audio = audioData; }
-        @Override public void onFail(String reason) { this.failReason = reason; }
+        @Override
+        public void onCancel(String reason) {
+            this.cancelReason = reason;
+        }
+
+        @Override
+        public void onSuccess(byte[] audioData) {
+            this.audio = audioData;
+        }
+
+        @Override
+        public void onFail(String reason) {
+            this.failReason = reason;
+        }
     }
 
     static final class RecordingVoice2TextCallback implements SpeechServiceVoice2TextCallback {
@@ -31,12 +44,25 @@ class SpeechServiceContractTest {
         String failReason;
         String cancelReason;
 
-        @Override public void onFail(String reason) { this.failReason = reason; }
-        @Override public void onCancel(String reason) { this.cancelReason = reason; }
-        @Override public void onSuccess(String text) { this.text = text; }
+        @Override
+        public void onFail(String reason) {
+            this.failReason = reason;
+        }
+
+        @Override
+        public void onCancel(String reason) {
+            this.cancelReason = reason;
+        }
+
+        @Override
+        public void onSuccess(String text) {
+            this.text = text;
+        }
     }
 
-    /** 最小端口桩：泛型实参取 String，模拟各回调路径。 */
+    /**
+     * 最小端口桩：泛型实参取 String，模拟各回调路径。
+     */
     static final class FakeSpeechService implements SpeechService<String> {
 
         TTSResultVO ttsResult = TTSResultVO.builder().status(1).msg("成功")

@@ -23,17 +23,23 @@ public class RagSample {
         this.ragService = ragService;
     }
 
-    /** 摄取文本知识（自动分块入库）。 */
+    /**
+     * 摄取文本知识（自动分块入库）。
+     */
     public void ingest(String knowledgeId, String content) {
         ragService.ingest(List.of(new Document(content, Map.of("knowledgeId", knowledgeId))));
     }
 
-    /** 基于知识库问答（检索 → 重排 → 增强生成）。 */
+    /**
+     * 基于知识库问答（检索 → 重排 → 增强生成）。
+     */
     public String ask(String question) {
         return ragService.query(question);
     }
 
-    /** 基于知识库流式问答。 */
+    /**
+     * 基于知识库流式问答。
+     */
     public reactor.core.publisher.Flux<String> askStream(String question) {
         return ragService.queryStream(question);
     }

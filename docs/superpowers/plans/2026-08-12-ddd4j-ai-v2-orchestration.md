@@ -1,14 +1,18 @@
 # v2.0 编排能力与语音独立拆分（asr / tts / flow / router）
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:
+> executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 实现离线语音识别（ASR）、独立文本转语音（TTS）、工作流编排（Flow）、多模型智能路由（Router），完成 ddd4j-ai 全组件覆盖。
 
-**Architecture:** flow 对接 Spring AI Alibaba Graph；router 提供多模型路由策略；asr 对接 WhisperCpp（离线）；tts 对接 Edge TTS（免费在线），与 sst 的 Azure 在线方案互补。
+**Architecture:** flow 对接 Spring AI Alibaba Graph；router 提供多模型路由策略；asr 对接 WhisperCpp（离线）；tts 对接 Edge
+TTS（免费在线），与 sst 的 Azure 在线方案互补。
 
 **Tech Stack:** Java 17、Maven、Spring AI Alibaba Graph 2.0.0-M1.1、WhisperCpp 1.4.0、tts-edge-java 1.3.1、Spring AI 2.0.0。
 
-**Related Design Doc:** `docs/superpowers/specs/2026-08-12-asr-component-design.md`、`2026-08-12-tts-component-design.md`、`2026-08-12-flow-component-design.md`、`2026-08-12-router-component-design.md`；架构基线 `2026-08-07-ddd4j-ai-architecture-design.md`。
+**Related Design Doc:** `docs/superpowers/specs/2026-08-12-asr-component-design.md`、
+`2026-08-12-tts-component-design.md`、`2026-08-12-flow-component-design.md`、`2026-08-12-router-component-design.md`；架构基线
+`2026-08-07-ddd4j-ai-architecture-design.md`。
 
 ## Global Constraints
 
@@ -22,7 +26,9 @@
 ## Task 1: 实现 ddd4j-ai-extension-asr
 
 **Files:**
-- Create: `.../cmpt/asr/service/AsrService.java`、`service/impl/WhisperAsrService.java`、`properties/WhisperProperties.java`
+
+- Create: `.../cmpt/asr/service/AsrService.java`、`service/impl/WhisperAsrService.java`、
+  `properties/WhisperProperties.java`
 - Test: `.../cmpt/asr/service/AsrServiceContractTest.java`、`impl/WhisperAsrServiceTest.java`
 
 **Interfaces:** Produces AsrService；Consumes whispercpp 1.4.0（可选复用 sst FFmpegService）
@@ -38,7 +44,9 @@
 ## Task 2: 实现 ddd4j-ai-extension-tts
 
 **Files:**
-- Create: `.../cmpt/tts/service/TtsService.java`、`service/impl/EdgeTtsService.java`、`enums/VoiceEnum.java`、`properties/EdgeTtsProperties.java`
+
+- Create: `.../cmpt/tts/service/TtsService.java`、`service/impl/EdgeTtsService.java`、`enums/VoiceEnum.java`、
+  `properties/EdgeTtsProperties.java`
 - Test: `.../cmpt/tts/service/TtsServiceContractTest.java`、`impl/EdgeTtsServiceTest.java`
 
 **Interfaces:** Produces TtsService；Consumes tts-edge-java 1.3.1
@@ -54,7 +62,9 @@
 ## Task 3: 实现 ddd4j-ai-extension-flow
 
 **Files:**
-- Create: `.../cmpt/flow/dto/{FlowDef,FlowResult,NodeDef}.java`、`service/FlowService.java`、`service/impl/GraphFlowEngine.java`、`properties/FlowProperties.java`
+
+- Create: `.../cmpt/flow/dto/{FlowDef,FlowResult,NodeDef}.java`、`service/FlowService.java`、
+  `service/impl/GraphFlowEngine.java`、`properties/FlowProperties.java`
 - Test: `.../cmpt/flow/service/FlowServiceTest.java`
 
 **Interfaces:** Produces FlowService；Consumes spring-ai-alibaba-graph-core 2.0.0-M1.1、chat/agent/memory
@@ -70,7 +80,9 @@
 ## Task 4: 实现 ddd4j-ai-extension-router
 
 **Files:**
-- Create: `.../cmpt/router/dto/{ModelSpec,RoutePolicy}.java`、`enums/...`、`service/RouterService.java`、`service/impl/{RoundRobin,Weighted,Cost,Latency}Router.java`、`properties/RouterProperties.java`
+
+- Create: `.../cmpt/router/dto/{ModelSpec,RoutePolicy}.java`、`enums/...`、`service/RouterService.java`、
+  `service/impl/{RoundRobin,Weighted,Cost,Latency}Router.java`、`properties/RouterProperties.java`
 - Test: `.../cmpt/router/service/RouterServiceTest.java`
 
 **Interfaces:** Produces RouterService；Consumes chat
@@ -86,6 +98,7 @@
 ## Task 5: 集成验证 + samples 总补齐
 
 **Files:**
+
 - Test: `ddd4j-ai-samples/src/test/.../V2SmokeIT.java`
 - Create: `ddd4j-ai-samples/.../samples/{asr,tts,flow,router}/...`
 

@@ -26,14 +26,18 @@ public class RagController {
         this.ragService = ragService;
     }
 
-    /** 摄取知识：POST /rag/ingest?content=... */
+    /**
+     * 摄取知识：POST /rag/ingest?content=...
+     */
     @PostMapping("/ingest")
     public Map<String, String> ingest(@RequestParam("content") String content) {
         ragService.ingest(List.of(new Document(content, Map.of("source", "sample-app"))));
         return Map.of("status", "ingested");
     }
 
-    /** 知识库问答：GET /rag/ask?q=... */
+    /**
+     * 知识库问答：GET /rag/ask?q=...
+     */
     @GetMapping("/ask")
     public Map<String, String> ask(@RequestParam("q") String question) {
         return Map.of("answer", ragService.query(question));

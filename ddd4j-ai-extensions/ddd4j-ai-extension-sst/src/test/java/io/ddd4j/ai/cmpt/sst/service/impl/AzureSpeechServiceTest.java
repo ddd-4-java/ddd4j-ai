@@ -43,26 +43,52 @@ import static org.mockito.Mockito.when;
  */
 class AzureSpeechServiceTest {
 
-    /** 记录型 TTS 回调。 */
+    /**
+     * 记录型 TTS 回调。
+     */
     static class RecText2Voice implements SpeechServiceText2VoiceCallback {
         byte[] audio;
         String fail;
         String cancel;
 
-        @Override public void onCancel(String reason) { this.cancel = reason; }
-        @Override public void onSuccess(byte[] audioData) { this.audio = audioData; }
-        @Override public void onFail(String reason) { this.fail = reason; }
+        @Override
+        public void onCancel(String reason) {
+            this.cancel = reason;
+        }
+
+        @Override
+        public void onSuccess(byte[] audioData) {
+            this.audio = audioData;
+        }
+
+        @Override
+        public void onFail(String reason) {
+            this.fail = reason;
+        }
     }
 
-    /** 记录型 STT 回调。 */
+    /**
+     * 记录型 STT 回调。
+     */
     static class RecVoice2Text implements SpeechServiceVoice2TextCallback {
         String text;
         String fail;
         String cancel;
 
-        @Override public void onFail(String reason) { this.fail = reason; }
-        @Override public void onCancel(String reason) { this.cancel = reason; }
-        @Override public void onSuccess(String text) { this.text = text; }
+        @Override
+        public void onFail(String reason) {
+            this.fail = reason;
+        }
+
+        @Override
+        public void onCancel(String reason) {
+            this.cancel = reason;
+        }
+
+        @Override
+        public void onSuccess(String text) {
+            this.text = text;
+        }
     }
 
     @BeforeAll
@@ -88,7 +114,9 @@ class AzureSpeechServiceTest {
         return properties;
     }
 
-    /** 用原生反射注入 properties 字段，避免对 spring-test 的依赖。 */
+    /**
+     * 用原生反射注入 properties 字段，避免对 spring-test 的依赖。
+     */
     private static AzureSpeechService newService() throws Exception {
         AzureSpeechService service = new AzureSpeechService();
         Field field = AzureSpeechService.class.getDeclaredField("azureSpeechProperties");
@@ -240,7 +268,9 @@ class AzureSpeechServiceTest {
 
     // ---------- voice2TextFromWavByteArray：识别分支 ----------
 
-    /** 组装 STT 路径的全部 mock 资源（调用方在 try-with-resources 中逐个关闭）。 */
+    /**
+     * 组装 STT 路径的全部 mock 资源（调用方在 try-with-resources 中逐个关闭）。
+     */
     record SttMocks(MockedStatic<SpeechConfig> speechConfigStatic,
                     MockedStatic<AudioInputStream> audioStreamStatic,
                     MockedStatic<AudioConfig> audioConfigStatic,

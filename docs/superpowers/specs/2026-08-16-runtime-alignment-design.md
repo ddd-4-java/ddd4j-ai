@@ -17,17 +17,17 @@ v1.x-A/B 实施中发现：Spring AI 2.0 的模型客户端（`OllamaApi` 等）
 
 项目版本线对应关系（用户提供，2026-08-16）：
 
-| ddd4j-boot 版本线 | release | 对应 ddd4j 线 | Spring 生态 |
-|---|---|---|---|
-| 3.4.x / 3.5.x | 3.4.13 / 3.5.16 | feature/2.0.x | Boot 3.5 / FW 6.2（当前 ddd4j-ai 所在） |
-| 4.0.x | 4.0.7 | feature/3.0.x | Boot 4.0.5（starter-parent） |
-| 4.1.x | 4.1.0 | feature/3.0.x | （本地分支暂缺） |
+| ddd4j-boot 版本线 | release         | 对应 ddd4j 线 | Spring 生态                             |
+|-------------------|-----------------|---------------|-----------------------------------------|
+| 3.4.x / 3.5.x     | 3.4.13 / 3.5.16 | feature/2.0.x | Boot 3.5 / FW 6.2（当前 ddd4j-ai 所在） |
+| 4.0.x             | 4.0.7           | feature/3.0.x | Boot 4.0.5（starter-parent）            |
+| 4.1.x             | 4.1.0           | feature/3.0.x | （本地分支暂缺）                        |
 
 ## 2. 关键事实（探查核实）
 
 1. **boot 4.0.x 分支**（本地 `ddd4j-boot` 仓库，revision `4.0.x.20251215-SNAPSHOT`）：
-   根 pom 继承 `spring-boot-starter-parent:4.0.5`，`spring-framework.version=7.0.8`；
-   **但 `ddd4j-boot-dependencies` 模块存在显式约束注释「Spring Framework 锁定 6.x，不得升级至 7.x」
+   根 pom 继承 `spring-boot-starter-parent:4.0.5`，`spring-framework.version=7.0.8`； **但 `ddd4j-boot-dependencies`
+   模块存在显式约束注释「Spring Framework 锁定 6.x，不得升级至 7.x」
    并管理 `spring-framework.version=6.2.19`**。
 2. 私仓中 `4.0.x.20251215-SNAPSHOT` 的 SNAPSHOT 文件已被清理（metadata 在、构件 404），
    无法直接远程解析——需本地构建安装。
@@ -35,28 +35,28 @@ v1.x-A/B 实施中发现：Spring AI 2.0 的模型客户端（`OllamaApi` 等）
 
 ## 3. 结论：仅对齐 boot 4.0.x 不足以启用 Spring AI 2.0
 
-boot 4.0.x 的 dependencies 模块把 FW 压回 6.2.19。因此本设计采用**两级动作**：
+boot 4.0.x 的 dependencies 模块把 FW 压回 6.2.19。因此本设计采用 **两级动作**：
 
 - **A. 版本线对齐**：ddd4j-ai 父链升级至 `ddd4j-parent:3.0.x` + `ddd4j-boot-dependencies:4.0.x`
   （跟上 Boot 4 生态与 ddd4j 3.0.x 契约）。
-- **B. FW7 定向覆盖**：在 `ddd4j-ai-dependencies` 的 `dependencyManagement` 中，
-  **在 ddd4j-boot-dependencies 之前** import `spring-framework-bom:7.0.8`
+- **B. FW7 定向覆盖**：在 `ddd4j-ai-dependencies` 的 `dependencyManagement` 中， **在 ddd4j-boot-dependencies 之前**
+  import `spring-framework-bom:7.0.8`
   （Maven 规则：同 pom 内先 import 的 BOM 条目优先），使 spring-core/context/beans/web 等全套对齐 FW 7.0.8，
   满足 Spring AI 2.0 运行时要求。
 
 ## 4. 取舍与风险
 
-| 风险 | 评估 | 对策 |
-|---|---|---|
-| 覆盖 boot 4.0.x 的 FW 锁定（违规"不得升级至 7.x"注释） | ddd4j-ai 拥有独立 dependencies 治理域，覆盖是本模块设计初衷；但与 boot 线全局策略冲突 | 在本 spec 与架构 spec §9.4 显式记录；待 boot 4.1.x 线放开 FW7 后回收覆盖 |
-| FW 7 + Boot 4 生态其余第三方（springdoc 2.7 等）兼容 | ddd4j-ai 仅用 spring-core/context/beans/jdbc + boot autoconfigure/test，面窄 | 全量 94 测试 + 容器 IT 作为回归安全网 |
-| 本地构建 boot 4.0.x / ddd4j 3.0.x 引入未发布 SNAPSHOT | 版本号与私仓 metadata 一致（4.0.x.20251215-SNAPSHOT / 3.0.x.20260630-SNAPSHOT），后续私仓恢复可无缝替换 | 本地 install 供当前开发；发布前可重推私仓 |
-| Boot 3.5 → 4.0 的 API 变化 | sst 的 `@ConfigurationProperties` 绑定、测试栈（JUnit/Mockito 由 ddd4j-dependencies 管理）可能版本跳动 | 逐模块修复，测试验证 |
+| 风险                                                   | 评估                                                                                                    | 对策                                                                     |
+|--------------------------------------------------------|---------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| 覆盖 boot 4.0.x 的 FW 锁定（违规"不得升级至 7.x"注释） | ddd4j-ai 拥有独立 dependencies 治理域，覆盖是本模块设计初衷；但与 boot 线全局策略冲突                   | 在本 spec 与架构 spec §9.4 显式记录；待 boot 4.1.x 线放开 FW7 后回收覆盖 |
+| FW 7 + Boot 4 生态其余第三方（springdoc 2.7 等）兼容   | ddd4j-ai 仅用 spring-core/context/beans/jdbc + boot autoconfigure/test，面窄                            | 全量 94 测试 + 容器 IT 作为回归安全网                                    |
+| 本地构建 boot 4.0.x / ddd4j 3.0.x 引入未发布 SNAPSHOT  | 版本号与私仓 metadata 一致（4.0.x.20251215-SNAPSHOT / 3.0.x.20260630-SNAPSHOT），后续私仓恢复可无缝替换 | 本地 install 供当前开发；发布前可重推私仓                                |
+| Boot 3.5 → 4.0 的 API 变化                             | sst 的 `@ConfigurationProperties` 绑定、测试栈（JUnit/Mockito 由 ddd4j-dependencies 管理）可能版本跳动  | 逐模块修复，测试验证                                                     |
 
 ## 5. 验证标准
 
 1. 全项目 `mvn test` 全绿（含 sst 38 个存量测试不回归）。
-2. Ollama 集成测试的 classpath 探测跳过**解除后真实执行**：
+2. Ollama 集成测试的 classpath 探测跳过 **解除后真实执行**：
    qwen2.5:0.5b 对话链路、all-minilm 嵌入链路、RAG 联合冒烟全绿。
 3. 架构 spec §9.4 由"已知约束"改写为"已解决（方案与生效版本记录）"。
 
@@ -68,16 +68,17 @@ import 的 `micronaut-platform:4.10.17`**（Boot 3.5/FW 6.2 系，其管理条�
 spring-* 6.2.16），且按 Maven 规则"本 pom 的 import 优先于 parent 继承"压过了
 ddd4j 根 pom 的 FW7 BOM。最终落点：
 
-| 仓库 | 分支 | 变更 |
-|---|---|---|
-| ddd4j | feature/3.0.x | 根 pom `spring-framework.version` 6.2.19→7.0.8；`ddd4j-dependencies` 在 micronaut-platform 等 BOM **之前** import `spring-framework-bom`（防御 6.2.x 管理压制） |
-| ddd4j-boot | 4.0.x | dependencies 模块的 FW 死属性同步 6.2.19→7.0.8（消除误导），注释更新 |
-| ddd4j-ai | master | **回收** §3-B 的下游覆盖（spring-framework-bom 前置 import 与 webflux/messaging 直接声明全部删除），FW7 完全由上游提供 |
+| 仓库       | 分支          | 变更                                                                                                                                                            |
+|------------|---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ddd4j      | feature/3.0.x | 根 pom `spring-framework.version` 6.2.19→7.0.8；`ddd4j-dependencies` 在 micronaut-platform 等 BOM **之前** import `spring-framework-bom`（防御 6.2.x 管理压制） |
+| ddd4j-boot | 4.0.x         | dependencies 模块的 FW 死属性同步 6.2.19→7.0.8（消除误导），注释更新                                                                                            |
+| ddd4j-ai   | master        | **回收** §3-B 的下游覆盖（spring-framework-bom 前置 import 与 webflux/messaging 直接声明全部删除），FW7 完全由上游提供                                          |
 
 验证：103 测试全绿（含 Ollama 真模型 9 例：chat 4 + embedding 3 + RAG 联合冒烟 2），
 spring-* 全套解析为 7.0.8。
 
 注意事项：
+
 - ddd4j feature/3.0.x 为 Maven 4 项目（pom `modelVersion 4.1.0`），本机 Maven 3.9 构建其 BOM 时
   需将 modelVersion 降级为 4.0.0 后 install-file（本地仓库中的治理 POM 已按此处理）。
 - `micronaut-platform` 等管理 FW 6.2.x 的 BOM 与 FW7 的并存问题在 ddd4j-dependencies 层永久防御
@@ -90,17 +91,19 @@ spring-* 全套解析为 7.0.8。
 
 **① 私仓毒制品事件**：此前以 `4.0.x.20260630-SNAPSHOT` 发布的 ddd4j-boot 治理 POM 实为 4.1.x 分支内容
 （构建时 worktree 已切到 4.1.x，starter-parent 4.1.0）。Spring Boot **4.1.0** 的 spring-boot-dependencies
-import 了**错误坐标** `org.apache.artemis:artemis-bom`（正确坐标为 `org.apache.activemq:artemis-bom`，
+import 了 **错误坐标** `org.apache.artemis:artemis-bom`（正确坐标为 `org.apache.activemq:artemis-bom`，
 后者各镜像均可用）——这就是长期 401 死锁的真相。已从真实 4.0.x 分支（starter-parent 4.0.7）重新发布覆盖。
 
 **② ddd4j-ai 转为 Maven 4 原生项目**（与 ddd4j 上游 feature/3.0.x 一致）：
-- 全部 22 个 pom：`modelVersion 4.1.0` + namespace 升级；根/聚合 pom `<modules>`→`<subprojects>`、`<module>`→`<subproject>`。
+
+- 全部 22 个 pom：`modelVersion 4.1.0` + namespace 升级；根/聚合 pom `<modules>`→`<subprojects>`、`<module>`→
+  `<subproject>`。
 - **删除 flatten 插件**：Maven 4 consumer POM 机制原生解析 `${revision}`（install/deploy 产出的
   consumer POM 中 parent/version 均为已解析值）；BOM dependencyManagement 中的 `${revision}` 为
   CI-friendly 语义（消费端自动解析为 BOM 自身版本），与 ddd4j 上游 bom 行为一致。
-- 构建须知：**本项目需用 Maven 4 构建**（项目 `.mvn/wrapper` 已配置 4.0.0-rc-6，`./mvnw` 即可；
+- 构建须知： **本项目需用 Maven 4 构建**（项目 `.mvn/wrapper` 已配置 4.0.0-rc-6，`./mvnw` 即可；
   原生 modelVersion 4.1.0/subprojects Maven 3.9 无法解析）；`-Denforcer.skip=true` 仍需（enforcer 3.6.3
-  与 Maven 4-rc6 兼容问题）。**外部消费者不受影响**——consumer POM 为 model 4.0.0，Maven 3.9 实测
+  与 Maven 4-rc6 兼容问题）。 **外部消费者不受影响**——consumer POM 为 model 4.0.0，Maven 3.9 实测
   （继承 ddd4j-ai-parent + 引组件，编译通过）。
 - 版本落点：ddd4j-boot-dependencies `4.0.x.20260630-SNAPSHOT`；ddd4j-ai-dependencies 内 Boot 基线
   pins 4.0.5→4.0.7（前置 import spring-boot-dependencies + 直接条目，对抗 micronaut-platform 的 3.5.x 管理）。
@@ -110,11 +113,11 @@ import 了**错误坐标** `org.apache.artemis:artemis-bom`（正确坐标为 `o
 
 为达到「可作为 Spring AI 项目脚手架」状态追加的修复（全部经 ddd4j-ai-sample-app 端到端验证）：
 
-| 问题 | 根因 | 修复 |
-|---|---|---|
+| 问题                                                                           | 根因                                                                                                                                                             | 修复                                                                                                                                     |
+|--------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
 | Boot 3.5.10 混入 Boot 4.0.5 类路径（`WebApplicationType.deduce` NoSuchMethod） | 上游某 BOM 对 `spring-boot`/`spring-boot-starter` 存在 3.5.10 显式管理条目（优先于 BOM import，来源待 ddd4j 批次深挖）；且 Boot 4 已无 `spring-boot-starter-web` | `ddd4j-ai-dependencies` 前置 import `spring-boot-dependencies:4.0.5` + 直接声明对齐两个 artifact；demo 改用 `spring-boot-starter-webmvc` |
-| demo 引依赖后组件 bean 未装配 | `@ConditionalOnBean(ChatClient.Builder/EmbeddingModel/VectorStore)` 在提供方自动配置**之前**评估恒 false | 四个组件 AutoConfiguration 补 `@AutoConfiguration(after/afterName=...)`（字符串引用不引入编译依赖） |
-| deploy 产物 parent 为字面 `${revision}`（外部消费者无法解析） | 根 pom 的 flatten-maven-plugin 未绑定 execution，flatten goal 从未执行 | 根 pom 显式绑定 flatten/clean executions；重新 install+deploy 后外部视角（清缓存拉私仓）单模块构建验证通过 |
+| demo 引依赖后组件 bean 未装配                                                  | `@ConditionalOnBean(ChatClient.Builder/EmbeddingModel/VectorStore)` 在提供方自动配置**之前**评估恒 false                                                         | 四个组件 AutoConfiguration 补 `@AutoConfiguration(after/afterName=...)`（字符串引用不引入编译依赖）                                      |
+| deploy 产物 parent 为字面 `${revision}`（外部消费者无法解析）                  | 根 pom 的 flatten-maven-plugin 未绑定 execution，flatten goal 从未执行                                                                                           | 根 pom 显式绑定 flatten/clean executions；重新 install+deploy 后外部视角（清缓存拉私仓）单模块构建验证通过                               |
 
 发布记录：六个治理 POM（ddd4j×4 + ddd4j-boot×2）经 deploy-file 发布至私仓 snapshot（consumer 兼容版，
 modelVersion 4.0.0）；ddd4j-ai 全模块经 `mvn deploy` 重新发布（flatten 修复后）。最终全量 105 测试全绿

@@ -10,7 +10,8 @@
 
 ## 1. 背景
 
-复杂 AI 任务（多步骤、条件分支、循环、人机协同）需要工作流编排。flow 组件对接 Spring AI Alibaba Graph（`spring-ai-alibaba-graph-core`），提供节点化编排能力，是 ddd4j-ai 的高阶编排层。
+复杂 AI 任务（多步骤、条件分支、循环、人机协同）需要工作流编排。flow 组件对接 Spring AI Alibaba Graph（
+`spring-ai-alibaba-graph-core`），提供节点化编排能力，是 ddd4j-ai 的高阶编排层。
 
 ## 2. 目标
 
@@ -25,11 +26,11 @@
 
 ## 3. 关键决策（建议）
 
-| # | 决策候选 | 理由 |
-|---|---------|------|
-| F1 | 复用 `spring-ai-alibaba-graph-core` 2.0.0-M1.1 | 不重复造轮子 |
-| F2 | 节点抽象统一（LLM/Tool/Branch/Human） | 流程可组合、可复用 |
-| F3 | 流程定义支持声明式（配置/JSON） | 业务侧低门槛编排 |
+| #  | 决策候选                                       | 理由               |
+|----|------------------------------------------------|--------------------|
+| F1 | 复用 `spring-ai-alibaba-graph-core` 2.0.0-M1.1 | 不重复造轮子       |
+| F2 | 节点抽象统一（LLM/Tool/Branch/Human）          | 流程可组合、可复用 |
+| F3 | 流程定义支持声明式（配置/JSON）                | 业务侧低门槛编排   |
 
 ## 4. 总体架构
 

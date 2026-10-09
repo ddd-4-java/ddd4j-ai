@@ -20,7 +20,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class VectorDbServiceContractTest {
 
-    /** 确定性二维嵌入：[首字符编码, 常量]，余弦/欧氏均可区分。 */
+    /**
+     * 确定性二维嵌入：[首字符编码, 常量]，余弦/欧氏均可区分。
+     */
     static class FirstCharEmbeddingModel implements org.springframework.ai.embedding.EmbeddingModel {
 
         @Override
@@ -47,7 +49,9 @@ class VectorDbServiceContractTest {
         }
     }
 
-    /** 每个测试独立向量库实例，避免方法间数据残留。 */
+    /**
+     * 每个测试独立向量库实例，避免方法间数据残留。
+     */
     private VectorDbService vectorDb;
 
     @BeforeEach
