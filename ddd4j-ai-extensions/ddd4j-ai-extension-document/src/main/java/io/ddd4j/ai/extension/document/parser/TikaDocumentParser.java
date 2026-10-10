@@ -76,6 +76,75 @@ public final class TikaDocumentParser implements DocumentParser {
         this.asrService = asrService;
     }
 
+    private static boolean isAudio(String mime) {
+        return mime != null && mime.startsWith("audio/");
+    }
+
+    private static ParseContext context(EmbeddedImageExtractor extractor) {
+        ParseContext context = new ParseContext();
+        context.set(EmbeddedDocumentExtractor.class, extractor);
+        return context;
+    }
+
+    private static ParseContext ocrContext(EmbeddedImageExtractor extractor) {
+        ParseContext context = context(extractor);
+        TesseractOCRConfig config = new TesseractOCRConfig();
+        config.setOutputType(TesseractOCRConfig.OUTPUT_TYPE.TXT);
+        context.set(TesseractOCRConfig.class, config);
+        context.set(TesseractOCRParser.class, new TesseractOCRParser());
+        return context;
+    }
+
+    /**
+     * 流式解析：TikaInputStream 按需 spool（大文件落盘临时文件），SecureContentHandler 限制
+     * SAX 实体数与输出量（zip 炸弹/高压缩比攻击面防护），不整体入内存。
+     */
+    private static Parsed doParse(Path path, ParseContext context, EmbeddedImageExtractor extractor) throws Exception {
+        StringWriter writer = new StringWriter();
+        MarkdownStructureHandler structure = new MarkdownStructureHandler();
+        TeeContentHandler tee = new TeeContentHandler(new ToMarkdownContentHandler(writer), structure);
+        try (org.apache.tika.io.TikaInputStream stream = org.apache.tika.io.TikaInputStream.get(path)) {
+            org.apache.tika.sax.SecureContentHandler secure = new org.apache.tika.sax.SecureContentHandler(tee, stream);
+            Metadata metadata = new Metadata();
+            new AutoDetectParser().parse(stream, secure, metadata, context);
+            List<DocumentImage> images = new ArrayList<>(structure.images());
+            images.addAll(extractor.images());
+            return new Parsed(writer.toString(), structure.sections(), structure.tables(), images,
+                    metadata, extractor.dropped());
+        }
+    }
+
+    private static void putIfAbsent(Map<String, Object> target, String key, Object value) {
+        if (value != null && !String.valueOf(value).isBlank() && !target.containsKey(key)) {
+            target.put(key, value);
+        }
+    }
+
+    private static String first(Metadata metadata, String... keys) {
+        for (String key : keys) {
+            String value = metadata.get(key);
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private static String detectLanguage(String text) {
+        try {
+            if (text == null || text.isBlank()) {
+                return null;
+            }
+            org.apache.tika.language.detect.LanguageResult result =
+                    org.apache.tika.language.detect.LanguageDetector.getDefaultLanguageDetector()
+                            .detect(text.length() > 2000 ? text.substring(0, 2000) : text);
+            String language = result.getLanguage();
+            return language == null || language.isBlank() || "unknown".equals(language) ? null : language;
+        } catch (Exception e) {
+            return null; // 语言检测不可用（无模型）不阻塞解析
+        }
+    }
+
     @Override
     public MediaType supports() {
         return MediaType.UNKNOWN;
@@ -151,10 +220,6 @@ public final class TikaDocumentParser implements DocumentParser {
         }
     }
 
-    private static boolean isAudio(String mime) {
-        return mime != null && mime.startsWith("audio/");
-    }
-
     private Parsed appendTranscription(Parsed parsed, byte[] bytes) {
         try {
             String text = asrService.transcribe(bytes, AudioFormat.wav44100Stereo16());
@@ -194,12 +259,6 @@ public final class TikaDocumentParser implements DocumentParser {
         return properties.isOcrEnabled();
     }
 
-    private static ParseContext context(EmbeddedImageExtractor extractor) {
-        ParseContext context = new ParseContext();
-        context.set(EmbeddedDocumentExtractor.class, extractor);
-        return context;
-    }
-
     /**
      * 注入解析超时：病态文档超时抛 TikaTimeoutException，不降级重试（重试只会再挂一次）。
      */
@@ -212,32 +271,47 @@ public final class TikaDocumentParser implements DocumentParser {
         return context;
     }
 
-    private static ParseContext ocrContext(EmbeddedImageExtractor extractor) {
-        ParseContext context = context(extractor);
-        TesseractOCRConfig config = new TesseractOCRConfig();
-        config.setOutputType(TesseractOCRConfig.OUTPUT_TYPE.TXT);
-        context.set(TesseractOCRConfig.class, config);
-        context.set(TesseractOCRParser.class, new TesseractOCRParser());
-        return context;
+    private Document map(String name, String mime, Parsed parsed) {
+        String markdown = parsed.markdown() == null ? "" : parsed.markdown().strip();
+        Map<String, Object> metadata = new HashMap<>();
+        // 全量透传 Tika 元数据（EXIF / 音频 / 办公作者时间页数等，markitdown 无此能力）
+        for (String key : parsed.tikaMetadata().names()) {
+            metadata.put(key, parsed.tikaMetadata().get(key));
+        }
+        // 规范化精选键（对 RAG 溯源友好）
+        putIfAbsent(metadata, "author", first(parsed.tikaMetadata(), "dc:creator", "Author"));
+        putIfAbsent(metadata, "created", first(parsed.tikaMetadata(), "dcterms:created", "Creation-Date"));
+        putIfAbsent(metadata, "pageCount", first(parsed.tikaMetadata(), "xmpTPg:NPages"));
+        if (properties.isEnableLanguageDetection()) {
+            putIfAbsent(metadata, "language", detectLanguage(markdown));
+        }
+        if (parsed.droppedImages() > 0) {
+            metadata.put("embeddedImagesTruncated", true);
+            log.warn("embedded images truncated: kept={}, dropped={}",
+                    parsed.images().size(), parsed.droppedImages());
+        }
+        metadata.put("source", "tika");
+        metadata.put("detectedMime", mime);
+        return new Document(
+                name == null ? "Document" : name,
+                mime,
+                SourceType.TIKA_FALLBACK,
+                parsed.sections(),
+                parsed.tables(),
+                parsed.images(),
+                markdown,
+                metadata);
     }
 
     /**
-     * 流式解析：TikaInputStream 按需 spool（大文件落盘临时文件），SecureContentHandler 限制
-     * SAX 实体数与输出量（zip 炸弹/高压缩比攻击面防护），不整体入内存。
+     * Tika 解析产物：Markdown 全文 + 结构化字段 + 原始元数据。
      */
-    private static Parsed doParse(Path path, ParseContext context, EmbeddedImageExtractor extractor) throws Exception {
-        StringWriter writer = new StringWriter();
-        MarkdownStructureHandler structure = new MarkdownStructureHandler();
-        TeeContentHandler tee = new TeeContentHandler(new ToMarkdownContentHandler(writer), structure);
-        try (org.apache.tika.io.TikaInputStream stream = org.apache.tika.io.TikaInputStream.get(path)) {
-            org.apache.tika.sax.SecureContentHandler secure = new org.apache.tika.sax.SecureContentHandler(tee, stream);
-            Metadata metadata = new Metadata();
-            new AutoDetectParser().parse(stream, secure, metadata, context);
-            List<DocumentImage> images = new ArrayList<>(structure.images());
-            images.addAll(extractor.images());
-            return new Parsed(writer.toString(), structure.sections(), structure.tables(), images,
-                    metadata, extractor.dropped());
-        }
+    private record Parsed(String markdown,
+                          List<DocumentSection> sections,
+                          List<DocumentTable> tables,
+                          List<DocumentImage> images,
+                          Metadata tikaMetadata,
+                          int droppedImages) {
     }
 
     /**
@@ -336,79 +410,5 @@ public final class TikaDocumentParser implements DocumentParser {
             String src = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(data);
             images.add(new DocumentImage(metadata.get("resourceName"), src));
         }
-    }
-
-    private Document map(String name, String mime, Parsed parsed) {
-        String markdown = parsed.markdown() == null ? "" : parsed.markdown().strip();
-        Map<String, Object> metadata = new HashMap<>();
-        // 全量透传 Tika 元数据（EXIF / 音频 / 办公作者时间页数等，markitdown 无此能力）
-        for (String key : parsed.tikaMetadata().names()) {
-            metadata.put(key, parsed.tikaMetadata().get(key));
-        }
-        // 规范化精选键（对 RAG 溯源友好）
-        putIfAbsent(metadata, "author", first(parsed.tikaMetadata(), "dc:creator", "Author"));
-        putIfAbsent(metadata, "created", first(parsed.tikaMetadata(), "dcterms:created", "Creation-Date"));
-        putIfAbsent(metadata, "pageCount", first(parsed.tikaMetadata(), "xmpTPg:NPages"));
-        if (properties.isEnableLanguageDetection()) {
-            putIfAbsent(metadata, "language", detectLanguage(markdown));
-        }
-        if (parsed.droppedImages() > 0) {
-            metadata.put("embeddedImagesTruncated", true);
-            log.warn("embedded images truncated: kept={}, dropped={}",
-                    parsed.images().size(), parsed.droppedImages());
-        }
-        metadata.put("source", "tika");
-        metadata.put("detectedMime", mime);
-        return new Document(
-                name == null ? "Document" : name,
-                mime,
-                SourceType.TIKA_FALLBACK,
-                parsed.sections(),
-                parsed.tables(),
-                parsed.images(),
-                markdown,
-                metadata);
-    }
-
-    private static void putIfAbsent(Map<String, Object> target, String key, Object value) {
-        if (value != null && !String.valueOf(value).isBlank() && !target.containsKey(key)) {
-            target.put(key, value);
-        }
-    }
-
-    private static String first(Metadata metadata, String... keys) {
-        for (String key : keys) {
-            String value = metadata.get(key);
-            if (value != null && !value.isBlank()) {
-                return value;
-            }
-        }
-        return null;
-    }
-
-    private static String detectLanguage(String text) {
-        try {
-            if (text == null || text.isBlank()) {
-                return null;
-            }
-            org.apache.tika.language.detect.LanguageResult result =
-                    org.apache.tika.language.detect.LanguageDetector.getDefaultLanguageDetector()
-                            .detect(text.length() > 2000 ? text.substring(0, 2000) : text);
-            String language = result.getLanguage();
-            return language == null || language.isBlank() || "unknown".equals(language) ? null : language;
-        } catch (Exception e) {
-            return null; // 语言检测不可用（无模型）不阻塞解析
-        }
-    }
-
-    /**
-     * Tika 解析产物：Markdown 全文 + 结构化字段 + 原始元数据。
-     */
-    private record Parsed(String markdown,
-                          List<DocumentSection> sections,
-                          List<DocumentTable> tables,
-                          List<DocumentImage> images,
-                          Metadata tikaMetadata,
-                          int droppedImages) {
     }
 }

@@ -11,10 +11,8 @@ package io.ddd4j.ai.extension.asr.service;
  */
 public record AudioFormat(int sampleRate, int channels, int bitsPerSample, boolean signed) {
 
-    /**
-     * 常见 44.1kHz 立体声 16-bit WAV。
-     */
-    public static AudioFormat wav44100Stereo16() {
+    /** 常见 44.1kHz 立体声 16-bit WAV。 */
+    public static AudioFormat wav44100Stereo16 () {
         return new AudioFormat(44_100, 2, 16, true);
     }
 }

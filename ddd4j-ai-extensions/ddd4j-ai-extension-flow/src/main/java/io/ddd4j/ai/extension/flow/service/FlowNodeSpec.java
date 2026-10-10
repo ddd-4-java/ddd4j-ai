@@ -30,7 +30,7 @@ public record FlowNodeSpec(
         branches = branches == null ? Map.of() : Map.copyOf(branches);
     }
 
-    public static Builder builder() {
+    public static Builder builder () {
         return new Builder();
     }
 

@@ -33,6 +33,34 @@ public enum JdbcDialect {
     private static final String INDEX = "idx_ddd4j_ai_dispatch_plan";
 
     /**
+     * 按数据库产品名选择方言；未知或 null 回落 H2 兼容写法。
+     */
+    public static JdbcDialect forProductName(String productName) {
+        if (productName == null) {
+            return H2;
+        }
+        String normalized = productName.toLowerCase();
+        if (normalized.contains("mysql") || normalized.contains("mariadb")) {
+            return MYSQL;
+        }
+        if (normalized.contains("postgres")) {
+            return POSTGRESQL;
+        }
+        return H2;
+    }
+
+    /**
+     * 从连接元数据探测方言。
+     */
+    public static JdbcDialect from(DataSource dataSource) {
+        try (Connection connection = dataSource.getConnection()) {
+            return forProductName(connection.getMetaData().getDatabaseProductName());
+        } catch (SQLException e) {
+            throw new IllegalStateException("无法探测数据库方言: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * MySQL：大文本用 MEDIUMTEXT（16MB）；其余用 TEXT（PostgreSQL/H2 的 TEXT 无实际上限）。
      */
     public String textType() {
@@ -80,33 +108,5 @@ public enum JdbcDialect {
                     + " result=EXCLUDED.result, created_at=EXCLUDED.created_at";
             case H2 -> "MERGE INTO " + TABLE + " " + columns + " KEY(id) VALUES " + values;
         };
-    }
-
-    /**
-     * 按数据库产品名选择方言；未知或 null 回落 H2 兼容写法。
-     */
-    public static JdbcDialect forProductName(String productName) {
-        if (productName == null) {
-            return H2;
-        }
-        String normalized = productName.toLowerCase();
-        if (normalized.contains("mysql") || normalized.contains("mariadb")) {
-            return MYSQL;
-        }
-        if (normalized.contains("postgres")) {
-            return POSTGRESQL;
-        }
-        return H2;
-    }
-
-    /**
-     * 从连接元数据探测方言。
-     */
-    public static JdbcDialect from(DataSource dataSource) {
-        try (Connection connection = dataSource.getConnection()) {
-            return forProductName(connection.getMetaData().getDatabaseProductName());
-        } catch (SQLException e) {
-            throw new IllegalStateException("无法探测数据库方言: " + e.getMessage(), e);
-        }
     }
 }

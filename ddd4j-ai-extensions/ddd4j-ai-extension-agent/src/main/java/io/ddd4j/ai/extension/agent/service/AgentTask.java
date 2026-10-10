@@ -19,7 +19,7 @@ public record AgentTask(String instruction, Map<String, Object> variables, Strin
         variables = variables == null ? Map.of() : Map.copyOf(variables);
     }
 
-    public static AgentTask of(String instruction) {
+    public static AgentTask of (String instruction){
         return new AgentTask(instruction, Map.of(), null);
     }
 }

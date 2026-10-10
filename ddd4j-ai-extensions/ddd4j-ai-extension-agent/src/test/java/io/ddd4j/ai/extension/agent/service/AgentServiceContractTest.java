@@ -16,32 +16,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class AgentServiceContractTest {
 
-    static class FakeAgentService implements AgentService {
-
-        private final RuntimeException failure;
-
-        FakeAgentService() {
-            this(null);
-        }
-
-        FakeAgentService(RuntimeException failure) {
-            this.failure = failure;
-        }
-
-        @Override
-        public AgentResult execute(AgentTask task) {
-            if (failure != null) {
-                throw failure;
-            }
-            return new AgentResult("done", List.of(new AgentStep("result", "done", 0)), task.conversationId());
-        }
-
-        @Override
-        public Flux<AgentStep> stream(AgentTask task) {
-            return Flux.fromIterable(execute(task).steps());
-        }
-    }
-
     @Test
     void execute_returnsResultWithTrajectory() throws Exception {
         AgentResult result = new FakeAgentService().execute(AgentTask.of("task"));
@@ -110,5 +84,31 @@ class AgentServiceContractTest {
         assertThat(result.output()).isEqualTo("done");
         // 关键：default 实现必须把阻塞的 execute 卸载到 boundedElastic，而非调用方线程
         assertThat(threadName.get()).startsWith("boundedElastic");
+    }
+
+    static class FakeAgentService implements AgentService {
+
+        private final RuntimeException failure;
+
+        FakeAgentService() {
+            this(null);
+        }
+
+        FakeAgentService(RuntimeException failure) {
+            this.failure = failure;
+        }
+
+        @Override
+        public AgentResult execute(AgentTask task) {
+            if (failure != null) {
+                throw failure;
+            }
+            return new AgentResult("done", List.of(new AgentStep("result", "done", 0)), task.conversationId());
+        }
+
+        @Override
+        public Flux<AgentStep> stream(AgentTask task) {
+            return Flux.fromIterable(execute(task).steps());
+        }
     }
 }

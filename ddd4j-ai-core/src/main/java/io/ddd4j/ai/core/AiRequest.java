@@ -17,7 +17,7 @@ public record AiRequest(String input, Map<String, Object> metadata) {
         metadata = Objects.isNull(metadata) ? Map.of() : Map.copyOf(metadata);
     }
 
-    public static AiRequest of(String input) {
+    public static AiRequest of (String input){
         return new AiRequest(input, Map.of());
     }
 }

@@ -17,7 +17,7 @@ public record AiResponse(String output, Map<String, Object> metadata) {
         metadata = Objects.isNull(metadata) ? Map.of() : Map.copyOf(metadata);
     }
 
-    public static AiResponse of(String output) {
+    public static AiResponse of (String output){
         return new AiResponse(output, Map.of());
     }
 }

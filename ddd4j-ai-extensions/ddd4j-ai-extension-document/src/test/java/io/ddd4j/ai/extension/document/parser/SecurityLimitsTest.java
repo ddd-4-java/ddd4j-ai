@@ -31,70 +31,6 @@ class SecurityLimitsTest {
     private static final byte[] ONE_PX_PNG = Base64.getDecoder().decode(
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==");
 
-    @Test
-    void deeplyNestedZip_returnsWithinDeadline(@TempDir Path tmp) throws Exception {
-        byte[] nested = nestedZip(10);
-        // 深嵌套容器：Tika 达到递归深度限制后停止展开，绝不挂死（60s 内返回）
-        File file = tmp.resolve("nested.zip").toFile();
-        Files.write(file.toPath(), nested);
-
-        Document document = new TikaDocumentParser().parse(file);
-
-        assertThat(document.source()).isNotNull();
-    }
-
-    @Test
-    void embeddedImages_cappedAtLimit(@TempDir Path tmp) throws Exception {
-        DocumentProperties properties = new DocumentProperties();
-        properties.setMaxEmbeddedImages(2);
-        File file = tmp.resolve("flood.docx").toFile();
-        Files.write(file.toPath(), docxWithImages(3));
-
-        Document document = new TikaDocumentParser(properties).parse(file);
-
-        long dataUrls = document.images().stream()
-                .filter(img -> img.src().startsWith("data:image/png;base64,")).count();
-        assertThat(dataUrls).isLessThanOrEqualTo(2);
-        assertThat(document.metadata()).containsEntry("embeddedImagesTruncated", true);
-    }
-
-    @Test
-    void oversizedEmbeddedImage_skipped(@TempDir Path tmp) throws Exception {
-        DocumentProperties properties = new DocumentProperties();
-        properties.setMaxEmbeddedImageBytes(10); // 1x1 PNG 是 69 字节，必然超限
-        File file = tmp.resolve("bigimg.docx").toFile();
-        Files.write(file.toPath(), docxWithImages(1));
-
-        Document document = new TikaDocumentParser(properties).parse(file);
-
-        assertThat(document.fullMarkdown()).contains("Hello embedded image"); // 主文档不受影响
-        assertThat(document.images()).noneMatch(img -> img.src().startsWith("data:image/png;base64,"));
-        assertThat(document.metadata()).containsEntry("embeddedImagesTruncated", true);
-    }
-
-    @Test
-    void zipBombHighRatio_boundedBySizeLimit(@TempDir Path tmp) throws Exception {
-        // 高压缩比 zip（小包解压出大内容）：受 max-file-size 与 SAX 输出限额约束，受控返回
-        ByteArrayOutputStream bomb = new ByteArrayOutputStream();
-        try (ZipOutputStream zip = new ZipOutputStream(bomb)) {
-            zip.putNextEntry(new ZipEntry("fill.txt"));
-            byte[] chunk = new byte[1024 * 1024];
-            for (int i = 0; i < 110; i++) { // 解压后 110MB > 默认 100MB 限额
-                zip.write(chunk);
-            }
-            zip.closeEntry();
-        }
-        DocumentProperties properties = new DocumentProperties();
-        properties.setMaxFileSizeBytes(0); // 文件本身小，不触文件限额——考验 SAX 输出限额
-        File file = tmp.resolve("bomb.zip").toFile();
-        Files.write(file.toPath(), bomb.toByteArray());
-
-        assertThatCode(() -> new TikaDocumentParser(properties).parse(file))
-                .doesNotThrowAnyException(); // 受控（SecureContentHandler 输出限额或正常截断），绝不挂死
-    }
-
-    // ---- 样本构造 ----
-
     /**
      * n 层互嵌 zip：最内层为 txt。
      */
@@ -176,5 +112,69 @@ class SecurityLimitsTest {
             }
         }
         return out.toByteArray();
+    }
+
+    @Test
+    void deeplyNestedZip_returnsWithinDeadline(@TempDir Path tmp) throws Exception {
+        byte[] nested = nestedZip(10);
+        // 深嵌套容器：Tika 达到递归深度限制后停止展开，绝不挂死（60s 内返回）
+        File file = tmp.resolve("nested.zip").toFile();
+        Files.write(file.toPath(), nested);
+
+        Document document = new TikaDocumentParser().parse(file);
+
+        assertThat(document.source()).isNotNull();
+    }
+
+    @Test
+    void embeddedImages_cappedAtLimit(@TempDir Path tmp) throws Exception {
+        DocumentProperties properties = new DocumentProperties();
+        properties.setMaxEmbeddedImages(2);
+        File file = tmp.resolve("flood.docx").toFile();
+        Files.write(file.toPath(), docxWithImages(3));
+
+        Document document = new TikaDocumentParser(properties).parse(file);
+
+        long dataUrls = document.images().stream()
+                .filter(img -> img.src().startsWith("data:image/png;base64,")).count();
+        assertThat(dataUrls).isLessThanOrEqualTo(2);
+        assertThat(document.metadata()).containsEntry("embeddedImagesTruncated", true);
+    }
+
+    // ---- 样本构造 ----
+
+    @Test
+    void oversizedEmbeddedImage_skipped(@TempDir Path tmp) throws Exception {
+        DocumentProperties properties = new DocumentProperties();
+        properties.setMaxEmbeddedImageBytes(10); // 1x1 PNG 是 69 字节，必然超限
+        File file = tmp.resolve("bigimg.docx").toFile();
+        Files.write(file.toPath(), docxWithImages(1));
+
+        Document document = new TikaDocumentParser(properties).parse(file);
+
+        assertThat(document.fullMarkdown()).contains("Hello embedded image"); // 主文档不受影响
+        assertThat(document.images()).noneMatch(img -> img.src().startsWith("data:image/png;base64,"));
+        assertThat(document.metadata()).containsEntry("embeddedImagesTruncated", true);
+    }
+
+    @Test
+    void zipBombHighRatio_boundedBySizeLimit(@TempDir Path tmp) throws Exception {
+        // 高压缩比 zip（小包解压出大内容）：受 max-file-size 与 SAX 输出限额约束，受控返回
+        ByteArrayOutputStream bomb = new ByteArrayOutputStream();
+        try (ZipOutputStream zip = new ZipOutputStream(bomb)) {
+            zip.putNextEntry(new ZipEntry("fill.txt"));
+            byte[] chunk = new byte[1024 * 1024];
+            for (int i = 0; i < 110; i++) { // 解压后 110MB > 默认 100MB 限额
+                zip.write(chunk);
+            }
+            zip.closeEntry();
+        }
+        DocumentProperties properties = new DocumentProperties();
+        properties.setMaxFileSizeBytes(0); // 文件本身小，不触文件限额——考验 SAX 输出限额
+        File file = tmp.resolve("bomb.zip").toFile();
+        Files.write(file.toPath(), bomb.toByteArray());
+
+        assertThatCode(() -> new TikaDocumentParser(properties).parse(file))
+                .doesNotThrowAnyException(); // 受控（SecureContentHandler 输出限额或正常截断），绝不挂死
     }
 }

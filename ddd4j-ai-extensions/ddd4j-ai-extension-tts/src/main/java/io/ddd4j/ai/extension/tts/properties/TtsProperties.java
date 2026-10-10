@@ -79,6 +79,19 @@ public class TtsProperties {
         return PrimaryType.fromString(primary.trim().toLowerCase());
     }
 
+    public enum PrimaryType {
+        EDGE,
+        DASHSCOPE;
+
+        public static PrimaryType fromString(String s) {
+            try {
+                return PrimaryType.valueOf(s.toUpperCase());
+            } catch (IllegalArgumentException ex) {
+                return EDGE;
+            }
+        }
+    }
+
     @Getter
     @Setter
     public static class Edge {
@@ -137,18 +150,5 @@ public class TtsProperties {
          * 是否启用 TTFA 采样与 Logger 输出。
          */
         private boolean enabled = true;
-    }
-
-    public enum PrimaryType {
-        EDGE,
-        DASHSCOPE;
-
-        public static PrimaryType fromString(String s) {
-            try {
-                return PrimaryType.valueOf(s.toUpperCase());
-            } catch (IllegalArgumentException ex) {
-                return EDGE;
-            }
-        }
     }
 }

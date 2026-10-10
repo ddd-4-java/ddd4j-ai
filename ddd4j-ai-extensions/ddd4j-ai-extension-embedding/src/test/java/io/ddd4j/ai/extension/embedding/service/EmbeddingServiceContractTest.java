@@ -13,27 +13,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class EmbeddingServiceContractTest {
 
-    /**
-     * 确定性桩：向量 = 文本哈希填充。
-     */
-    static class HashEmbeddingService implements EmbeddingService {
-
-        @Override
-        public float[] embed(String text) {
-            return new float[]{text.hashCode(), 1.0f};
-        }
-
-        @Override
-        public List<float[]> embedBatch(List<String> texts) {
-            return texts.stream().map(this::embed).toList();
-        }
-
-        @Override
-        public int dimensions() {
-            return 2;
-        }
-    }
-
     private final EmbeddingService embedding = new HashEmbeddingService();
 
     @Test
@@ -53,5 +32,26 @@ class EmbeddingServiceContractTest {
     @Test
     void dimensionsMatchesVectorLength() {
         assertThat(embedding.embed("x")).hasSize(embedding.dimensions());
+    }
+
+    /**
+     * 确定性桩：向量 = 文本哈希填充。
+     */
+    static class HashEmbeddingService implements EmbeddingService {
+
+        @Override
+        public float[] embed(String text) {
+            return new float[]{text.hashCode(), 1.0f};
+        }
+
+        @Override
+        public List<float[]> embedBatch(List<String> texts) {
+            return texts.stream().map(this::embed).toList();
+        }
+
+        @Override
+        public int dimensions() {
+            return 2;
+        }
     }
 }

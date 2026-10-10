@@ -93,7 +93,7 @@ public final class WavConverter {
      */
     record Header(int sampleRate, int channels, int bitsPerSample, byte[] data) {
 
-        static Header parse(byte[] bytes) {
+        static Header parse ( byte[] bytes){
             if (bytes.length < 44 || !"RIFF".equals(ascii(bytes, 0, 4)) || !"WAVE".equals(ascii(bytes, 8, 4))) {
                 return null;
             }
@@ -122,15 +122,15 @@ public final class WavConverter {
             return new Header(sampleRate, channels, bits, data);
         }
 
-        private static String ascii(byte[] bytes, int offset, int length) {
+        private static String ascii ( byte[] bytes, int offset, int length){
             return new String(bytes, offset, length, StandardCharsets.US_ASCII);
         }
 
-        private static int littleEndianShort(byte[] bytes, int offset) {
+        private static int littleEndianShort ( byte[] bytes, int offset){
             return (bytes[offset] & 0xFF) | ((bytes[offset + 1] & 0xFF) << 8);
         }
 
-        private static int littleEndianInt(byte[] bytes, int offset) {
+        private static int littleEndianInt ( byte[] bytes, int offset){
             return (bytes[offset] & 0xFF)
                     | ((bytes[offset + 1] & 0xFF) << 8)
                     | ((bytes[offset + 2] & 0xFF) << 16)

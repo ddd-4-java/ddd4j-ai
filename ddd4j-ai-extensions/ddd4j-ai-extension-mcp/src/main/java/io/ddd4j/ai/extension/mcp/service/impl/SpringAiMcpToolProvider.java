@@ -27,6 +27,20 @@ public class SpringAiMcpToolProvider implements McpToolProvider {
         this.clients = resolved != null ? resolved : Collections.emptyList();
     }
 
+    @SuppressWarnings("unchecked")
+    private static List<ToolDefinition> safeListTools(Object client) {
+        try {
+            // 反射调用避免编译期强依赖 Spring AI MCP 工具类的内部 API
+            Object tools = client.getClass().getMethod("listTools").invoke(client);
+            if (tools instanceof List<?> list) {
+                return (List<ToolDefinition>) list;
+            }
+        } catch (Exception ignored) {
+            // 客户端无 listTools 或签名不同，回退到空列表
+        }
+        return Collections.emptyList();
+    }
+
     @Override
     public List<ToolDefinition> availableTools() {
         // 工具清单由 Spring AI MCP 自动配置在 refresh 时注册到 McpToolUtils；这里仅占位返回空列表。
@@ -42,19 +56,5 @@ public class SpringAiMcpToolProvider implements McpToolProvider {
         throw new UnsupportedOperationException(
                 "MCP tool invocation is delegated to Spring AI McpToolUtils.callTool; " +
                         "use McpSyncClient/McpAsyncClient API directly to avoid double abstraction. name=" + name);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static List<ToolDefinition> safeListTools(Object client) {
-        try {
-            // 反射调用避免编译期强依赖 Spring AI MCP 工具类的内部 API
-            Object tools = client.getClass().getMethod("listTools").invoke(client);
-            if (tools instanceof List<?> list) {
-                return (List<ToolDefinition>) list;
-            }
-        } catch (Exception ignored) {
-            // 客户端无 listTools 或签名不同，回退到空列表
-        }
-        return Collections.emptyList();
     }
 }

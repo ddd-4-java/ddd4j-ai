@@ -29,28 +29,6 @@ class TikaEmbeddedResourceTest {
     private static final byte[] ONE_PX_PNG = Base64.getDecoder().decode(
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==");
 
-    @Test
-    void docxWithEmbeddedImage_collectsBase64Image(@TempDir Path tmp) throws Exception {
-        File file = tmp.resolve("report.docx").toFile();
-        Files.write(file.toPath(), minimalDocxWithImage());
-
-        Document document = new TikaDocumentParser().parse(file);
-
-        assertThat(document.fullMarkdown()).contains("Hello embedded image");
-        // 双通道图片：XHTML 的 embedded: 引用 + extractor 的 base64 data URL
-        assertThat(document.images()).isNotEmpty();
-        assertThat(document.images())
-                .anyMatch(img -> img.src().startsWith("data:image/png;base64,"));
-    }
-
-    @Test
-    void plainText_noEmbeddedResources(@TempDir Path tmp) throws Exception {
-        File file = tmp.resolve("note.txt").toFile();
-        Files.writeString(file.toPath(), "no resources");
-        Document document = new TikaDocumentParser().parse(file);
-        assertThat(document.images()).isEmpty();
-    }
-
     /**
      * 构造最小 docx：document.xml 引用 rId1 → media/image1.png。
      */
@@ -114,5 +92,27 @@ class TikaEmbeddedResourceTest {
             zip.closeEntry();
         }
         return out.toByteArray();
+    }
+
+    @Test
+    void docxWithEmbeddedImage_collectsBase64Image(@TempDir Path tmp) throws Exception {
+        File file = tmp.resolve("report.docx").toFile();
+        Files.write(file.toPath(), minimalDocxWithImage());
+
+        Document document = new TikaDocumentParser().parse(file);
+
+        assertThat(document.fullMarkdown()).contains("Hello embedded image");
+        // 双通道图片：XHTML 的 embedded: 引用 + extractor 的 base64 data URL
+        assertThat(document.images()).isNotEmpty();
+        assertThat(document.images())
+                .anyMatch(img -> img.src().startsWith("data:image/png;base64,"));
+    }
+
+    @Test
+    void plainText_noEmbeddedResources(@TempDir Path tmp) throws Exception {
+        File file = tmp.resolve("note.txt").toFile();
+        Files.writeString(file.toPath(), "no resources");
+        Document document = new TikaDocumentParser().parse(file);
+        assertThat(document.images()).isEmpty();
     }
 }

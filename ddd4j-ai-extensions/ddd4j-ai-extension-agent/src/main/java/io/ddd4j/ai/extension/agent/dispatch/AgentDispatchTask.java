@@ -26,12 +26,12 @@ public record AgentDispatchTask(
     public static final String DONE = "DONE";
     public static final String FAILED = "FAILED";
 
-    public static AgentDispatchTask pending(String planId, String instruction) {
+    public static AgentDispatchTask pending (String planId, String instruction){
         return new AgentDispatchTask(java.util.UUID.randomUUID().toString(), planId,
                 instruction, PENDING, null, Instant.now());
     }
 
-    public AgentDispatchTask withStatus(String newStatus, String newResult) {
+    public AgentDispatchTask withStatus (String newStatus, String newResult){
         return new AgentDispatchTask(id, planId, instruction, newStatus, newResult, createdAt);
     }
 }

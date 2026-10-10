@@ -25,14 +25,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public abstract class AgentDispatchTaskRepositoryContract {
 
+    private static AgentDispatchTask task(String id, String planId, String instruction, Instant createdAt) {
+        return new AgentDispatchTask(id, planId, instruction, AgentDispatchTask.PENDING, null, createdAt);
+    }
+
     /**
      * 每个用例一个新实例（避免用例间状态串扰）。
      */
     protected abstract AgentDispatchTaskRepository newRepository();
-
-    private static AgentDispatchTask task(String id, String planId, String instruction, Instant createdAt) {
-        return new AgentDispatchTask(id, planId, instruction, AgentDispatchTask.PENDING, null, createdAt);
-    }
 
     @Test
     void saveThenFindById_returnsSameContent() {

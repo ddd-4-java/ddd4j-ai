@@ -19,15 +19,15 @@ public record FlowDefinition(String name, List<FlowNodeSpec> nodes, List<FlowEdg
         edges = List.copyOf(edges);
     }
 
-    public static Builder builder() {
+    public static Builder builder () {
         return new Builder();
     }
 
     public static final class Builder {
 
-        private String name;
         private final java.util.ArrayList<FlowNodeSpec> nodes = new java.util.ArrayList<>();
         private final java.util.ArrayList<FlowEdge> edges = new java.util.ArrayList<>();
+        private String name;
 
         public Builder name(String name) {
             this.name = name;

@@ -16,6 +16,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 class AiResponseTest {
 
+    @Test
+    void recordEquality() {
+        Map<String, Object> metadata = Map.of("k", "v");
+        assertThat(new AiResponse("a", metadata)).isEqualTo(new AiResponse("a", metadata));
+        assertThat(new AiResponse("a", metadata)).isNotEqualTo(new AiResponse("b", metadata));
+    }
+
     @Nested
     class Of {
 
@@ -69,12 +76,5 @@ class AiResponseTest {
             assertThrows(UnsupportedOperationException.class,
                     () -> response.metadata().put("k", "v"));
         }
-    }
-
-    @Test
-    void recordEquality() {
-        Map<String, Object> metadata = Map.of("k", "v");
-        assertThat(new AiResponse("a", metadata)).isEqualTo(new AiResponse("a", metadata));
-        assertThat(new AiResponse("a", metadata)).isNotEqualTo(new AiResponse("b", metadata));
     }
 }

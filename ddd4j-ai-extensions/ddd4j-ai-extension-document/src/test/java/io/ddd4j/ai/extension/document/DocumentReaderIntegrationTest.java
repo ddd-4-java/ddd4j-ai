@@ -29,6 +29,24 @@ class DocumentReaderIntegrationTest {
     @Autowired
     private DocumentReader reader;
 
+    private static void createPdf(File target, String content) throws Exception {
+        try (PDDocument document = new PDDocument()) {
+            PDPage page = new PDPage();
+            document.addPage(page);
+            try (PDPageContentStream stream = new PDPageContentStream(document, page)) {
+                stream.beginText();
+                stream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 12);
+                stream.newLineAtOffset(60, 720);
+                for (String line : content.split("\n")) {
+                    stream.showText(line);
+                    stream.newLineAtOffset(0, -16);
+                }
+                stream.endText();
+            }
+            document.save(target);
+        }
+    }
+
     @Test
     void readerHandlesPlainTextWithTika(@TempDir Path tmp) throws Exception {
         File file = tmp.resolve("hello.txt").toFile();
@@ -60,24 +78,6 @@ class DocumentReaderIntegrationTest {
             Document document = reader.read(in, "note.md");
             assertThat(document.source()).isEqualTo(SourceType.TIKA_FALLBACK);
             assertThat(document.fullMarkdown()).contains("Title").contains("Body text");
-        }
-    }
-
-    private static void createPdf(File target, String content) throws Exception {
-        try (PDDocument document = new PDDocument()) {
-            PDPage page = new PDPage();
-            document.addPage(page);
-            try (PDPageContentStream stream = new PDPageContentStream(document, page)) {
-                stream.beginText();
-                stream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 12);
-                stream.newLineAtOffset(60, 720);
-                for (String line : content.split("\n")) {
-                    stream.showText(line);
-                    stream.newLineAtOffset(0, -16);
-                }
-                stream.endText();
-            }
-            document.save(target);
         }
     }
 }

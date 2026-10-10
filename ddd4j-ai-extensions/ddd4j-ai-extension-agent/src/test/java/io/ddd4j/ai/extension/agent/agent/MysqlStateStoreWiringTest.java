@@ -25,6 +25,14 @@ class MysqlStateStoreWiringTest {
     @Container
     static final MySQLContainer<?> MYSQL = new MySQLContainer<>("mysql:8.0");
 
+    private static DataSource dataSource() {
+        com.mysql.cj.jdbc.MysqlDataSource ds = new com.mysql.cj.jdbc.MysqlDataSource();
+        ds.setUrl(MYSQL.getJdbcUrl());
+        ds.setUser("root");
+        ds.setPassword(MYSQL.getPassword());
+        return ds;
+    }
+
     @Test
     void mysqlStateStore_roundtrip() {
         AgentStateStore store = new MysqlAgentStateStore(dataSource(), true);
@@ -45,13 +53,5 @@ class MysqlStateStoreWiringTest {
         assertThat(store.exists("agent-1", session)).isTrue();
         store.delete("agent-1", session);
         assertThat(store.exists("agent-1", session)).isFalse();
-    }
-
-    private static DataSource dataSource() {
-        com.mysql.cj.jdbc.MysqlDataSource ds = new com.mysql.cj.jdbc.MysqlDataSource();
-        ds.setUrl(MYSQL.getJdbcUrl());
-        ds.setUser("root");
-        ds.setPassword(MYSQL.getPassword());
-        return ds;
     }
 }

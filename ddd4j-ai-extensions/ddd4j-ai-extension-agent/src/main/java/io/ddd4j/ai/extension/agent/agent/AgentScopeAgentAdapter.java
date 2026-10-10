@@ -40,6 +40,32 @@ public final class AgentScopeAgentAdapter implements AgentService {
         this.harnessAgent = Objects.requireNonNull(harnessAgent, "harnessAgent");
     }
 
+    /**
+     * 把 Agentscope 响应规整为 {@link AgentResult}。
+     *
+     * <p>同步 {@link #execute(AgentTask)} 与异步 {@link #executeAsync(AgentTask)} 共用本方法，
+     * 以保证两条路径产出完全一致。
+     */
+    private static AgentResult toResult(Msg response, String conversationId) {
+        List<AgentStep> steps = new ArrayList<>();
+        if (response instanceof AssistantMessage assistant) {
+            String text = extractText(assistant);
+            steps.add(new AgentStep("result", text, 0));
+            return new AgentResult(text, steps, conversationId);
+        }
+        String fallback = response == null ? "" : response.getClass().getSimpleName();
+        steps.add(new AgentStep("result", fallback, 0));
+        return new AgentResult(fallback, steps, conversationId);
+    }
+
+    private static String extractText(Msg msg) {
+        if (msg == null) {
+            return "";
+        }
+        String text = msg.getTextContent();
+        return text == null ? "" : text;
+    }
+
     @Override
     public AgentResult execute(AgentTask task) {
         Objects.requireNonNull(task, "task");
@@ -71,24 +97,6 @@ public final class AgentScopeAgentAdapter implements AgentService {
                 });
     }
 
-    /**
-     * 把 Agentscope 响应规整为 {@link AgentResult}。
-     *
-     * <p>同步 {@link #execute(AgentTask)} 与异步 {@link #executeAsync(AgentTask)} 共用本方法，
-     * 以保证两条路径产出完全一致。
-     */
-    private static AgentResult toResult(Msg response, String conversationId) {
-        List<AgentStep> steps = new ArrayList<>();
-        if (response instanceof AssistantMessage assistant) {
-            String text = extractText(assistant);
-            steps.add(new AgentStep("result", text, 0));
-            return new AgentResult(text, steps, conversationId);
-        }
-        String fallback = response == null ? "" : response.getClass().getSimpleName();
-        steps.add(new AgentStep("result", fallback, 0));
-        return new AgentResult(fallback, steps, conversationId);
-    }
-
     @Override
     public Flux<AgentStep> stream(AgentTask task) {
         Objects.requireNonNull(task, "task");
@@ -111,14 +119,6 @@ public final class AgentScopeAgentAdapter implements AgentService {
         };
         String content = event.getMessage() == null ? "" : event.getMessage().getTextContent();
         return new AgentStep(type, content == null ? "" : content, Math.abs(content.hashCode() % 10000));
-    }
-
-    private static String extractText(Msg msg) {
-        if (msg == null) {
-            return "";
-        }
-        String text = msg.getTextContent();
-        return text == null ? "" : text;
     }
 
     /**

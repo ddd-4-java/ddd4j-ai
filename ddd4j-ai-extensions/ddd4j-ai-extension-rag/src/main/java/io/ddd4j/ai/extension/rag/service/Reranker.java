@@ -13,6 +13,11 @@ import java.util.List;
 public interface Reranker {
 
     /**
+     * 直通重排：原样返回候选。
+     */
+    NoopReranker NOOP = new NoopReranker();
+
+    /**
      * 对候选片段重排。
      *
      * @param query      用户问题
@@ -20,9 +25,4 @@ public interface Reranker {
      * @return 重排后的片段
      */
     List<Document> rerank(String query, List<Document> candidates);
-
-    /**
-     * 直通重排：原样返回候选。
-     */
-    NoopReranker NOOP = new NoopReranker();
 }

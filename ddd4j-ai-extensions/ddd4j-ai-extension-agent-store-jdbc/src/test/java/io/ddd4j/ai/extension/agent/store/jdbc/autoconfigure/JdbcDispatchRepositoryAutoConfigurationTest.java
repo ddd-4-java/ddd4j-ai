@@ -23,17 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class JdbcDispatchRepositoryAutoConfigurationTest {
 
-    @Configuration
-    static class DataSourceConfig {
-        @Bean
-        DataSource dataSource() {
-            return new EmbeddedDatabaseBuilder()
-                    .setType(EmbeddedDatabaseType.H2)
-                    .generateUniqueName(true)
-                    .build();
-        }
-    }
-
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(JdbcDispatchRepositoryAutoConfiguration.class));
 
@@ -63,5 +52,16 @@ class JdbcDispatchRepositoryAutoConfigurationTest {
                         "ddd4j.ai.agent.dispatch.repository=jdbc",
                         "ddd4j.ai.agent.dispatch.auto-ddl=false")
                 .run(context -> assertThat(context).hasSingleBean(JdbcAgentDispatchTaskRepository.class));
+    }
+
+    @Configuration
+    static class DataSourceConfig {
+        @Bean
+        DataSource dataSource() {
+            return new EmbeddedDatabaseBuilder()
+                    .setType(EmbeddedDatabaseType.H2)
+                    .generateUniqueName(true)
+                    .build();
+        }
     }
 }

@@ -21,6 +21,17 @@ import java.util.function.Consumer;
 public interface DashScopeRealtimeClient {
 
     /**
+     * 工厂方法：构造一个真正调用 DashScope SDK 的客户端实现。
+     *
+     * @param apiKey DashScope 控制台申请的 API key
+     * @param model  TTS 模型名（如 {@code qwen3-tts-12hz-0.6b-customvoice}）
+     * @param voice  音色 shortName（如 {@code Cherry}），null 用模型默认
+     */
+    static DashScopeRealtimeClient create(String apiKey, String model, String voice) {
+        return new DashScopeSdkClient(apiKey, model, voice);
+    }
+
+    /**
      * 启动 WebSocket 长连接（dashscope SDK 内部异步建链）。
      */
     void connect();
@@ -54,15 +65,4 @@ public interface DashScopeRealtimeClient {
      * 接收关闭事件回调（code + reason）。
      */
     void onClose(java.util.function.BiConsumer<Integer, String> handler);
-
-    /**
-     * 工厂方法：构造一个真正调用 DashScope SDK 的客户端实现。
-     *
-     * @param apiKey DashScope 控制台申请的 API key
-     * @param model  TTS 模型名（如 {@code qwen3-tts-12hz-0.6b-customvoice}）
-     * @param voice  音色 shortName（如 {@code Cherry}），null 用模型默认
-     */
-    static DashScopeRealtimeClient create(String apiKey, String model, String voice) {
-        return new DashScopeSdkClient(apiKey, model, voice);
-    }
 }

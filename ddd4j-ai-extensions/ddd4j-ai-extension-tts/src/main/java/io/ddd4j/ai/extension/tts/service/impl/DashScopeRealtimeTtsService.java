@@ -60,6 +60,39 @@ public class DashScopeRealtimeTtsService implements TtsService {
         return new DashScopeRealtimeTtsService(client, metrics, voice);
     }
 
+    /**
+     * 从 DashScope 事件 JSON 中提取 audio.delta。
+     *
+     * <p>协议约定（参考 agentscope-cpp 第 5.2 节）：
+     * <pre>
+     * Server → Client:
+     *   session.created
+     *   response.audio.delta {delta: <base64 audio>}
+     *   response.audio.done
+     *   response.done
+     * </pre>
+     */
+    private static JsonObject extractAudioPayload(JsonObject event) {
+        if (event == null) {
+            return null;
+        }
+        // 形态 1: {type: "response.audio.delta", audio: {delta: "..."}}
+        if (event.has("audio") && event.get("audio").isJsonObject()) {
+            JsonObject audio = event.getAsJsonObject("audio");
+            if (audio.has("delta")) {
+                return audio;
+            }
+        }
+        // 形态 2: 直接 {delta: "..."} 或 {type, delta}
+        if (event.has("delta") && event.get("delta").isJsonPrimitive()
+                && event.get("delta").getAsJsonPrimitive().isString()) {
+            JsonObject wrapped = new JsonObject();
+            wrapped.add("delta", event.get("delta"));
+            return wrapped;
+        }
+        return null;
+    }
+
     @Override
     public byte[] synthesize(String text, String voice) throws Exception {
         // 聚合所有流式字节后返回（与原 TtsService 阻塞调用保持一致）
@@ -147,39 +180,6 @@ public class DashScopeRealtimeTtsService implements TtsService {
                     log.warn("DashScope TTS 流式失败: {}", err.getMessage());
                     client.close();
                 });
-    }
-
-    /**
-     * 从 DashScope 事件 JSON 中提取 audio.delta。
-     *
-     * <p>协议约定（参考 agentscope-cpp 第 5.2 节）：
-     * <pre>
-     * Server → Client:
-     *   session.created
-     *   response.audio.delta {delta: <base64 audio>}
-     *   response.audio.done
-     *   response.done
-     * </pre>
-     */
-    private static JsonObject extractAudioPayload(JsonObject event) {
-        if (event == null) {
-            return null;
-        }
-        // 形态 1: {type: "response.audio.delta", audio: {delta: "..."}}
-        if (event.has("audio") && event.get("audio").isJsonObject()) {
-            JsonObject audio = event.getAsJsonObject("audio");
-            if (audio.has("delta")) {
-                return audio;
-            }
-        }
-        // 形态 2: 直接 {delta: "..."} 或 {type, delta}
-        if (event.has("delta") && event.get("delta").isJsonPrimitive()
-                && event.get("delta").getAsJsonPrimitive().isString()) {
-            JsonObject wrapped = new JsonObject();
-            wrapped.add("delta", event.get("delta"));
-            return wrapped;
-        }
-        return null;
     }
 
     /**

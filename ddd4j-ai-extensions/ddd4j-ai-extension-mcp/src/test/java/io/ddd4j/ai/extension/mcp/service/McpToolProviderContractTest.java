@@ -17,40 +17,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class McpToolProviderContractTest {
 
-    /**
-     * 桩实现：注册两个工具，一个抛异常用于验证错误路径。
-     */
-    static class FakeToolProvider implements McpToolProvider {
-
-        final ToolDefinition echo = new ToolDefinition(
-                "echo",
-                "回显输入字符串",
-                Map.of("type", "object"),
-                args -> args);
-
-        final ToolDefinition fail = new ToolDefinition(
-                "fail",
-                "总是抛异常",
-                Map.of(),
-                args -> {
-                    throw new IllegalStateException("intentional");
-                });
-
-        @Override
-        public List<ToolDefinition> availableTools() {
-            return List.of(echo, fail);
-        }
-
-        @Override
-        public Object invokeTool(String name, Map<String, Object> arguments) throws Exception {
-            return switch (name) {
-                case "echo" -> echo.executor().execute(arguments);
-                case "fail" -> fail.executor().execute(arguments);
-                default -> throw new IllegalArgumentException("Unknown tool: " + name);
-            };
-        }
-    }
-
     private final FakeToolProvider provider = new FakeToolProvider();
 
     @Test
@@ -87,5 +53,39 @@ class McpToolProviderContractTest {
         ToolExecutor dummy = args -> null;
         assertThatThrownBy(() -> new ToolDefinition(null, "desc", Map.of(), dummy))
                 .isInstanceOf(NullPointerException.class);
+    }
+
+    /**
+     * 桩实现：注册两个工具，一个抛异常用于验证错误路径。
+     */
+    static class FakeToolProvider implements McpToolProvider {
+
+        final ToolDefinition echo = new ToolDefinition(
+                "echo",
+                "回显输入字符串",
+                Map.of("type", "object"),
+                args -> args);
+
+        final ToolDefinition fail = new ToolDefinition(
+                "fail",
+                "总是抛异常",
+                Map.of(),
+                args -> {
+                    throw new IllegalStateException("intentional");
+                });
+
+        @Override
+        public List<ToolDefinition> availableTools() {
+            return List.of(echo, fail);
+        }
+
+        @Override
+        public Object invokeTool(String name, Map<String, Object> arguments) throws Exception {
+            return switch (name) {
+                case "echo" -> echo.executor().execute(arguments);
+                case "fail" -> fail.executor().execute(arguments);
+                default -> throw new IllegalArgumentException("Unknown tool: " + name);
+            };
+        }
     }
 }
