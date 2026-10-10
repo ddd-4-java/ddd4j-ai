@@ -26,6 +26,19 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(MemoryProperties.class)
 public class MemoryAutoConfiguration {
 
+    /**
+     * 构造会话记忆自动装配配置（供 Spring 容器实例化）。
+     */
+    public MemoryAutoConfiguration() {
+    }
+
+    /**
+     * 注册窗口策略会话记忆服务：优先复用容器内 {@link ChatMemoryRepository}，缺失则进程内回退。
+     *
+     * @param properties 记忆配置（窗口大小）
+     * @param repository 会话存储后端的延迟解析器
+     * @return 会话记忆服务 bean
+     */
     @Bean
     @ConditionalOnMissingBean(MemoryService.class)
     public MemoryService memoryService(MemoryProperties properties,

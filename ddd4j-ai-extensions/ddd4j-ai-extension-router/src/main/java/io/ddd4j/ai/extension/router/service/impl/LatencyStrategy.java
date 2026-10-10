@@ -15,9 +15,23 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class LatencyStrategy implements RoutingStrategy {
 
+    /**
+     * 构造 LatencyStrategy 对象。
+     */
+    public LatencyStrategy() {
+    }
+
     private final ConcurrentHashMap<String, Long> latencies = new ConcurrentHashMap<>();
     private final AtomicInteger counter = new AtomicInteger();
 
+    /**
+     * 选取记录耗时最小的模型；全部候选尚无耗时记录时按轮询兜底。
+     *
+     * @param candidates 候选模型 id 列表（非空）
+     * @return 选中的模型 id
+     * @throws NullPointerException  candidates 为 null 时
+     * @throws IllegalArgumentException candidates 为空时
+     */
     @Override
     public String select(List<String> candidates) {
         Objects.requireNonNull(candidates, "candidates");
@@ -32,6 +46,12 @@ public class LatencyStrategy implements RoutingStrategy {
         return measured.stream().min(Comparator.comparingLong(latencies::get)).orElseThrow();
     }
 
+    /**
+     * 回写某模型最近一次响应耗时（覆盖旧值）。
+     *
+     * @param modelId 模型 id
+     * @param millis  响应耗时（毫秒）
+     */
     @Override
     public void recordLatency(String modelId, long millis) {
         latencies.put(modelId, millis);

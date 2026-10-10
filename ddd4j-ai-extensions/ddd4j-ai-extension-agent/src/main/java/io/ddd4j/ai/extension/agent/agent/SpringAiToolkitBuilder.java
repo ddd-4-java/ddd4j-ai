@@ -34,6 +34,10 @@ public final class SpringAiToolkitBuilder {
     /**
      * 把 Spring AI 工具回调注册到 Agentscope Toolkit 工厂方法。
      * 单个工具注册失败时记录 WARN 跳过（不中断整个 Toolkit 装配），与 cloud-agents 行为一致。
+     *
+     * @param callbacks Spring AI 工具回调列表；为 {@code null} 或空时直接返回，不注册任何工具
+     * @param toolkit   Agentscope Toolkit 工厂；为 {@code null} 时抛出 {@link NullPointerException}
+     * @throws NullPointerException 当 {@code toolkit} 为 {@code null} 时（由 {@code Objects.requireNonNull} 抛出）
      */
     public static void registerSpringAiTools(List<ToolCallback> callbacks,
                                              io.agentscope.core.tool.Toolkit toolkit) {
@@ -63,16 +67,34 @@ public final class SpringAiToolkitBuilder {
             this.callback = callback;
         }
 
+        /**
+         * 返回底层 Spring AI 工具定义中的工具名。
+         *
+         * @return 工具名称
+         */
         @Override
         public String getName() {
             return callback.getToolDefinition().name();
         }
 
+        /**
+         * 返回底层 Spring AI 工具定义中的工具描述。
+         *
+         * @return 工具描述文本
+         */
         @Override
         public String getDescription() {
             return callback.getToolDefinition().description();
         }
 
+        /**
+         * 把底层工具的 JSON Schema 输入参数声明解析为 Agentscope 参数协议所需的 Map。
+         * <p>
+         * schema 为空或无法解析为 Map 时返回空 Map（此时参数经
+         * {@link ToolCallParam#getInput()} 以 raw JSON 透传）。
+         *
+         * @return 参数结构 Map；schema 缺失或解析失败时返回空 Map
+         */
         @Override
         public Map<String, Object> getParameters() {
             // 解析 ToolCallback JSON Schema 为 Map（Agentscope 参数协议）
@@ -92,6 +114,15 @@ public final class SpringAiToolkitBuilder {
             }
         }
 
+        /**
+         * 异步执行底层 Spring AI 工具回调：入参序列化为 JSON 后经
+         * {@code ToolCallback.call(inputJson)} 调用，结果包装为
+         * {@link ToolResultBlock#text(String)}；任何失败均转为
+         * {@link ToolResultBlock#error(String)}，不向上抛出异常。
+         *
+         * @param param 工具调用参数；为 {@code null} 或入参为空时按 {@code "{}"} 空实参调用
+         * @return 承载工具结果（成功文本或错误文本）的 {@code Mono}，不会错误终止
+         */
         @Override
         public Mono<ToolResultBlock> callAsync(ToolCallParam param) {
             if (param == null || param.getInput() == null || param.getInput().isEmpty()) {

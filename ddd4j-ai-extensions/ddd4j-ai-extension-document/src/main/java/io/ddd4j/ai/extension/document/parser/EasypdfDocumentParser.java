@@ -21,16 +21,40 @@ import io.ddd4j.ai.extension.document.MediaType;
 @ConditionalOnClass(name = "io.github.easy4j.pdf.core.convert.HtmlPdfConverter")
 public class EasypdfDocumentParser implements DocumentParser {
 
+    /**
+     * 构造 EasypdfDocumentParser 处理器。
+     */
+    public EasypdfDocumentParser() {
+    }
+
+    /**
+     * 声明本解析器承接的媒体类型：PDF。
+     *
+     * @return {@link MediaType#PDF}
+     */
     @Override
     public MediaType supports() {
         return MediaType.PDF;
     }
 
+    /**
+     * 解析优先级：10（高于通用兜底 0）。
+     *
+     * @return 优先级数值（越大越先尝试）
+     */
     @Override
     public int order() {
         return 10; // 高于通用兜底（0）
     }
 
+    /**
+     * 解析 PDF 文件（契约占位：委托组件发布前始终抛 {@link UnsupportedOperationException}，
+     * 门面据此降级到通用兜底）。
+     *
+     * @param file PDF 文件
+     * @return 解析成功时的统一文档模型（当前占位阶段不会返回）
+     * @throws Exception 委托组件未就位或解析失败
+     */
     @Override
     public Document parse(File file) throws Exception {
         Objects.requireNonNull(file, "file must not be null");
@@ -38,6 +62,15 @@ public class EasypdfDocumentParser implements DocumentParser {
                 "easypdf delegation pending; ensure io.github.easy4j:easypdf-core is on classpath");
     }
 
+    /**
+     * 解析输入流形式的文档（契约占位：占位阶段不消费输入流即抛
+     * {@link UnsupportedOperationException}，门面据此重放到通用兜底）。
+     *
+     * @param in       文档内容流（非空，方法不负责关闭）
+     * @param filename 文件名（用于媒体类型判定）
+     * @return 解析成功时的统一文档模型（当前占位阶段不会返回）
+     * @throws Exception 委托组件未就位或解析失败
+     */
     @Override
     public Document parse(InputStream in, String filename) throws Exception {
         Objects.requireNonNull(in, "in must not be null");

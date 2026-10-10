@@ -17,18 +17,20 @@ import java.util.Objects;
 import java.util.concurrent.Future;
 
 /**
- * @Title: AzureSpeechService
- * @Package com.easy.learn.tts
- * @Author: czq
- * @Date: 2024年06月27日 9:47
- * @Desc:
+ * Azure 语音服务实现：基于微软认知服务语音 SDK 完成语音合成与语音识别。
  */
 
 @Slf4j
 @Component
 public class AzureSpeechService implements SpeechService<SpeechConfig>, InitializingBean {
 
-//    @Value("${tts.azure.speech.key:bc0f7f96d1854214832adca4e143b3d5}")
+    /**
+     * 构造 AzureSpeechService 对象。
+     */
+    public AzureSpeechService() {
+    }
+
+//    @Value("${tts.azure.speech.key:your-key}")
 //    private String speechKey;
 //
 //    @Value("${tts.azure.speech.region:eastasia}")
@@ -62,6 +64,12 @@ public class AzureSpeechService implements SpeechService<SpeechConfig>, Initiali
 
     }
 
+    /**
+     * 获取默认的语音转文本（STT）配置：使用绑定的密钥与区域创建配置，
+     * 设置识别语言，并将分段静音超时调整为 1000 毫秒。
+     *
+     * @return 默认语音转文本配置对象
+     */
     public SpeechConfig getDefaultSpeechSTTConfig() {
         String speechKey = azureSpeechProperties.getKey();
         String speechRegion = azureSpeechProperties.getRegion();
@@ -162,7 +170,7 @@ public class AzureSpeechService implements SpeechService<SpeechConfig>, Initiali
     }
 
     @Override
-    public void voice2TextFromWavByteArray(SpeechConfig speechConfigDto, byte[] wavFileBytes, SpeechServiceVoice2TextCallback callback) throws Exception {
+    public void voice2TextFromWavByteArray(SpeechConfig speechConfigDto,byte[] wavFileBytes, SpeechServiceVoice2TextCallback callback) throws Exception {
         SpeechConfig config = speechConfig;
         if (Objects.nonNull(speechConfigDto)) {
             config = speechConfigDto;
@@ -181,7 +189,7 @@ public class AzureSpeechService implements SpeechService<SpeechConfig>, Initiali
     }
 
     @Override
-    public void voice2TextFromMp3ByteArray(SpeechConfig speechConfigDto, byte[] wavFileBytes, SpeechServiceVoice2TextCallback callback) throws Exception {
+    public void voice2TextFromMp3ByteArray(SpeechConfig speechConfigDto,byte[] wavFileBytes, SpeechServiceVoice2TextCallback callback) throws Exception {
         SpeechConfig config = speechConfig;
         if (Objects.nonNull(speechConfigDto)) {
             config = speechConfigDto;

@@ -43,9 +43,9 @@ import io.ddd4j.ai.extension.document.properties.DocumentProperties;
 /**
  * Tika 通用解析适配器：AutoDetectParser 覆盖 PDF / Office / HTML / CSV / 纯文本等全格式，
  * 作为通用基础实现（最低优先级兜底）。<ul>
- * <li>MIME：{@link Tika#detect(byte[], String)} 内容嗅探 + 文件名联合检测（不依赖手写后缀映射）</li>
- * <li>内容：{@link ToMarkdownContentHandler} 输出结构化 Markdown（标题/列表/表格 → GFM），供 RAG 分块</li>
- * <li>元数据：透传 Tika 提取的 author/created/pages 等，供溯源与过滤</li>
+ *   <li>MIME：{@link Tika#detect(byte[], String)} 内容嗅探 + 文件名联合检测（不依赖手写后缀映射）</li>
+ *   <li>内容：{@link ToMarkdownContentHandler} 输出结构化 Markdown（标题/列表/表格 → GFM），供 RAG 分块</li>
+ *   <li>元数据：透传 Tika 提取的 author/created/pages 等，供溯源与过滤</li>
  * </ul>
  * 注：计划原定 markitdown4j 1.0.0 承担此角色，但其 class 文件为 Java 25 编译（version 69），
  * 项目 target Java 17 无法加载且无低版本可退，故按计划预留的 {@link SourceType#TIKA_FALLBACK}
@@ -63,98 +63,62 @@ public final class TikaDocumentParser implements DocumentParser {
     private final DocumentProperties properties;
     private final AsrService asrService;
 
+    /**
+     * 无参构造：使用默认文档配置，不挂语音转写。
+     */
     public TikaDocumentParser() {
         this(new DocumentProperties(), null);
     }
 
+    /**
+     * 指定文档配置构造，不挂语音转写。
+     *
+     * @param properties 文档配置（大小上限、超时、OCR 开关等）
+     */
     public TikaDocumentParser(DocumentProperties properties) {
         this(properties, null);
     }
 
+    /**
+     * 全参构造。
+     *
+     * @param properties 文档配置（大小上限、超时、OCR 开关等）
+     * @param asrService 语音识别服务；为 {@code null} 时音频不做转写
+     */
     public TikaDocumentParser(DocumentProperties properties, AsrService asrService) {
         this.properties = properties;
         this.asrService = asrService;
     }
 
-    private static boolean isAudio(String mime) {
-        return mime != null && mime.startsWith("audio/");
-    }
-
-    private static ParseContext context(EmbeddedImageExtractor extractor) {
-        ParseContext context = new ParseContext();
-        context.set(EmbeddedDocumentExtractor.class, extractor);
-        return context;
-    }
-
-    private static ParseContext ocrContext(EmbeddedImageExtractor extractor) {
-        ParseContext context = context(extractor);
-        TesseractOCRConfig config = new TesseractOCRConfig();
-        config.setOutputType(TesseractOCRConfig.OUTPUT_TYPE.TXT);
-        context.set(TesseractOCRConfig.class, config);
-        context.set(TesseractOCRParser.class, new TesseractOCRParser());
-        return context;
-    }
-
     /**
-     * 流式解析：TikaInputStream 按需 spool（大文件落盘临时文件），SecureContentHandler 限制
-     * SAX 实体数与输出量（zip 炸弹/高压缩比攻击面防护），不整体入内存。
+     * 声明本解析器承接的媒体类型：通用兜底，接受任意类型（{@link MediaType#UNKNOWN}）。
+     *
+     * @return {@link MediaType#UNKNOWN}
      */
-    private static Parsed doParse(Path path, ParseContext context, EmbeddedImageExtractor extractor) throws Exception {
-        StringWriter writer = new StringWriter();
-        MarkdownStructureHandler structure = new MarkdownStructureHandler();
-        TeeContentHandler tee = new TeeContentHandler(new ToMarkdownContentHandler(writer), structure);
-        try (org.apache.tika.io.TikaInputStream stream = org.apache.tika.io.TikaInputStream.get(path)) {
-            org.apache.tika.sax.SecureContentHandler secure = new org.apache.tika.sax.SecureContentHandler(tee, stream);
-            Metadata metadata = new Metadata();
-            new AutoDetectParser().parse(stream, secure, metadata, context);
-            List<DocumentImage> images = new ArrayList<>(structure.images());
-            images.addAll(extractor.images());
-            return new Parsed(writer.toString(), structure.sections(), structure.tables(), images,
-                    metadata, extractor.dropped());
-        }
-    }
-
-    private static void putIfAbsent(Map<String, Object> target, String key, Object value) {
-        if (value != null && !String.valueOf(value).isBlank() && !target.containsKey(key)) {
-            target.put(key, value);
-        }
-    }
-
-    private static String first(Metadata metadata, String... keys) {
-        for (String key : keys) {
-            String value = metadata.get(key);
-            if (value != null && !value.isBlank()) {
-                return value;
-            }
-        }
-        return null;
-    }
-
-    private static String detectLanguage(String text) {
-        try {
-            if (text == null || text.isBlank()) {
-                return null;
-            }
-            org.apache.tika.language.detect.LanguageResult result =
-                    org.apache.tika.language.detect.LanguageDetector.getDefaultLanguageDetector()
-                            .detect(text.length() > 2000 ? text.substring(0, 2000) : text);
-            String language = result.getLanguage();
-            return language == null || language.isBlank() || "unknown".equals(language) ? null : language;
-        } catch (Exception e) {
-            return null; // 语言检测不可用（无模型）不阻塞解析
-        }
-    }
-
     @Override
     public MediaType supports() {
         return MediaType.UNKNOWN;
     }
 
+    /**
+     * 解析优先级：0（兜底：让高质量委托 parser（order=10）优先）。
+     *
+     * @return 优先级数值（越大越先尝试）
+     */
     @Override
     public int order() {
         return 0; // 兜底：让高质量委托 parser（order=10）优先
     }
 
+    /**
+     * 解析文件：先做大小上限校验 → Tika 内容嗅探 MIME → AutoDetectParser 结构化解析；
+     * 音频且挂了 ASR 时追加转写章节；空文件短路返回空文档。
+     *
+     * @param file 待解析文档（非空）
+     * @return 统一文档模型
+     * @throws DocumentTooLargeException      超过 {@code max-file-size-bytes} 上限时
+     * @throws Exception                      Tika 解析失败或解析超时
+     */
     @Override
     public Document parse(File file) throws Exception {
         Objects.requireNonNull(file, "file must not be null");
@@ -197,6 +161,15 @@ public final class TikaDocumentParser implements DocumentParser {
         }
     }
 
+    /**
+     * 解析输入流：先限额落盘为临时文件（超限即抛），再委托文件版解析，最终删除临时文件。
+     *
+     * @param in       文档内容流（非空，方法不负责关闭）
+     * @param filename 文件名（仅用于临时文件后缀，便于 Tika 探测）
+     * @return 统一文档模型
+     * @throws DocumentTooLargeException 流累计字节超过大小上限时
+     * @throws Exception                 落盘或 Tika 解析失败
+     */
     @Override
     public Document parse(InputStream in, String filename) throws Exception {
         Objects.requireNonNull(in, "in must not be null");
@@ -209,15 +182,17 @@ public final class TikaDocumentParser implements DocumentParser {
         }
     }
 
-    /**
-     * 限额复制：超过 max-file-size-bytes 抛 {@link DocumentTooLargeException}（流式计数，不全量入内存）。
-     */
+    /** 限额复制：超过 max-file-size-bytes 抛 {@link DocumentTooLargeException}（流式计数，不全量入内存）。 */
     private void copyLimited(InputStream in, Path target) throws IOException {
         long limit = properties.getMaxFileSizeBytes();
         InputStream source = limit > 0 ? new LimitedInputStream(in, limit) : in;
         try (source; java.io.OutputStream out = Files.newOutputStream(target)) {
             source.transferTo(out);
         }
+    }
+
+    private static boolean isAudio(String mime) {
+        return mime != null && mime.startsWith("audio/");
     }
 
     private Parsed appendTranscription(Parsed parsed, byte[] bytes) {
@@ -259,9 +234,13 @@ public final class TikaDocumentParser implements DocumentParser {
         return properties.isOcrEnabled();
     }
 
-    /**
-     * 注入解析超时：病态文档超时抛 TikaTimeoutException，不降级重试（重试只会再挂一次）。
-     */
+    private static ParseContext context(EmbeddedImageExtractor extractor) {
+        ParseContext context = new ParseContext();
+        context.set(EmbeddedDocumentExtractor.class, extractor);
+        return context;
+    }
+
+    /** 注入解析超时：病态文档超时抛 TikaTimeoutException，不降级重试（重试只会再挂一次）。 */
     private ParseContext withTimeout(ParseContext context) {
         long timeout = properties.getParseTimeoutMillis();
         if (timeout > 0) {
@@ -269,6 +248,161 @@ public final class TikaDocumentParser implements DocumentParser {
                     new org.apache.tika.config.TikaTaskTimeout(timeout));
         }
         return context;
+    }
+
+    private static ParseContext ocrContext(EmbeddedImageExtractor extractor) {
+        ParseContext context = context(extractor);
+        TesseractOCRConfig config = new TesseractOCRConfig();
+        config.setOutputType(TesseractOCRConfig.OUTPUT_TYPE.TXT);
+        context.set(TesseractOCRConfig.class, config);
+        context.set(TesseractOCRParser.class, new TesseractOCRParser());
+        return context;
+    }
+
+    /** 流式解析：TikaInputStream 按需 spool（大文件落盘临时文件），SecureContentHandler 限制
+     *  SAX 实体数与输出量（zip 炸弹/高压缩比攻击面防护），不整体入内存。 */
+    private static Parsed doParse(Path path, ParseContext context, EmbeddedImageExtractor extractor) throws Exception {
+        StringWriter writer = new StringWriter();
+        MarkdownStructureHandler structure = new MarkdownStructureHandler();
+        TeeContentHandler tee = new TeeContentHandler(new ToMarkdownContentHandler(writer), structure);
+        try (org.apache.tika.io.TikaInputStream stream = org.apache.tika.io.TikaInputStream.get(path)) {
+            org.apache.tika.sax.SecureContentHandler secure = new org.apache.tika.sax.SecureContentHandler(tee, stream);
+            Metadata metadata = new Metadata();
+            new AutoDetectParser().parse(stream, secure, metadata, context);
+            List<DocumentImage> images = new ArrayList<>(structure.images());
+            images.addAll(extractor.images());
+            return new Parsed(writer.toString(), structure.sections(), structure.tables(), images,
+                    metadata, extractor.dropped());
+        }
+    }
+
+    /** 限额读流：累计字节超限即抛，避免全量入内存后才拒绝。 */
+    private static final class LimitedInputStream extends FilterInputStream {
+
+        private final long limit;
+        private long read;
+
+        private LimitedInputStream(InputStream in, long limit) {
+            super(in);
+            this.limit = limit;
+        }
+
+        /**
+         * 批量读取并累计计数，超限即抛 {@link DocumentTooLargeException}。
+         *
+         * @param b   目标缓冲区
+         * @param off 起始偏移
+         * @param len 最多读取字节数
+         * @return 实际读取字节数（-1 表示流结束）
+         * @throws IOException                  底层流读取失败
+         * @throws DocumentTooLargeException    累计字节超过限额时
+         */
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            int n = super.read(b, off, len);
+            if (n > 0) {
+                read += n;
+                checkLimit();
+            }
+            return n;
+        }
+
+        /**
+         * 单字节读取并累计计数，超限即抛 {@link DocumentTooLargeException}。
+         *
+         * @return 下一个字节（-1 表示流结束）
+         * @throws IOException               底层流读取失败
+         * @throws DocumentTooLargeException 累计字节超过限额时
+         */
+        @Override
+        public int read() throws IOException {
+            int c = super.read();
+            if (c != -1) {
+                read++;
+                checkLimit();
+            }
+            return c;
+        }
+
+        private void checkLimit() {
+            if (read > limit) {
+                log.warn("document rejected, exceeds size limit: > {} bytes (stream)", limit);
+                throw new DocumentTooLargeException("document exceeds size limit: > " + limit + " bytes");
+            }
+        }
+    }
+
+    /** 收集容器文档（docx/zip 等）内嵌图片 → base64 data URL（对齐 markitdown 的图片提取），
+     *  受数量与单图大小双限额约束（图片轰炸防护），丢弃计数透出至 metadata。 */
+    private static final class EmbeddedImageExtractor implements EmbeddedDocumentExtractor {
+
+        private final int maxImages;
+        private final long maxImageBytes;
+        private final List<DocumentImage> images = new ArrayList<>();
+        private int dropped;
+
+        private EmbeddedImageExtractor(DocumentProperties properties) {
+            this.maxImages = properties.getMaxEmbeddedImages();
+            this.maxImageBytes = properties.getMaxEmbeddedImageBytes();
+        }
+
+        List<DocumentImage> images() {
+            return images;
+        }
+
+        int dropped() {
+            return dropped;
+        }
+
+        /**
+         * 是否接收内嵌文档：始终返回 {@code true}（数量限额在
+         * {@link #parseEmbedded} 内计数，接口本身无拒绝回调）。
+         *
+         * @param metadata 内嵌文档元数据
+         * @return {@code true}
+         */
+        @Override
+        public boolean shouldParseEmbedded(Metadata metadata) {
+            return true; // 始终接收，数量限额在 parseEmbedded 内计数（接口无拒绝回调）
+        }
+
+        /**
+         * 收集内嵌图片为 base64 data URL：内容嗅探补判 MIME，
+         * 受数量与单图大小双限额约束（超限丢弃并计数，不影响主文档）。
+         *
+         * @param stream      内嵌资源流
+         * @param handler     内容处理器（本实现不消费）
+         * @param metadata    内嵌资源元数据
+         * @param outputHtml  是否要求输出 HTML（本实现不消费）
+         * @throws SAXException  内容处理器处理失败
+         * @throws IOException   流读取失败
+         */
+        @Override
+        public void parseEmbedded(InputStream stream, ContentHandler handler, Metadata metadata,
+                                  boolean outputHtml) throws SAXException, IOException {
+            byte[] data = stream.readAllBytes();
+            String contentType = metadata.get(HttpHeaders.CONTENT_TYPE);
+            if (contentType == null || !contentType.startsWith("image/")) {
+                // POI/OOXML 路径可能不设 CONTENT_TYPE：按内容嗅探补判
+                String detected = TIKA.detect(data, metadata.get("resourceName"));
+                if (detected.startsWith("image/")) {
+                    contentType = detected;
+                }
+            }
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return;
+            }
+            if (maxImages > 0 && images.size() >= maxImages) {
+                dropped++; // 数量超限：丢弃多余图片
+                return;
+            }
+            if (maxImageBytes > 0 && data.length > maxImageBytes) {
+                dropped++; // 单图超限：跳过收集，主文档不受影响
+                return;
+            }
+            String src = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(data);
+            images.add(new DocumentImage(metadata.get("resourceName"), src));
+        }
     }
 
     private Document map(String name, String mime, Parsed parsed) {
@@ -303,107 +437,38 @@ public final class TikaDocumentParser implements DocumentParser {
                 metadata);
     }
 
-    /**
-     * 限额读流：累计字节超限即抛，避免全量入内存后才拒绝。
-     */
-    private static final class LimitedInputStream extends FilterInputStream {
-
-        private final long limit;
-        private long read;
-
-        private LimitedInputStream(InputStream in, long limit) {
-            super(in);
-            this.limit = limit;
-        }
-
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException {
-            int n = super.read(b, off, len);
-            if (n > 0) {
-                read += n;
-                checkLimit();
-            }
-            return n;
-        }
-
-        @Override
-        public int read() throws IOException {
-            int c = super.read();
-            if (c != -1) {
-                read++;
-                checkLimit();
-            }
-            return c;
-        }
-
-        private void checkLimit() {
-            if (read > limit) {
-                log.warn("document rejected, exceeds size limit: > {} bytes (stream)", limit);
-                throw new DocumentTooLargeException("document exceeds size limit: > " + limit + " bytes");
-            }
+    private static void putIfAbsent(Map<String, Object> target, String key, Object value) {
+        if (value != null && !String.valueOf(value).isBlank() && !target.containsKey(key)) {
+            target.put(key, value);
         }
     }
 
-    /**
-     * 收集容器文档（docx/zip 等）内嵌图片 → base64 data URL（对齐 markitdown 的图片提取），
-     * 受数量与单图大小双限额约束（图片轰炸防护），丢弃计数透出至 metadata。
-     */
-    private static final class EmbeddedImageExtractor implements EmbeddedDocumentExtractor {
-
-        private final int maxImages;
-        private final long maxImageBytes;
-        private final List<DocumentImage> images = new ArrayList<>();
-        private int dropped;
-
-        private EmbeddedImageExtractor(DocumentProperties properties) {
-            this.maxImages = properties.getMaxEmbeddedImages();
-            this.maxImageBytes = properties.getMaxEmbeddedImageBytes();
-        }
-
-        List<DocumentImage> images() {
-            return images;
-        }
-
-        int dropped() {
-            return dropped;
-        }
-
-        @Override
-        public boolean shouldParseEmbedded(Metadata metadata) {
-            return true; // 始终接收，数量限额在 parseEmbedded 内计数（接口无拒绝回调）
-        }
-
-        @Override
-        public void parseEmbedded(InputStream stream, ContentHandler handler, Metadata metadata,
-                                  boolean outputHtml) throws SAXException, IOException {
-            byte[] data = stream.readAllBytes();
-            String contentType = metadata.get(HttpHeaders.CONTENT_TYPE);
-            if (contentType == null || !contentType.startsWith("image/")) {
-                // POI/OOXML 路径可能不设 CONTENT_TYPE：按内容嗅探补判
-                String detected = TIKA.detect(data, metadata.get("resourceName"));
-                if (detected.startsWith("image/")) {
-                    contentType = detected;
-                }
+    private static String first(Metadata metadata, String... keys) {
+        for (String key : keys) {
+            String value = metadata.get(key);
+            if (value != null && !value.isBlank()) {
+                return value;
             }
-            if (contentType == null || !contentType.startsWith("image/")) {
-                return;
+        }
+        return null;
+    }
+
+    private static String detectLanguage(String text) {
+        try {
+            if (text == null || text.isBlank()) {
+                return null;
             }
-            if (maxImages > 0 && images.size() >= maxImages) {
-                dropped++; // 数量超限：丢弃多余图片
-                return;
-            }
-            if (maxImageBytes > 0 && data.length > maxImageBytes) {
-                dropped++; // 单图超限：跳过收集，主文档不受影响
-                return;
-            }
-            String src = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(data);
-            images.add(new DocumentImage(metadata.get("resourceName"), src));
+            org.apache.tika.language.detect.LanguageResult result =
+                    org.apache.tika.language.detect.LanguageDetector.getDefaultLanguageDetector()
+                            .detect(text.length() > 2000 ? text.substring(0, 2000) : text);
+            String language = result.getLanguage();
+            return language == null || language.isBlank() || "unknown".equals(language) ? null : language;
+        } catch (Exception e) {
+            return null; // 语言检测不可用（无模型）不阻塞解析
         }
     }
 
-    /**
-     * Tika 解析产物：Markdown 全文 + 结构化字段 + 原始元数据。
-     */
+    /** Tika 解析产物：Markdown 全文 + 结构化字段 + 原始元数据。 */
     private record Parsed(String markdown,
                           List<DocumentSection> sections,
                           List<DocumentTable> tables,

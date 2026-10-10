@@ -67,6 +67,14 @@
             <groupId>io.ddd4j.ai</groupId>
             <artifactId>ddd4j-ai-extension-document</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.ddd4j.ai</groupId>
+            <artifactId>ddd4j-ai-extension-ocr</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.ddd4j.ai</groupId>
+            <artifactId>ddd4j-ai-extension-mcp</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

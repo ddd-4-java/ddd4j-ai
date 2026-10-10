@@ -22,6 +22,18 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(TtsProperties.class)
 public class TtsAutoConfiguration {
 
+    /**
+     * 构造 TtsAutoConfiguration 自动装配类（由 Spring 容器实例化）。
+     */
+    public TtsAutoConfiguration() {
+    }
+
+    /**
+     * 注册文本转语音服务：默认走 Edge TTS 实现，允许业务自定义 Bean 覆盖。
+     *
+     * @param properties 文本转语音组件配置（提供默认音色）
+     * @return 文本转语音服务实例
+     */
     @Bean
     @ConditionalOnMissingBean(TtsService.class)
     public TtsService ttsService(TtsProperties properties) {

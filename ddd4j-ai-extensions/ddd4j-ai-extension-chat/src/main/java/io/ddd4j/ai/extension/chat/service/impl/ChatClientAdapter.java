@@ -25,6 +25,7 @@ import java.util.Objects;
  */
 public class ChatClientAdapter implements ChatService, AiHandler {
 
+    /** 适配器在 {@link io.ddd4j.ai.core.AiHandler} 体系中的注册名。 */
     public static final String NAME = "ddd4j-ai-chat";
 
     private final ChatClient chatClient;
@@ -33,17 +34,40 @@ public class ChatClientAdapter implements ChatService, AiHandler {
 
     private final String defaultSystemPrompt;
 
+    /**
+     * 构造对话适配器。
+     *
+     * @param chatClient         Spring AI 对话客户端（非空）
+     * @param memoryService      记忆服务；为 {@code null} 时多轮入口会抛出异常
+     * @param defaultSystemPrompt 默认系统提示词；为空时不注入 system 消息
+     * @throws NullPointerException 当 {@code chatClient} 为 {@code null} 时
+     */
     public ChatClientAdapter(ChatClient chatClient, MemoryService memoryService, String defaultSystemPrompt) {
         this.chatClient = Objects.requireNonNull(chatClient, "chatClient");
         this.memoryService = memoryService;
         this.defaultSystemPrompt = defaultSystemPrompt;
     }
 
+    /**
+     * 单轮同步对话：用户消息直接经 Spring AI 客户端调用。
+     *
+     * @param message 用户消息
+     * @return 模型回答文本
+     */
     @Override
     public String chat(String message) {
         return requestSpec(message).call().content();
     }
 
+    /**
+     * 多轮同步对话：读取会话历史 + 默认系统提示词 → 调用模型 → 把本轮问答写回记忆。
+     *
+     * @param message        用户消息
+     * @param conversationId 会话标识（非空）
+     * @return 模型回答文本
+     * @throws NullPointerException 当 {@code conversationId} 为 {@code null} 时
+     * @throws IllegalStateException 当未装配 {@link MemoryService} 时
+     */
     @Override
     public String chat(String message, String conversationId) {
         Objects.requireNonNull(conversationId, "conversationId");
@@ -62,16 +86,33 @@ public class ChatClientAdapter implements ChatService, AiHandler {
         return answer;
     }
 
+    /**
+     * 单轮流式对话：以 Flux 逐段产出模型回答。
+     *
+     * @param message 用户消息
+     * @return 模型回答的增量文本流
+     */
     @Override
     public Flux<String> streamChat(String message) {
         return requestSpec(message).stream().content();
     }
 
+    /**
+     * core {@link AiHandler} 门面：把请求输入交给单轮对话并包装为 {@link AiResponse}。
+     *
+     * @param request AI 请求
+     * @return 装载模型回答的 AI 响应
+     */
     @Override
     public AiResponse handle(AiRequest request) {
         return AiResponse.of(chat(request.input()));
     }
 
+    /**
+     * 返回适配器注册名。
+     *
+     * @return {@link #NAME}
+     */
     @Override
     public String name() {
         return NAME;

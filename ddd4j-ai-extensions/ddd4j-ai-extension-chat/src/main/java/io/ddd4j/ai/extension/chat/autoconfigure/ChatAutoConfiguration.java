@@ -27,6 +27,21 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(ChatProperties.class)
 public class ChatAutoConfiguration {
 
+    /**
+     * 构造 ChatAutoConfiguration 自动装配类（由 Spring 容器实例化）。
+     */
+    public ChatAutoConfiguration() {
+    }
+
+    /**
+     * 构建对话服务：用业务侧 {@code ChatClient.Builder} 构建客户端，
+     * 组合可选记忆服务与默认系统提示词包装为 {@link ChatClientAdapter}。
+     *
+     * @param chatClientBuilder Spring AI 对话客户端构建器（由模型 starter 提供）
+     * @param properties        对话配置（默认系统提示词等）
+     * @param memoryService     记忆服务延迟提供器；缺失时仅支持单轮对话
+     * @return {@link ChatService} 实现
+     */
     @Bean
     @ConditionalOnMissingBean(ChatService.class)
     public ChatService chatService(ChatClient.Builder chatClientBuilder, ChatProperties properties,

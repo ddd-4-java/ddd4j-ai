@@ -14,6 +14,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = RagProperties.PREFIX)
 public class RagProperties {
 
+    /**
+     * 构造 RagProperties 配置（由 Spring 容器绑定属性时实例化）。
+     */
+    public RagProperties() {
+    }
+
+    /** 配置前缀（{@code ddd4j.ai.rag}）。 */
     public static final String PREFIX = "ddd4j.ai.rag";
 
     /**
@@ -36,10 +43,10 @@ public class RagProperties {
      */
     private String promptTemplate = """
             请基于以下参考资料回答问题。若资料不足以回答，请明确说明。
-            
+
             参考资料：
             {information}
-            
+
             问题：{question}
             """;
 }

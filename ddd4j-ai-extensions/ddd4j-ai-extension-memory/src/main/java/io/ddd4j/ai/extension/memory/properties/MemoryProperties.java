@@ -14,6 +14,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = MemoryProperties.PREFIX)
 public class MemoryProperties {
 
+    /** 配置前缀（{@code ddd4j.ai.memory}）。 */
     public static final String PREFIX = "ddd4j.ai.memory";
 
     /**
@@ -25,4 +26,10 @@ public class MemoryProperties {
      * 窗口大小：每个会话保留最近 N 条消息。
      */
     private int windowSize = 20;
+
+    /**
+     * 构造会话记忆配置（供 Spring 容器绑定属性时实例化）。
+     */
+    public MemoryProperties() {
+    }
 }

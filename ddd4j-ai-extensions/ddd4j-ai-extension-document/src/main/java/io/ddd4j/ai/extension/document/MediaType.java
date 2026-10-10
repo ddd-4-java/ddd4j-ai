@@ -9,10 +9,42 @@ import java.util.Locale;
  */
 public enum MediaType {
 
-    PDF, DOCX, XLSX, PPTX, CSV, HTML, IPYNB, EPUB, RSS, WIKIPEDIA, ZIP, PLAINTEXT, MD, IMAGE, UNKNOWN;
+    /** PDF 文档。 */
+    PDF,
+    /** Word 文档（docx）。 */
+    DOCX,
+    /** Excel 表格（xlsx）。 */
+    XLSX,
+    /** PowerPoint 演示文稿（pptx）。 */
+    PPTX,
+    /** CSV 数据文件。 */
+    CSV,
+    /** HTML 网页。 */
+    HTML,
+    /** Jupyter Notebook。 */
+    IPYNB,
+    /** EPUB 电子书。 */
+    EPUB,
+    /** RSS/XML 订阅内容。 */
+    RSS,
+    /** 维基百科页面。 */
+    WIKIPEDIA,
+    /** ZIP 压缩包。 */
+    ZIP,
+    /** 纯文本。 */
+    PLAINTEXT,
+    /** Markdown 文档。 */
+    MD,
+    /** 图片（png/jpg/gif/bmp/webp/svg）。 */
+    IMAGE,
+    /** 未知类型（无法按后缀判定）。 */
+    UNKNOWN;
 
     /**
      * 按文件名后缀推断媒体类型（大小写不敏感）；未知后缀返回 {@link #UNKNOWN}。
+     *
+     * @param filename 文件名或路径；为 {@code null} 时返回 {@link #UNKNOWN}
+     * @return 推断出的媒体类型
      */
     public static MediaType fromFilename(String filename) {
         if (filename == null) {

@@ -14,6 +14,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = ChatProperties.PREFIX)
 public class ChatProperties {
 
+    /**
+     * 构造 ChatProperties 配置（由 Spring 容器绑定属性时实例化）。
+     */
+    public ChatProperties() {
+    }
+
+    /** 配置前缀（{@code ddd4j.ai.chat}）。 */
     public static final String PREFIX = "ddd4j.ai.chat";
 
     /**

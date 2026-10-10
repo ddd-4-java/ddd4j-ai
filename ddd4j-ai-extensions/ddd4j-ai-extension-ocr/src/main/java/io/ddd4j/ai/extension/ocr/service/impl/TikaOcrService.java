@@ -24,10 +24,23 @@ public class TikaOcrService implements OcrService {
 
     private final boolean ocrEnabled;
 
+    /**
+     * 构造 Tika 识别服务。
+     *
+     * @param ocrEnabled 是否启用 Tesseract OCR 图像扫描（依赖宿主机 tesseract 可执行文件）
+     */
     public TikaOcrService(boolean ocrEnabled) {
         this.ocrEnabled = ocrEnabled;
     }
 
+    /**
+     * Tika 自动探测格式并提取纯文本；开启 OCR 时对图像追加 Tesseract 扫描。
+     *
+     * @param input     文档内容流
+     * @param mediaType 媒体类型提示（null 时交由 Tika 自行探测）
+     * @return 提取的纯文本
+     * @throws Exception 解析失败时原样抛出
+     */
     @Override
     public String extractText(InputStream input, MediaType mediaType) throws Exception {
         BodyContentHandler handler = new BodyContentHandler(-1);
@@ -46,6 +59,14 @@ public class TikaOcrService implements OcrService {
         return handler.toString();
     }
 
+    /**
+     * 将 Tika 提取结果包装为统一文档模型（单文档，附 sourceType/contentType 元数据）。
+     *
+     * @param input     文档内容流
+     * @param mediaType 媒体类型提示（null 时 contentType 记为 unknown）
+     * @return 单元素文档模型列表
+     * @throws Exception 解析失败时原样抛出
+     */
     @Override
     public List<Document> extract(InputStream input, MediaType mediaType) throws Exception {
         String text = extractText(input, mediaType);

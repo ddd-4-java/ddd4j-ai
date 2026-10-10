@@ -1,0 +1,36 @@
+# ddd4j-ai 集成示例参考配置
+# 用法：启动时通过 spring.profiles.active=integrated 或
+# --spring.config.import=optional:classpath:/application-integrated.yml 引入本文件。
+spring:
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        options:
+          model: qwen2.5:0.5b
+      embedding:
+        options:
+          model: all-minilm
+
+ddd4j:
+  ai:
+    chat:
+      enabled: true
+      default-system-prompt: "你是一个有用的AI助手"
+    memory:
+      enabled: true
+      window-size: 20
+    embedding:
+      enabled: true
+    vectordb:
+      enabled: true
+    rag:
+      enabled: true
+    agent:
+      enabled: true
+      api-key: ${OPENAI_API_KEY:}
+      model-name: gpt-4o-mini
+    document:
+      enabled: true
+    ocr:
+      enabled: true

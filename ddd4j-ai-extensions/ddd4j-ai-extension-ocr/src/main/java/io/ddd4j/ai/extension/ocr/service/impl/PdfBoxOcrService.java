@@ -18,6 +18,20 @@ import java.util.List;
  */
 public class PdfBoxOcrService implements OcrService {
 
+    /**
+     * 构造 PdfBoxOcrService 对象。
+     */
+    public PdfBoxOcrService() {
+    }
+
+    /**
+     * PDFBox 直接抽取 PDF 文本层（全量读入内存后解析）。
+     *
+     * @param input     PDF 内容流
+     * @param mediaType 媒体类型（本实现忽略，调用方保证为 PDF）
+     * @return 抽取的纯文本
+     * @throws Exception PDF 解析失败时原样抛出
+     */
     @Override
     public String extractText(InputStream input, MediaType mediaType) throws Exception {
         try (PDDocument document = Loader.loadPDF(input.readAllBytes())) {
@@ -25,6 +39,14 @@ public class PdfBoxOcrService implements OcrService {
         }
     }
 
+    /**
+     * 将 PDF 文本包装为统一文档模型（单文档，附 sourceType/contentType 元数据）。
+     *
+     * @param input     PDF 内容流
+     * @param mediaType 媒体类型（本实现忽略，调用方保证为 PDF）
+     * @return 单元素文档模型列表
+     * @throws Exception PDF 解析失败时原样抛出
+     */
     @Override
     public List<Document> extract(InputStream input, MediaType mediaType) throws Exception {
         String text = extractText(input, mediaType);

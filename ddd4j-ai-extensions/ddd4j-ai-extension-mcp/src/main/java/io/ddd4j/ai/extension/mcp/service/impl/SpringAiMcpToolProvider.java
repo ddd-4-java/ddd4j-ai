@@ -22,9 +22,44 @@ public class SpringAiMcpToolProvider implements McpToolProvider {
 
     private final List<Object> clients;
 
+    /**
+     * 构造时解析容器内已注册的 MCP 客户端集合（缺失时回落空列表）。
+     *
+     * @param mcpClientsProvider MCP 客户端集合的延迟解析器
+     */
     public SpringAiMcpToolProvider(ObjectProvider<List<Object>> mcpClientsProvider) {
         List<Object> resolved = mcpClientsProvider.getIfAvailable(Collections::emptyList);
         this.clients = resolved != null ? resolved : Collections.emptyList();
+    }
+
+    /**
+     * 枚举全部 MCP 客户端暴露的工具清单（无客户端时为空列表）。
+     *
+     * @return 工具定义列表
+     */
+    @Override
+    public List<ToolDefinition> availableTools() {
+        // 工具清单由 Spring AI MCP 自动配置在 refresh 时注册到 McpToolUtils；这里仅占位返回空列表。
+        // 真实工具通过 Spring AI 原生 McpSyncClient/McpAsyncClient API 调用，避免双层抽象带来的同步复杂度。
+        return clients.stream()
+                .filter(c -> c != null)
+                .flatMap(c -> safeListTools(c).stream())
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 工具调用统一委托 Spring AI 原生 {@code McpToolUtils.callTool}，本实现不承担二次转发。
+     *
+     * @param name      工具名称
+     * @param arguments 参数 Map
+     * @return 永不正常返回
+     * @throws UnsupportedOperationException 恒抛，提示改用 McpSyncClient/McpAsyncClient 直连
+     */
+    @Override
+    public Object invokeTool(String name, Map<String, Object> arguments) {
+        throw new UnsupportedOperationException(
+                "MCP tool invocation is delegated to Spring AI McpToolUtils.callTool; " +
+                        "use McpSyncClient/McpAsyncClient API directly to avoid double abstraction. name=" + name);
     }
 
     @SuppressWarnings("unchecked")
@@ -39,22 +74,5 @@ public class SpringAiMcpToolProvider implements McpToolProvider {
             // 客户端无 listTools 或签名不同，回退到空列表
         }
         return Collections.emptyList();
-    }
-
-    @Override
-    public List<ToolDefinition> availableTools() {
-        // 工具清单由 Spring AI MCP 自动配置在 refresh 时注册到 McpToolUtils；这里仅占位返回空列表。
-        // 真实工具通过 Spring AI 原生 McpSyncClient/McpAsyncClient API 调用，避免双层抽象带来的同步复杂度。
-        return clients.stream()
-                .filter(c -> c != null)
-                .flatMap(c -> safeListTools(c).stream())
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Object invokeTool(String name, Map<String, Object> arguments) {
-        throw new UnsupportedOperationException(
-                "MCP tool invocation is delegated to Spring AI McpToolUtils.callTool; " +
-                        "use McpSyncClient/McpAsyncClient API directly to avoid double abstraction. name=" + name);
     }
 }

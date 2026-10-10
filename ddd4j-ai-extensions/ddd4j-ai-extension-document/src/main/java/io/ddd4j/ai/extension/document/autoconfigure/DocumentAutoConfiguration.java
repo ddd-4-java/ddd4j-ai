@@ -29,12 +29,31 @@ import java.util.List;
 @EnableConfigurationProperties(DocumentProperties.class)
 public class DocumentAutoConfiguration {
 
+    /**
+     * 构造 DocumentAutoConfiguration 自动装配类（由 Spring 容器实例化）。
+     */
+    public DocumentAutoConfiguration() {
+    }
+
+    /**
+     * 装配统一文档读取门面（聚合容器内全部解析器）。
+     *
+     * @param parsers 容器内全部 {@link DocumentParser} 实现
+     * @return 按优先级路由的 {@link DocumentReader}
+     */
     @Bean
     @ConditionalOnMissingBean
     public DocumentReader documentReader(List<DocumentParser> parsers) {
         return new DocumentReader(parsers);
     }
 
+    /**
+     * 装配 Tika 通用兜底解析器（可经 {@code enable-tika-fallback} 关闭）。
+     *
+     * @param properties 文档配置（大小上限等）
+     * @param asrService 语音识别服务延迟提供器（Tika 音频转写用，可缺失）
+     * @return {@link TikaDocumentParser} 实例
+     */
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(name = "ddd4j.ai.document.enable-tika-fallback", havingValue = "true", matchIfMissing = true)
@@ -43,6 +62,11 @@ public class DocumentAutoConfiguration {
         return new TikaDocumentParser(properties, asrService.getIfAvailable());
     }
 
+    /**
+     * 装配 EasyPDF 高质量解析器（可经 {@code enable-high-quality} 关闭）。
+     *
+     * @return {@link EasypdfDocumentParser} 实例
+     */
     @Bean
     @ConditionalOnMissingBean(name = "easypdfDocumentParser")
     @ConditionalOnProperty(name = "ddd4j.ai.document.enable-high-quality", havingValue = "true", matchIfMissing = true)
@@ -50,6 +74,11 @@ public class DocumentAutoConfiguration {
         return new EasypdfDocumentParser();
     }
 
+    /**
+     * 装配 EasyDoc 高质量解析器（docx 等，可经 {@code enable-high-quality} 关闭）。
+     *
+     * @return {@link EasydocDocumentParser} 实例
+     */
     @Bean
     @ConditionalOnMissingBean(name = "easydocDocumentParser")
     @ConditionalOnProperty(name = "ddd4j.ai.document.enable-high-quality", havingValue = "true", matchIfMissing = true)
@@ -57,6 +86,11 @@ public class DocumentAutoConfiguration {
         return new EasydocDocumentParser();
     }
 
+    /**
+     * 装配 EasyExcel 高质量解析器（xlsx/csv，可经 {@code enable-high-quality} 关闭）。
+     *
+     * @return {@link EasyexcelDocumentParser} 实例
+     */
     @Bean
     @ConditionalOnMissingBean(name = "easyexcelDocumentParser")
     @ConditionalOnProperty(name = "ddd4j.ai.document.enable-high-quality", havingValue = "true", matchIfMissing = true)
@@ -64,6 +98,11 @@ public class DocumentAutoConfiguration {
         return new EasyexcelDocumentParser();
     }
 
+    /**
+     * 装配 EasyODF 高质量解析器（odt 等，可经 {@code enable-high-quality} 关闭）。
+     *
+     * @return {@link EasyodfDocumentParser} 实例
+     */
     @Bean
     @ConditionalOnMissingBean(name = "easyodfDocumentParser")
     @ConditionalOnProperty(name = "ddd4j.ai.document.enable-high-quality", havingValue = "true", matchIfMissing = true)

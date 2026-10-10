@@ -19,6 +19,11 @@ public class WeightedStrategy implements RoutingStrategy {
     private final AtomicInteger counter = new AtomicInteger();
     private final Random random;
 
+    /**
+     * 构造权重策略（内部使用共享随机源）。
+     *
+     * @param weights 模型 id → 权重映射（null 视为空表）
+     */
     public WeightedStrategy(Map<String, Integer> weights) {
         this(weights, new Random());
     }
@@ -28,6 +33,14 @@ public class WeightedStrategy implements RoutingStrategy {
         this.random = random;
     }
 
+    /**
+     * 按权重加权随机选取；无权重候选或权重和非正时退化为轮询兜底。
+     *
+     * @param candidates 候选模型 id 列表（非空）
+     * @return 选中的模型 id
+     * @throws NullPointerException  candidates 为 null 时
+     * @throws IllegalArgumentException candidates 为空时
+     */
     @Override
     public String select(List<String> candidates) {
         Objects.requireNonNull(candidates, "candidates");

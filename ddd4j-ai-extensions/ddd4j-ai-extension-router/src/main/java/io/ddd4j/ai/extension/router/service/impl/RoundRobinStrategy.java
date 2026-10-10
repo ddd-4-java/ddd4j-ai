@@ -13,8 +13,22 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class RoundRobinStrategy implements RoutingStrategy {
 
+    /**
+     * 构造 RoundRobinStrategy 对象。
+     */
+    public RoundRobinStrategy() {
+    }
+
     private final AtomicInteger counter = new AtomicInteger();
 
+    /**
+     * 按内部计数器取模轮询选取候选模型。
+     *
+     * @param candidates 候选模型 id 列表（非空）
+     * @return 选中的模型 id
+     * @throws NullPointerException  candidates 为 null 时
+     * @throws IllegalArgumentException candidates 为空时
+     */
     @Override
     public String select(List<String> candidates) {
         Objects.requireNonNull(candidates, "candidates");

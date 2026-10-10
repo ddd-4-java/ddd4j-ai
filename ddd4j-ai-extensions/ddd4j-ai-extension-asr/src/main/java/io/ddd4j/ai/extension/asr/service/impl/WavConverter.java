@@ -13,6 +13,7 @@ import java.util.Arrays;
  */
 public final class WavConverter {
 
+    /** 目标采样率（Hz）：Whisper 要求的 16kHz。 */
     public static final int TARGET_SAMPLE_RATE = 16_000;
 
     private WavConverter() {
@@ -23,6 +24,7 @@ public final class WavConverter {
      *
      * @param audio    WAV 字节（或裸 PCM）
      * @param fallback 非 WAV 时的格式假设
+     * @return 归一化到 [-1,1] 的 16kHz 单声道 float 采样序列
      */
     public static float[] toFloatMono16k(byte[] audio, AudioFormat fallback) {
         Header header = Header.parse(audio);
