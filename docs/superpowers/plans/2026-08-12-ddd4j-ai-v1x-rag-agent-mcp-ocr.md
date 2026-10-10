@@ -27,10 +27,10 @@
 
 **Interfaces:** Produces McpClient/ServerService；Consumes MCP SDK 2.0.0
 
-- [ ] **Step 1:** 写失败测试 —— `callTool(name,args)` 经嵌入式 server 返回；`listTools()` 枚举；`exposeTool(ToolSpec)` schema 生成。
-- [ ] **Step 2:** 定义双向端口（client 消费 / server 暴露）。
-- [ ] **Step 3:** 集成 MCP SDK；AutoConfiguration 装配。
-- [ ] **Step 4:** 绿后 `git commit -m "feat(mcp): 实现 MCP 客户端/服务端组件"`。
+- [x] **Step 1:** 写失败测试 —— `callTool(name,args)` 经嵌入式 server 返回；`listTools()` 枚举；`exposeTool(ToolSpec)` schema 生成。（证据: ddd4j-ai-extensions/ddd4j-ai-extension-mcp/src/test/java/io/ddd4j/ai/extension/mcp/ 下 McpToolProviderContractTest、McpAutoConfigurationTest；commit a706865）
+- [ ] **Step 2:** 定义双向端口（client 消费 / server 暴露）。【待办】
+- [x] **Step 3:** 集成 MCP SDK；AutoConfiguration 装配。（证据: ddd4j-ai-extensions/ddd4j-ai-extension-mcp/src/main/java/io/ddd4j/ai/extension/mcp/autoconfigure/McpAutoConfiguration.java；commit a706865）
+- [x] **Step 4:** 绿后 `git commit -m "feat(mcp): 实现 MCP 客户端/服务端组件"`。（证据: commit a706865）
 
 ---
 
@@ -43,11 +43,11 @@
 
 **Interfaces:** Produces OcrService；Consumes PDFBox / Tika
 
-- [ ] **Step 1:** 先确认 PDFBox/Tika 依赖来源（boot-dependencies 间接？），若未提供则在 `ddd4j-ai-dependencies` 补声明版本，`git commit -m "chore(deps): 引入 PDFBox/Tika 版本管理"`。
-- [ ] **Step 2:** 写失败测试 —— 样例 PDF → 文本（PdfBox）；docx → 文本（Tika）；格式自动识别。
-- [ ] **Step 3:** 定义 OcrService 端口（`parse(InputStream, format)` → `List<Document>`）。
-- [ ] **Step 4:** 实现 PdfBox/Tika/Image Parser；Image 预留扩展点。
-- [ ] **Step 5:** 绿后 `git commit -m "feat(ocr): 实现文档识别组件（PDFBox+Tika）"`。
+- [x] **Step 1:** 先确认 PDFBox/Tika 依赖来源（boot-dependencies 间接？），若未提供则在 `ddd4j-ai-dependencies` 补声明版本，`git commit -m "chore(deps): 引入 PDFBox/Tika 版本管理"`。（证据: ddd4j-ai-dependencies/pom.xml（pdfbox.version=3.0.8、tika.version=3.3.2）；随 commit f54c2eb 入库）
+- [x] **Step 2:** 写失败测试 —— 样例 PDF → 文本（PdfBox）；docx → 文本（Tika）；格式自动识别。（证据: ddd4j-ai-extensions/ddd4j-ai-extension-ocr/src/test/java/io/ddd4j/ai/extension/ocr/ 下 OcrServiceContractTest、PdfBoxOcrServiceTest、TikaOcrServiceTest）
+- [x] **Step 3:** 定义 OcrService 端口（`parse(InputStream, format)` → `List<Document>`）。（证据: ddd4j-ai-extensions/ddd4j-ai-extension-ocr/src/main/java/io/ddd4j/ai/extension/ocr/service/OcrService.java（extract(InputStream,MediaType)→List<Document>））
+- [ ] **Step 4:** 实现 PdfBox/Tika/Image Parser；Image 预留扩展点。【待办】
+- [x] **Step 5:** 绿后 `git commit -m "feat(ocr): 实现文档识别组件（PDFBox+Tika）"`。（证据: commit f54c2eb）
 
 ---
 
@@ -61,11 +61,11 @@
 
 **Interfaces:** Produces RagService；Consumes chat/embedding/vectordb（组合）
 
-- [ ] **Step 1:** 写失败测试 —— ingest 入库；query 检索→拼装 prompt→生成；rerank 扩展点可替换。
-- [ ] **Step 2:** 定义 RagService 端口（`ingest`/`query`/`queryStream`）。
-- [ ] **Step 3:** 实现 RagPipeline：摄取管道（Reader→Splitter→Embedding→VectorDb）；查询管道（search→[rerank]→prompt→chat）。
-- [ ] **Step 4:** RagProperties（topK/模板/rerank 开关）。
-- [ ] **Step 5:** 绿后 `git commit -m "feat(rag): 实现检索增强生成管道"`。
+- [x] **Step 1:** 写失败测试 —— ingest 入库；query 检索→拼装 prompt→生成；rerank 扩展点可替换。（证据: ddd4j-ai-extensions/ddd4j-ai-extension-rag/src/test/java/io/ddd4j/ai/extension/rag/ 下 RagPipelineTest、RagAutoConfigurationTest、RagSmokeIntegrationTest；plan 注记 Completed 2026-08-16）
+- [x] **Step 2:** 定义 RagService 端口（`ingest`/`query`/`queryStream`）。（证据: ddd4j-ai-extensions/ddd4j-ai-extension-rag/src/main/java/io/ddd4j/ai/extension/rag/service/RagService.java（ingest/query/queryStream））
+- [x] **Step 3:** 实现 RagPipeline：摄取管道（Reader→Splitter→Embedding→VectorDb）；查询管道（search→[rerank]→prompt→chat）。（证据: ddd4j-ai-extensions/ddd4j-ai-extension-rag/src/main/java/io/ddd4j/ai/extension/rag/service/impl/RagPipeline.java）
+- [x] **Step 4:** RagProperties（topK/模板/rerank 开关）。（证据: ddd4j-ai-extensions/ddd4j-ai-extension-rag/src/main/java/io/ddd4j/ai/extension/rag/properties/RagProperties.java（topK/promptTemplate/chunking）+ Reranker/NoopReranker 扩展点（RagAutoConfiguration））
+- [x] **Step 5:** 绿后 `git commit -m "feat(rag): 实现检索增强生成管道"`。（证据: commit 122a85b）
 
 ---
 
@@ -77,11 +77,11 @@
 
 **Interfaces:** Produces AgentService；Consumes chat/memory/mcp
 
-- [ ] **Step 1:** 写失败测试 —— ReAct 单轮思考→工具→终止；Plan-Execute 多步；工具调用经 mcp 端口；循环终止条件。
-- [ ] **Step 2:** 定义 AgentService 端口与编排策略接口。
-- [ ] **Step 3:** 实现 ReAct/PlanExecute 策略；上下文走 memory。
-- [ ] **Step 4:** 可选对接 AgentScope Java 2.0.1 运行时。
-- [ ] **Step 5:** 绿后 `git commit -m "feat(agent): 实现智能体编排组件（ReAct/PlanExecute）"`。
+- [x] **Step 1:** 写失败测试 —— ReAct 单轮思考→工具→终止；Plan-Execute 多步；工具调用经 mcp 端口；循环终止条件。（证据: commit 4230699（原 ReActAgentTest、PlanExecuteAgentTest）；快照留存 ddd4j-ai-extensions/ddd4j-ai-extension-agent/docs/superpowers/plans/baseline-ReActAgentTest.java、baseline-PlanExecuteAgentTest.java）
+- [x] **Step 2:** 定义 AgentService 端口与编排策略接口。（证据: ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/service/AgentService.java）
+- [x] **Step 3:** 实现 ReAct/PlanExecute 策略；上下文走 memory。（证据: commit 4230699；快照留存 ddd4j-ai-extensions/ddd4j-ai-extension-agent/docs/superpowers/plans/baseline-ReActAgent.java、baseline-PlanExecuteAgent.java（运行时实现已于 d954118/f6aef9b 由 Agentscope HarnessAgent 替代））
+- [x] **Step 4:** 可选对接 AgentScope Java 2.0.1 运行时。（证据: ddd4j-ai-extensions/ddd4j-ai-extension-agent/src/main/java/io/ddd4j/ai/extension/agent/agent/AgentScopeAgentAdapter.java；commits fc45fc4、1610314）
+- [x] **Step 5:** 绿后 `git commit -m "feat(agent): 实现智能体编排组件（ReAct/PlanExecute）"`。（证据: commit 4230699）
 
 ---
 
@@ -90,8 +90,8 @@
 **Files:**
 - Test: `ddd4j-ai-samples/src/test/.../HighOrderSmokeIT.java`
 
-- [ ] **Step 1:** 写联合冒烟：OCR 摄取文档 → RAG 入库 → Agent 经 MCP 调工具回答。
-- [ ] **Step 2:** 绿后 `git commit -m "test(samples): 高阶能力联合冒烟"`。
+- [ ] **Step 1:** 写联合冒烟：OCR 摄取文档 → RAG 入库 → Agent 经 MCP 调工具回答。【待办】
+- [ ] **Step 2:** 绿后 `git commit -m "test(samples): 高阶能力联合冒烟"`。【待办】
 
 ---
 
@@ -100,8 +100,8 @@
 **Files:**
 - Create: `ddd4j-ai-samples/.../samples/{mcp,ocr,rag,agent}/...`
 
-- [ ] **Step 1:** 每组件最小可运行示例。
-- [ ] **Step 2:** `git commit -m "docs(samples): 补充 mcp/ocr/rag/agent 示例"`。
+- [x] **Step 1:** 每组件最小可运行示例。（证据: feature/2.0.x 分支 ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/{mcp,ocr,rag,agent}/ 示例（commit eb43105；feature/1.0.x 工作树缺 mcp/ocr 示例））
+- [x] **Step 2:** `git commit -m "docs(samples): 补充 mcp/ocr/rag/agent 示例"`。（证据: commit eb43105（feature/2.0.x））
 
 ---
 

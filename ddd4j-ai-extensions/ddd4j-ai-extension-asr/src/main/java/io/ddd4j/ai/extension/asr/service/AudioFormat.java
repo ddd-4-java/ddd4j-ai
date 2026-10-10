@@ -11,7 +11,11 @@ package io.ddd4j.ai.extension.asr.service;
  */
 public record AudioFormat(int sampleRate, int channels, int bitsPerSample, boolean signed) {
 
-    /** 常见 44.1kHz 立体声 16-bit WAV。 */
+    /**
+     * 常见 44.1kHz 立体声 16-bit WAV。
+     *
+     * @return 描述 44100Hz/2 声道/16 位有符号 PCM 的音频格式
+     */
     public static AudioFormat wav44100Stereo16() {
         return new AudioFormat(44_100, 2, 16, true);
     }

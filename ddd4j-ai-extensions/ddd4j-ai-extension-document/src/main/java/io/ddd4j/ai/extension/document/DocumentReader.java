@@ -17,6 +17,11 @@ public final class DocumentReader {
 
     private final List<DocumentParser> parsers;
 
+    /**
+     * 构造读取门面：解析器按 {@code order} 降序排序（优先级高者先尝试）。
+     *
+     * @param parsers 可用文档解析器列表
+     */
     public DocumentReader(List<DocumentParser> parsers) {
         this.parsers = parsers.stream()
                 .sorted(Comparator.comparingInt(DocumentParser::order).reversed())
@@ -26,6 +31,8 @@ public final class DocumentReader {
     /**
      * 读取文件为统一文档模型。
      *
+     * @param file 待解析的文档文件（非空）
+     * @return 统一文档模型
      * @throws Exception 解析失败；无可用解析器抛 {@link UnsupportedOperationException}
      */
     public Document read(File file) throws Exception {
@@ -35,6 +42,11 @@ public final class DocumentReader {
 
     /**
      * 读取输入流为统一文档模型（文件名用于媒体类型判定）。
+     *
+     * @param in       文档内容流（非空，方法不负责关闭）
+     * @param filename 文件名（用于后缀推断媒体类型）
+     * @return 统一文档模型
+     * @throws Exception 解析失败；无可用解析器抛 {@link UnsupportedOperationException}
      */
     public Document read(InputStream in, String filename) throws Exception {
         Objects.requireNonNull(in, "in must not be null");
@@ -43,6 +55,10 @@ public final class DocumentReader {
 
     /**
      * 读取 URL 指向的文档。
+     *
+     * @param url 文档地址（非空）
+     * @return 统一文档模型
+     * @throws Exception 打开连接或解析失败
      */
     public Document read(URL url) throws Exception {
         Objects.requireNonNull(url, "url must not be null");
@@ -53,6 +69,10 @@ public final class DocumentReader {
 
     /**
      * 读取路径指向的文档。
+     *
+     * @param path 文档路径（非空）
+     * @return 统一文档模型
+     * @throws Exception 解析失败；无可用解析器抛 {@link UnsupportedOperationException}
      */
     public Document read(Path path) throws Exception {
         Objects.requireNonNull(path, "path must not be null");

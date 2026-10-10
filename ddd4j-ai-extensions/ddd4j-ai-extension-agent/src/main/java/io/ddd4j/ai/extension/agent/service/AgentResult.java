@@ -12,6 +12,13 @@ import java.util.List;
  */
 public record AgentResult(String output, List<AgentStep> steps, String conversationId) {
 
+    /**
+     * 规范构造器：把步骤轨迹固化为不可变列表。
+     *
+     * @param output         最终答案
+     * @param steps          执行轨迹（thought/action/observation/result）
+     * @param conversationId 会话标识（与任务一致）
+     */
     public AgentResult {
         steps = List.copyOf(steps);
     }

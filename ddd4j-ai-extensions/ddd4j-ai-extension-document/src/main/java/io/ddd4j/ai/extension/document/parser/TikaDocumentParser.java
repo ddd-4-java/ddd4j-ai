@@ -63,29 +63,62 @@ public final class TikaDocumentParser implements DocumentParser {
     private final DocumentProperties properties;
     private final AsrService asrService;
 
+    /**
+     * 无参构造：使用默认文档配置，不挂语音转写。
+     */
     public TikaDocumentParser() {
         this(new DocumentProperties(), null);
     }
 
+    /**
+     * 指定文档配置构造，不挂语音转写。
+     *
+     * @param properties 文档配置（大小上限、超时、OCR 开关等）
+     */
     public TikaDocumentParser(DocumentProperties properties) {
         this(properties, null);
     }
 
+    /**
+     * 全参构造。
+     *
+     * @param properties 文档配置（大小上限、超时、OCR 开关等）
+     * @param asrService 语音识别服务；为 {@code null} 时音频不做转写
+     */
     public TikaDocumentParser(DocumentProperties properties, AsrService asrService) {
         this.properties = properties;
         this.asrService = asrService;
     }
 
+    /**
+     * 声明本解析器承接的媒体类型：通用兜底，接受任意类型（{@link MediaType#UNKNOWN}）。
+     *
+     * @return {@link MediaType#UNKNOWN}
+     */
     @Override
     public MediaType supports() {
         return MediaType.UNKNOWN;
     }
 
+    /**
+     * 解析优先级：0（兜底：让高质量委托 parser（order=10）优先）。
+     *
+     * @return 优先级数值（越大越先尝试）
+     */
     @Override
     public int order() {
         return 0; // 兜底：让高质量委托 parser（order=10）优先
     }
 
+    /**
+     * 解析文件：先做大小上限校验 → Tika 内容嗅探 MIME → AutoDetectParser 结构化解析；
+     * 音频且挂了 ASR 时追加转写章节；空文件短路返回空文档。
+     *
+     * @param file 待解析文档（非空）
+     * @return 统一文档模型
+     * @throws DocumentTooLargeException      超过 {@code max-file-size-bytes} 上限时
+     * @throws Exception                      Tika 解析失败或解析超时
+     */
     @Override
     public Document parse(File file) throws Exception {
         Objects.requireNonNull(file, "file must not be null");
@@ -128,6 +161,15 @@ public final class TikaDocumentParser implements DocumentParser {
         }
     }
 
+    /**
+     * 解析输入流：先限额落盘为临时文件（超限即抛），再委托文件版解析，最终删除临时文件。
+     *
+     * @param in       文档内容流（非空，方法不负责关闭）
+     * @param filename 文件名（仅用于临时文件后缀，便于 Tika 探测）
+     * @return 统一文档模型
+     * @throws DocumentTooLargeException 流累计字节超过大小上限时
+     * @throws Exception                 落盘或 Tika 解析失败
+     */
     @Override
     public Document parse(InputStream in, String filename) throws Exception {
         Objects.requireNonNull(in, "in must not be null");
@@ -245,6 +287,16 @@ public final class TikaDocumentParser implements DocumentParser {
             this.limit = limit;
         }
 
+        /**
+         * 批量读取并累计计数，超限即抛 {@link DocumentTooLargeException}。
+         *
+         * @param b   目标缓冲区
+         * @param off 起始偏移
+         * @param len 最多读取字节数
+         * @return 实际读取字节数（-1 表示流结束）
+         * @throws IOException                  底层流读取失败
+         * @throws DocumentTooLargeException    累计字节超过限额时
+         */
         @Override
         public int read(byte[] b, int off, int len) throws IOException {
             int n = super.read(b, off, len);
@@ -255,6 +307,13 @@ public final class TikaDocumentParser implements DocumentParser {
             return n;
         }
 
+        /**
+         * 单字节读取并累计计数，超限即抛 {@link DocumentTooLargeException}。
+         *
+         * @return 下一个字节（-1 表示流结束）
+         * @throws IOException               底层流读取失败
+         * @throws DocumentTooLargeException 累计字节超过限额时
+         */
         @Override
         public int read() throws IOException {
             int c = super.read();
@@ -295,11 +354,29 @@ public final class TikaDocumentParser implements DocumentParser {
             return dropped;
         }
 
+        /**
+         * 是否接收内嵌文档：始终返回 {@code true}（数量限额在
+         * {@link #parseEmbedded} 内计数，接口本身无拒绝回调）。
+         *
+         * @param metadata 内嵌文档元数据
+         * @return {@code true}
+         */
         @Override
         public boolean shouldParseEmbedded(Metadata metadata) {
             return true; // 始终接收，数量限额在 parseEmbedded 内计数（接口无拒绝回调）
         }
 
+        /**
+         * 收集内嵌图片为 base64 data URL：内容嗅探补判 MIME，
+         * 受数量与单图大小双限额约束（超限丢弃并计数，不影响主文档）。
+         *
+         * @param stream      内嵌资源流
+         * @param handler     内容处理器（本实现不消费）
+         * @param metadata    内嵌资源元数据
+         * @param outputHtml  是否要求输出 HTML（本实现不消费）
+         * @throws SAXException  内容处理器处理失败
+         * @throws IOException   流读取失败
+         */
         @Override
         public void parseEmbedded(InputStream stream, ContentHandler handler, Metadata metadata,
                                   boolean outputHtml) throws SAXException, IOException {

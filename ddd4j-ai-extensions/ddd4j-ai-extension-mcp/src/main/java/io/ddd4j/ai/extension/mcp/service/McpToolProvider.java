@@ -12,6 +12,8 @@ public interface McpToolProvider {
 
     /**
      * 列出所有可发现的工具定义。
+     *
+     * @return 工具定义列表（无工具时为空列表）
      */
     List<ToolDefinition> availableTools();
 

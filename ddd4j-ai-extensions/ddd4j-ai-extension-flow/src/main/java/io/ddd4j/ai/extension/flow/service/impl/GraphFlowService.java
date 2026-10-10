@@ -36,10 +36,23 @@ public class GraphFlowService implements FlowService {
     private final List<ToolCallback> toolCallbacks;
     private final io.ddd4j.ai.extension.agent.service.AgentService agentService;
 
+    /**
+     * 构造图工作流服务（不挂智能体端口）。
+     *
+     * @param chatService   对话端口（LLM 节点执行用）
+     * @param toolCallbacks 工具回调列表；{@code null} 按空列表处理
+     */
     public GraphFlowService(ChatService chatService, List<ToolCallback> toolCallbacks) {
         this(chatService, toolCallbacks, null);
     }
 
+    /**
+     * 构造图工作流服务。
+     *
+     * @param chatService   对话端口（LLM 节点执行用）
+     * @param toolCallbacks 工具回调列表；{@code null} 按空列表处理
+     * @param agentService  智能体端口（AGENT 节点执行用）；可为 {@code null}
+     */
     public GraphFlowService(ChatService chatService, List<ToolCallback> toolCallbacks,
                             io.ddd4j.ai.extension.agent.service.AgentService agentService) {
         this.chatService = chatService;
@@ -47,6 +60,14 @@ public class GraphFlowService implements FlowService {
         this.agentService = agentService;
     }
 
+    /**
+     * 把声明式 DSL 编译为可执行的 {@link CompiledGraph}：注册节点动作、
+     * 条件边（BRANCH 路由）与普通边。
+     *
+     * @param definition 工作流定义
+     * @return 编译后的图实例
+     * @throws GraphStateException 图结构非法（如节点缺失、边指向未知节点）时
+     */
     @Override
     public CompiledGraph compile(FlowDefinition definition) throws GraphStateException {
         StateGraph graph = new StateGraph();
@@ -86,6 +107,13 @@ public class GraphFlowService implements FlowService {
         return state -> CompletableFuture.completedFuture(Map.of());
     }
 
+    /**
+     * 同步运行编译后的图：阻塞至最后一个节点，返回终态 state。
+     *
+     * @param graph 编译后的图
+     * @param input 初始 state
+     * @return 终态 state 数据；无任何输出时为空 Map
+     */
     @Override
     public Map<String, Object> run(CompiledGraph graph, Map<String, Object> input) {
         NodeOutput last = graph.stream(input).blockLast();
@@ -95,6 +123,13 @@ public class GraphFlowService implements FlowService {
         return last.state().data();
     }
 
+    /**
+     * 流式运行编译后的图：逐节点产出 {@link NodeOutput}。
+     *
+     * @param graph 编译后的图
+     * @param input 初始 state
+     * @return 节点输出流
+     */
     @Override
     public Flux<NodeOutput> stream(CompiledGraph graph, Map<String, Object> input) {
         return graph.stream(input);

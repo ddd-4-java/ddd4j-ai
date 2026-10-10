@@ -172,6 +172,46 @@ byte[] mp3Bytes = ffmpegService.convertWavToMp3FromByteAry(wavBytes);
 | 渠道枚举 | `TTSSTTChannel` | 当前支持 `Azure` |
 | 音频格式 | `AVFormatEnums` | 音频采样率与编码格式枚举 |
 
+### 🧪 示例模块（ddd4j-ai-samples）
+
+`ddd4j-ai-samples` 提供两类示例：**组件示例**（`chat` / `memory` / `embedding` / `vectordb` / `rag` / `agent` / `sst`，每个示例对应一个 extension 模块）与**集成示例**（`integrated/`，串联多个组件的真实场景）。
+
+#### 集成示例清单
+
+| 集成示例 | 类（`io.ddd4j.ai.samples.integrated.*`） | 用途 / 组件串联 |
+|----------|------------------------------------------|-----------------|
+| 记忆对话 + 流式 | `chatmemsse.ChatMemorySseSample` | 多轮对话自动携带历史 + SSE 流式推送（chat + memory） |
+| RAG 全链路 | `ragpipeline.RagPipelineSample` | 文档→OCR→向量化→向量库存储→检索+生成→兜底回答（document + embedding + vectordb + rag + chat） |
+| 完整智能体 | `smartagent.SmartAgentSample` | 工具调用、知识库检索、文档理解、记忆（agent + document + rag + mcp + memory） |
+| 知识库数据管线 | `knowledgebase.KnowledgeBaseSample` | 文档解析/OCR → 向量存储 → 相似性检索，不含 LLM 对话（document + ocr + embedding + vectordb） |
+| 多模型路由 | `multimodelrouter.MultiModelRouterSample` | 按轮询/权重/延迟策略在多个模型池中分发请求（router + chat） |
+| 文档理解 | `docunderstanding.DocUnderstandingSample` | PDF/Office/图片 → 文本提取（含 OCR）→ 智能问答（document + ocr + chat + agent） |
+| 工作流编排 | `orchestration.OrchestrationSample` | 声明式 DSL 定义多节点工作流（LLM/Tool/Agent/Branch）→ 编译 → 执行（flow + agent + router） |
+
+> 多智能体协作（multi-agent-dispatch）示例尚在计划中（见集成示例完善计划 Task 7）。
+
+#### 集成示例参考配置（application-integrated.yml）
+
+参考配置文件位于 [`ddd4j-ai-samples/src/main/resources/application-integrated.yml`](./ddd4j-ai-samples/src/main/resources/application-integrated.yml)，覆盖 `spring.ai.ollama` 与 `ddd4j.ai` 全家桶开关（chat / memory / embedding / vectordb / rag / agent / document / ocr）。引用方式二选一：
+
+```bash
+# 方式一：以 profile 方式激活
+java -Dspring.profiles.active=integrated -jar your-app.jar
+
+# 方式二：在自己的 application.yml 中导入
+# spring.config.import=optional:classpath:/application-integrated.yml
+```
+
+#### 运行前提
+
+1. **Ollama 本地服务**：默认地址 `http://localhost:11434`（`spring.ai.ollama.base-url`），需先启动 Ollama 并拉取模型：
+   ```bash
+   ollama pull qwen2.5:0.5b    # 对话模型（spring.ai.ollama.chat.options.model）
+   ollama pull all-minilm      # 嵌入模型（spring.ai.ollama.embedding.options.model）
+   ```
+2. **agent 组件 API Key**：`ddd4j.ai.agent.api-key` 走环境变量占位符 `${OPENAI_API_KEY:}`（默认为空）。启用 `ddd4j.ai.agent` 时需导出 `OPENAI_API_KEY`；未启用 agent 时该空值不影响其余组件。
+3. **组件开关**：`ddd4j.ai.*.enabled` 按需开启，未用到的组件可置为 `false`，避免初始化无用的连接资源。
+
 ### 🏗️ 架构与设计规范
 
 项目采用 DDD + COLA（菱形架构）+ 防腐层（ACL）+ 依赖倒置 + BOM 版本对齐的设计理念，AI 组件作为基础设施适配器通过端口接口与领域层解耦。完整设计文档位于 [`docs/superpowers/specs/`](./docs/superpowers/specs/)：

@@ -16,6 +16,11 @@ public class EdgeTtsService implements TtsService {
 
     private final String defaultVoice;
 
+    /**
+     * 构造 Edge TTS 合成服务。
+     *
+     * @param defaultVoice 默认音色 shortName（调用方未指定音色时使用）
+     */
     public EdgeTtsService(String defaultVoice) {
         this.defaultVoice = defaultVoice;
     }

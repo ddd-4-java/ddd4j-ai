@@ -35,10 +35,22 @@ public final class AgentScopeAgentAdapter implements AgentService {
 
     private final HarnessAgent harnessAgent;
 
+    /**
+     * 构造桥接适配器。
+     *
+     * @param harnessAgent 业务方装配好的 Agentscope HarnessAgent，不允许为 null
+     */
     public AgentScopeAgentAdapter(HarnessAgent harnessAgent) {
         this.harnessAgent = Objects.requireNonNull(harnessAgent, "harnessAgent");
     }
 
+    /**
+     * 阻塞执行一次智能体调用，把流式事件折叠为最终结果。
+     *
+     * @param task 待执行的智能体任务，不允许为 null
+     * @return 含最终输出、执行步骤与会话标识的结果对象
+     * @throws AgentExecutionException 底层 ReAct 调用失败时抛出
+     */
     @Override
     public AgentResult execute(AgentTask task) {
         Objects.requireNonNull(task, "task");
@@ -58,6 +70,12 @@ public final class AgentScopeAgentAdapter implements AgentService {
         }
     }
 
+    /**
+     * 流式执行智能体调用，将 Agentscope 原生事件映射为业务步骤。
+     *
+     * @param task 待执行的智能体任务，不允许为 null
+     * @return 逐步骤推送的响应式流；执行失败时以 {@link AgentExecutionException} 终止
+     */
     @Override
     public Flux<AgentStep> stream(AgentTask task) {
         Objects.requireNonNull(task, "task");
@@ -96,6 +114,9 @@ public final class AgentScopeAgentAdapter implements AgentService {
      *
      * <p>与 {@link #stream(AgentTask)} 的粗粒度 {@code io.agentscope.core.agent.Event}
      * 是两套并行抽象：本方法不做事件类型映射，保真度最高。
+     *
+     * @param task 待执行的智能体任务，不允许为 null
+     * @return 原生智能体事件流；执行失败时以 {@link AgentExecutionException} 终止
      */
     @Override
     public Flux<AgentEvent> streamEvents(AgentTask task) {

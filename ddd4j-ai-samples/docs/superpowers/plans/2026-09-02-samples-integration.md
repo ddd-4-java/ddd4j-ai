@@ -64,9 +64,9 @@ public class ChatMemorySample {
 }
 ```
 
-- [ ] Step 1: 创建目录 + ChatMemorySample.java
-- [ ] Step 2: `mvn compile` 验证
-- [ ] Step 3: Commit `feat(samples): add integrated chat-memory sample`
+- [x] Step 1: 创建目录 + ChatMemorySample.java（证据: ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/integrated/chatmemsse/ChatMemorySseSample.java，commit df53ee5）
+- [x] Step 2: `mvn compile` 验证（证据: ddd4j-ai-samples/target/classes/io/ddd4j/ai/samples/integrated/chatmemsse/ChatMemorySseSample.class）
+- [x] Step 3: Commit `feat(samples): add integrated chat-memory sample`（证据: commit df53ee5）
 
 ---
 
@@ -90,9 +90,9 @@ public class RagPipelineSample {
 }
 ```
 
-- [ ] Step 1: 创建 RagPipelineSample.java
-- [ ] Step 2: `mvn compile` 验证
-- [ ] Step 3: Commit `feat(samples): add integrated rag-pipeline sample`
+- [x] Step 1: 创建 RagPipelineSample.java（证据: ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/integrated/ragpipeline/RagPipelineSample.java，commit df53ee5）
+- [x] Step 2: `mvn compile` 验证（证据: ddd4j-ai-samples/target/classes/io/ddd4j/ai/samples/integrated/ragpipeline/RagPipelineSample.class）
+- [x] Step 3: Commit `feat(samples): add integrated rag-pipeline sample`（证据: commit df53ee5）
 
 ---
 
@@ -115,9 +115,9 @@ public class AgentWithToolsSample {
 }
 ```
 
-- [ ] Step 1: 创建 AgentWithToolsSample.java
-- [ ] Step 2: `mvn compile` 验证
-- [ ] Step 3: Commit `feat(samples): add integrated agent-with-tools sample (RAG+Tools+Memory)`
+- [x] Step 1: 创建 AgentWithToolsSample.java（证据: ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/integrated/smartagent/SmartAgentSample.java（即计划的 AgentWithTools 示例），commit df53ee5）
+- [x] Step 2: `mvn compile` 验证（证据: ddd4j-ai-samples/target/classes/io/ddd4j/ai/samples/integrated/smartagent/SmartAgentSample.class）
+- [x] Step 3: Commit `feat(samples): add integrated agent-with-tools sample (RAG+Tools+Memory)`（证据: commit df53ee5）
 
 ---
 
@@ -139,9 +139,9 @@ public class MultiModelRouterSample {
 }
 ```
 
-- [ ] Step 1: 创建 MultiModelRouterSample.java
-- [ ] Step 2: `mvn compile` 验证
-- [ ] Step 3: Commit `feat(samples): add integrated multi-model-router sample`
+- [x] Step 1: 创建 MultiModelRouterSample.java（证据: ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/integrated/multimodelrouter/MultiModelRouterSample.java，commit df53ee5）
+- [x] Step 2: `mvn compile` 验证（证据: ddd4j-ai-samples/target/classes/io/ddd4j/ai/samples/integrated/multimodelrouter/MultiModelRouterSample.class）
+- [x] Step 3: Commit `feat(samples): add integrated multi-model-router sample`（证据: commit df53ee5）
 
 ---
 
@@ -163,9 +163,9 @@ public class DocumentUnderstandingSample {
 }
 ```
 
-- [ ] Step 1: 创建 DocumentUnderstandingSample.java
-- [ ] Step 2: `mvn compile` 验证
-- [ ] Step 3: Commit `feat(samples): add integrated document-understanding sample`
+- [x] Step 1: 创建 DocumentUnderstandingSample.java（证据: ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/integrated/docunderstanding/DocUnderstandingSample.java（即计划的 DocumentUnderstanding 示例），commit df53ee5）
+- [x] Step 2: `mvn compile` 验证（证据: ddd4j-ai-samples/target/classes/io/ddd4j/ai/samples/integrated/docunderstanding/DocUnderstandingSample.class）
+- [x] Step 3: Commit `feat(samples): add integrated document-understanding sample`（证据: commit df53ee5）
 
 ---
 
@@ -187,9 +187,9 @@ public class WorkflowOrchestrationSample {
 }
 ```
 
-- [ ] Step 1: 创建 WorkflowOrchestrationSample.java
-- [ ] Step 2: `mvn compile` 验证
-- [ ] Step 3: Commit `feat(samples): add integrated workflow-orchestration sample`
+- [x] Step 1: 创建 WorkflowOrchestrationSample.java（证据: ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/integrated/orchestration/OrchestrationSample.java（即计划的 WorkflowOrchestration 示例），commit df53ee5）
+- [x] Step 2: `mvn compile` 验证（证据: ddd4j-ai-samples/target/classes/io/ddd4j/ai/samples/integrated/orchestration/OrchestrationSample.class）
+- [x] Step 3: Commit `feat(samples): add integrated workflow-orchestration sample`（证据: commit df53ee5）
 
 ---
 
@@ -211,9 +211,9 @@ public class MultiAgentDispatchSample {
 }
 ```
 
-- [ ] Step 1: 创建 MultiAgentDispatchSample.java
-- [ ] Step 2: `mvn compile` 验证
-- [ ] Step 3: Commit `feat(samples): add integrated multi-agent-dispatch sample`
+- [ ] Step 1: 创建 MultiAgentDispatchSample.java【待办】
+- [ ] Step 2: `mvn compile` 验证【待办】
+- [ ] Step 3: Commit `feat(samples): add integrated multi-agent-dispatch sample`【待办】
 
 ---
 
@@ -263,18 +263,18 @@ ddd4j:
       enabled: true
 ```
 
-- [ ] Step 1: 创建 application-integrated.yml
-- [ ] Step 2: 更新 README（列出集成示例清单 + 使用说明）
-- [ ] Step 3: Commit `docs(samples): add integrated examples reference config and README`
+- [x] Step 1: 创建 application-integrated.yml（完成方式: 按本 Task YAML 规格原文落地于 `ddd4j-ai-samples/src/main/resources/application-integrated.yml`，含中文注释）
+- [x] Step 2: 更新 README（列出集成示例清单 + 使用说明）（完成方式: samples 模块无独立 README，更新项目根 `README.md` 新增「🧪 示例模块（ddd4j-ai-samples）」章节，含集成示例清单、application-integrated.yml 引用方式、Ollama 与 OPENAI_API_KEY 前提说明）
+- [ ] Step 3: Commit `docs(samples): add integrated examples reference config and README`【待办——由编排者统一提交】
 
 ---
 
 ## Task 9: 全量验证 + 双分支推送
 
-- [ ] Step 1: `mvn -U -Denforcer.skip=true -B -DskipTests=false clean test` 全 reactor BUILD SUCCESS
-- [ ] Step 2: `git push github feature/2.0.x && git push origin feature/2.0.x`
-- [ ] Step 3: cherry-pick → feature/1.0.x（pom 冲突解决为 4.0.0 格式）
-- [ ] Step 4: 1.0.x 全量验证 + 推送
+- [x] Step 1: `mvn -U -Denforcer.skip=true -B -DskipTests=false clean test` 全 reactor BUILD SUCCESS（证据: 各模块 target/surefire-reports 共 76 测试类、369 tests、0 failures（2026-10-09 全 reactor 构建））
+- [x] Step 2: `git push github feature/2.0.x && git push origin feature/2.0.x`（证据: commit 93f856e 已在 github/origin feature/2.0.x）
+- [x] Step 3: cherry-pick → feature/1.0.x（pom 冲突解决为 4.0.0 格式）（证据: commit df53ee5 已在 feature/1.0.x）
+- [ ] Step 4: 1.0.x 全量验证 + 推送【存疑】
 
 ---
 

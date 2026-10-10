@@ -50,6 +50,43 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Testcontainers 家族基线钉版 1.21.4：BOM import 置于本 pom 最前，
+                 压过下方 spring-boot-dependencies:3.4.13 所带 testcontainers-bom:1.20.6；
+                 同时以下方直接条目覆盖父链继承的散条目，保证核心与各模块同版。
+                 版本来源：ddd4j 家族统一 testcontainers 基线 1.21.4（与 feature/2.0.x 分支口径一致），
+                 本 pom 直接条目与靠前 import 优先于继承与后续 BOM import。 -->
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>mysql</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>ollama</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
             <!-- Jackson 版本治理（项目规范）：1.0.x 线基于 Jackson 2，
                  import com.fasterxml.jackson:jackson-bom；dependencies 直接使用组件不写版本号。 -->
             <dependency>
@@ -237,6 +274,23 @@
                 <version>${tika.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!-- easy4j AI 客户端 SDK：此处显式管理以覆盖上游 ddd4j-dependencies BOM 的同名条目，
+                 版本取上方 easy4j-*-java-sdk.version 属性（已本地发布口径，见 #841 迁移说明） -->
+            <dependency>
+                <groupId>io.github.easy4j</groupId>
+                <artifactId>claudecode-java-sdk</artifactId>
+                <version>${easy4j-claudecode-java-sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.easy4j</groupId>
+                <artifactId>codex-java-sdk</artifactId>
+                <version>${easy4j-codex-java-sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.easy4j</groupId>
+                <artifactId>dreamina-java-sdk</artifactId>
+                <version>${easy4j-dreamina-java-sdk.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

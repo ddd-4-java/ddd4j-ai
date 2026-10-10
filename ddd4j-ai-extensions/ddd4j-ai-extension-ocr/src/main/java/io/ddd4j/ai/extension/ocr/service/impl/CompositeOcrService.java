@@ -18,11 +18,25 @@ public class CompositeOcrService implements OcrService {
     private final PdfBoxOcrService pdfBoxOcrService;
     private final TikaOcrService tikaOcrService;
 
+    /**
+     * 构造组合识别服务。
+     *
+     * @param pdfBoxOcrService PDF 直提实现
+     * @param tikaOcrService   多格式回退实现
+     */
     public CompositeOcrService(PdfBoxOcrService pdfBoxOcrService, TikaOcrService tikaOcrService) {
         this.pdfBoxOcrService = pdfBoxOcrService;
         this.tikaOcrService = tikaOcrService;
     }
 
+    /**
+     * 提取纯文本：PDF 媒体类型走 PDFBox，其余走 Tika。
+     *
+     * @param input     文档内容流
+     * @param mediaType 媒体类型（null 视为非 PDF）
+     * @return 提取的纯文本
+     * @throws Exception 解析失败时原样抛出
+     */
     @Override
     public String extractText(InputStream input, MediaType mediaType) throws Exception {
         if (pdfBoxOcrService != null && isPdf(mediaType)) {
@@ -31,6 +45,14 @@ public class CompositeOcrService implements OcrService {
         return tikaOcrService.extractText(input, mediaType);
     }
 
+    /**
+     * 提取为统一文档模型：PDF 媒体类型走 PDFBox，其余走 Tika。
+     *
+     * @param input     文档内容流
+     * @param mediaType 媒体类型（null 视为非 PDF）
+     * @return 文档模型列表
+     * @throws Exception 解析失败时原样抛出
+     */
     @Override
     public List<Document> extract(InputStream input, MediaType mediaType) throws Exception {
         if (pdfBoxOcrService != null && isPdf(mediaType)) {

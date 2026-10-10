@@ -26,6 +26,18 @@ import java.util.List;
 @ConditionalOnProperty(name = "ddd4j.ai.mcp.enabled", havingValue = "true", matchIfMissing = true)
 public class McpAutoConfiguration {
 
+    /**
+     * 构造 McpAutoConfiguration 自动装配类（由 Spring 容器实例化）。
+     */
+    public McpAutoConfiguration() {
+    }
+
+    /**
+     * 注册 MCP 工具提供者：枚举容器内 MCP 客户端可用工具并转发调用。
+     *
+     * @param mcpClientsProvider MCP 客户端集合的延迟解析器（无客户端时回落空列表）
+     * @return MCP 工具提供者 bean
+     */
     @org.springframework.context.annotation.Bean
     @ConditionalOnClass(name = "org.springframework.ai.mcp.client.McpSyncClient")
     public McpToolProvider mcpToolProvider(ObjectProvider<List<Object>> mcpClientsProvider) {

@@ -14,6 +14,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = FlowProperties.PREFIX)
 public class FlowProperties {
 
+    /**
+     * 构造 FlowProperties 配置（由 Spring 容器绑定属性时实例化）。
+     */
+    public FlowProperties() {
+    }
+
+    /** 配置前缀（{@code ddd4j.ai.flow}）。 */
     public static final String PREFIX = "ddd4j.ai.flow";
 
     /**

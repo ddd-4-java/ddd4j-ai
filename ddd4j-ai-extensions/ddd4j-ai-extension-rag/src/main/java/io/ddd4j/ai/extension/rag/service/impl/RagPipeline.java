@@ -31,6 +31,15 @@ public class RagPipeline implements RagService {
 
     private final RagProperties properties;
 
+    /**
+     * 构造 RAG 管道：四要素均非 null。
+     *
+     * @param chatService     对话端口
+     * @param vectorDbService 向量库端口
+     * @param reranker        重排器
+     * @param properties      RAG 配置
+     * @throws NullPointerException 任一要素为 null 时
+     */
     public RagPipeline(ChatService chatService, VectorDbService vectorDbService,
                        Reranker reranker, RagProperties properties) {
         this.chatService = Objects.requireNonNull(chatService, "chatService");
@@ -39,6 +48,12 @@ public class RagPipeline implements RagService {
         this.properties = Objects.requireNonNull(properties, "properties");
     }
 
+    /**
+     * 摄取文档：按配置决定是否 Token 分块，随后写入向量库。
+     *
+     * @param documents 待摄取文档列表
+     * @throws NullPointerException documents 为 null 时
+     */
     @Override
     public void ingest(List<Document> documents) {
         Objects.requireNonNull(documents, "documents");
@@ -48,16 +63,34 @@ public class RagPipeline implements RagService {
         vectorDbService.add(chunks);
     }
 
+    /**
+     * 同步问答：检索 → 重排 → 模板增强 → 单次生成。
+     *
+     * @param question 用户问题
+     * @return 生成的回答
+     */
     @Override
     public String query(String question) {
         return chatService.chat(augment(question));
     }
 
+    /**
+     * 流式问答：检索 → 重排 → 模板增强 → 流式生成。
+     *
+     * @param question 用户问题
+     * @return 回答增量流
+     */
     @Override
     public Flux<String> queryStream(String question) {
         return chatService.streamChat(augment(question));
     }
 
+    /**
+     * 增强查询：检索 topK 候选、重排后拼接为 {information}，渲染 prompt 模板。
+     *
+     * @param question 用户问题
+     * @return 渲染后的增强 prompt
+     */
     private String augment(String question) {
         List<Document> candidates = vectorDbService.search(question, properties.getTopK(), null);
         List<Document> reranked = reranker.rerank(question, candidates);

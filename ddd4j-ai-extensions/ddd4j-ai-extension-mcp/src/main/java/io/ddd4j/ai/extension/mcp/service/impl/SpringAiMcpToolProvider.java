@@ -22,11 +22,21 @@ public class SpringAiMcpToolProvider implements McpToolProvider {
 
     private final List<Object> clients;
 
+    /**
+     * 构造时解析容器内已注册的 MCP 客户端集合（缺失时回落空列表）。
+     *
+     * @param mcpClientsProvider MCP 客户端集合的延迟解析器
+     */
     public SpringAiMcpToolProvider(ObjectProvider<List<Object>> mcpClientsProvider) {
         List<Object> resolved = mcpClientsProvider.getIfAvailable(Collections::emptyList);
         this.clients = resolved != null ? resolved : Collections.emptyList();
     }
 
+    /**
+     * 枚举全部 MCP 客户端暴露的工具清单（无客户端时为空列表）。
+     *
+     * @return 工具定义列表
+     */
     @Override
     public List<ToolDefinition> availableTools() {
         // 工具清单由 Spring AI MCP 自动配置在 refresh 时注册到 McpToolUtils；这里仅占位返回空列表。
@@ -37,6 +47,14 @@ public class SpringAiMcpToolProvider implements McpToolProvider {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 工具调用统一委托 Spring AI 原生 {@code McpToolUtils.callTool}，本实现不承担二次转发。
+     *
+     * @param name      工具名称
+     * @param arguments 参数 Map
+     * @return 永不正常返回
+     * @throws UnsupportedOperationException 恒抛，提示改用 McpSyncClient/McpAsyncClient 直连
+     */
     @Override
     public Object invokeTool(String name, Map<String, Object> arguments) {
         throw new UnsupportedOperationException(

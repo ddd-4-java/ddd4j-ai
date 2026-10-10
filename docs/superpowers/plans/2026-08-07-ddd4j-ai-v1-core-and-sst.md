@@ -136,7 +136,7 @@
 - [x] **Step 1:** 写失败测试 —— `AiRequest.of(x)` 等价 `new AiRequest(x, Map.of())`；`input=null` 抛 NPE；`metadata=null` 返回空映射；传入可变 Map 后改动不影响实例（防御性拷贝）。
 - [x] **Step 2:** 对称校验 `AiResponse`（output NPE / metadata 不可变 / `of` 工厂）。
 - [x] **Step 3:** 用测试桩 `AiHandler` 验证 `handle(AiRequest)` → `AiResponse` 往返，并断言 `name()` 稳定返回。
-- [ ] **Step 4:** 全部绿后 `git commit -m "test(ai-core): 补充 core 契约单元测试"`。
+- [x] **Step 4:** 全部绿后 `git commit -m "test(ai-core): 补充 core 契约单元测试"`。（证据: commit ebc1e8e（ddd4j-ai-core/src/test/.../AiRequestTest、AiResponseTest、AiHandlerContractTest 入库））
 
 > Completed 2026-08-16（19 个用例全绿：AiRequestTest 7 / AiResponseTest 7 / AiHandlerContractTest 5；Step 4 提交待执行）
 
@@ -156,7 +156,7 @@
 - [x] **Step 2:** 针对端口 `SpeechService<T>` 用测试桩验证回调路径（onSuccess/onFail/onCancel）。
 - [x] **Step 3:** mock `SpeechConfig`/`SpeechSynthesizer`/`SpeechRecognizer`，验证 `tts()` 返回结构、`text2Voice()` 回调分支、三入口 `voice2Text*` 与 `doVoice2Text` 的 RecognizedSpeech/NoMatch/Canceled 分支。
 - [x] **Step 4:** FFmpegService：命令构造单测；装 ffmpeg 时做端到端转换冒烟，无 ffmpeg 用 `Assumptions.assumeTrue` 跳过。
-- [ ] **Step 5:** 全部绿后 `git commit -m "test(sst): 补充 sst 组件单元测试"`。
+- [x] **Step 5:** 全部绿后 `git commit -m "test(sst): 补充 sst 组件单元测试"`。（证据: commit ebc1e8e（extension-sst 下 SpeechServiceContractTest、AzureSpeechServiceTest、FFmpegServiceTest、AzureSpeechPropertiesTest 入库））
 
 > Completed 2026-08-16（19 个用例全绿：Properties 3 / 端口契约 4 / FFmpeg 端到端 4 / Azure SDK mock 8）。
 > 实施附带修复与发现：
@@ -174,7 +174,7 @@
 
 - [x] **Step 1:** 在 samples 模块新增 sst 端到端示例（配置 + 注入 SpeechService + 调用 tts/voice2Text）。
 - [x] **Step 2:** README/示例说明对齐（保留 README 快速开始示例一致）。
-- [ ] **Step 3:** `git commit -m "docs(samples): 补充 sst 示例"`。
+- [x] **Step 3:** `git commit -m "docs(samples): 补充 sst 示例"`。（证据: commit ebc1e8e（ddd4j-ai-samples/src/main/java/io/ddd4j/ai/samples/sst/SstSample.java 入库））
 
 > Completed 2026-08-16（`SstSample`：TTS 同步/回调 + STT 含 FFmpeg 归一化/MP3 直识别；samples 由 `packaging=pom` 调整为默认 jar 以纳入编译验证）。
 

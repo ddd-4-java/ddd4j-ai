@@ -24,6 +24,19 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(EmbeddingProperties.class)
 public class EmbeddingAutoConfiguration {
 
+    /**
+     * 构造 EmbeddingAutoConfiguration 自动装配类（由 Spring 容器实例化）。
+     */
+    public EmbeddingAutoConfiguration() {
+    }
+
+    /**
+     * 构建向量嵌入服务：委托业务侧 {@link EmbeddingModel}，按配置批大小分片。
+     *
+     * @param embeddingModel 业务侧提供的嵌入模型
+     * @param properties     嵌入配置（批大小等）
+     * @return {@link EmbeddingService} 实现
+     */
     @Bean
     @ConditionalOnMissingBean(EmbeddingService.class)
     public EmbeddingService embeddingService(EmbeddingModel embeddingModel, EmbeddingProperties properties) {

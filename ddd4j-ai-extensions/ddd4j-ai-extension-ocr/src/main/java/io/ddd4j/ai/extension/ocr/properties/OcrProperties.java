@@ -14,6 +14,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = OcrProperties.PREFIX)
 public class OcrProperties {
 
+    /**
+     * 构造 OcrProperties 配置（由 Spring 容器绑定属性时实例化）。
+     */
+    public OcrProperties() {
+    }
+
+    /** 配置前缀（{@code ddd4j.ai.ocr}）。 */
     public static final String PREFIX = "ddd4j.ai.ocr";
 
     /**

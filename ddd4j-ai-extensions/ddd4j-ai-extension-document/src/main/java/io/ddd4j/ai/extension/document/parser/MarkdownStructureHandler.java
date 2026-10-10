@@ -27,6 +27,12 @@ import io.ddd4j.ai.extension.document.DocumentTable;
  */
 final class MarkdownStructureHandler extends DefaultHandler {
 
+    /**
+     * 构造 MarkdownStructureHandler 处理器。
+     */
+    public MarkdownStructureHandler() {
+    }
+
     private final List<MutableSection> roots = new ArrayList<>();
     private final Deque<MutableSection> stack = new ArrayDeque<>();
     private final List<DocumentTable> tables = new ArrayList<>();

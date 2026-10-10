@@ -14,6 +14,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = AgentProperties.PREFIX)
 public class AgentProperties {
 
+    /**
+     * 构造 AgentProperties 配置（由 Spring 容器绑定属性时实例化）。
+     */
+    public AgentProperties() {
+    }
+
+    /** 配置前缀（{@code ddd4j.ai.agent}）。 */
     public static final String PREFIX = "ddd4j.ai.agent";
 
     /**

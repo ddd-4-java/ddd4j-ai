@@ -8,6 +8,11 @@ package io.ddd4j.ai.extension.document;
  */
 public class DocumentTooLargeException extends IllegalArgumentException {
 
+    /**
+     * 构造超限异常。
+     *
+     * @param message 异常消息（通常包含实际大小与配置上限）
+     */
     public DocumentTooLargeException(String message) {
         super(message);
     }

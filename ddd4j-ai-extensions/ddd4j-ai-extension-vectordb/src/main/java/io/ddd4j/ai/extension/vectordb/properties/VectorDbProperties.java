@@ -14,6 +14,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = VectorDbProperties.PREFIX)
 public class VectorDbProperties {
 
+    /**
+     * 构造 VectorDbProperties 配置（由 Spring 容器绑定属性时实例化）。
+     */
+    public VectorDbProperties() {
+    }
+
+    /** 配置前缀（{@code ddd4j.ai.vectordb}）。 */
     public static final String PREFIX = "ddd4j.ai.vectordb";
 
     /**

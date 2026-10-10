@@ -22,6 +22,18 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(AsrProperties.class)
 public class AsrAutoConfiguration {
 
+    /**
+     * 构造 AsrAutoConfiguration 自动装配类（由 Spring 容器实例化）。
+     */
+    public AsrAutoConfiguration() {
+    }
+
+    /**
+     * 构建 Whisper.cpp 语音识别服务（仅当业务侧未自行注入时生效）。
+     *
+     * @param properties 语音识别配置（模型文件路径等）
+     * @return 基于 {@link WhisperCppAsrService} 的 {@link AsrService} 实例
+     */
     @Bean
     @ConditionalOnMissingBean(AsrService.class)
     public AsrService asrService(AsrProperties properties) {

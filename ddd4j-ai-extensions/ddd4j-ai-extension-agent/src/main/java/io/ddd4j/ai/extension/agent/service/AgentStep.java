@@ -10,6 +10,14 @@ package io.ddd4j.ai.extension.agent.service;
  */
 public record AgentStep(String type, String content, int index) {
 
+    /**
+     * 规范构造器：校验步骤类型非空（content/index 不做限制）。
+     *
+     * @param type    步骤类型：plan / thought / action / observation / execution / result
+     * @param content 步骤内容
+     * @param index   步骤序号（0 起）
+     * @throws IllegalArgumentException 当 {@code type} 为 {@code null} 或空白时
+     */
     public AgentStep {
         if (type == null || type.isBlank()) {
             throw new IllegalArgumentException("type must not be blank");

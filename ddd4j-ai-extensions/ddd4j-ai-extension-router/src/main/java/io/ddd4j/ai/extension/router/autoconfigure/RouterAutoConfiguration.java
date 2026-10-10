@@ -31,6 +31,18 @@ import java.util.Map;
 @EnableConfigurationProperties(RouterProperties.class)
 public class RouterAutoConfiguration {
 
+    /**
+     * 构造 RouterAutoConfiguration 自动装配类（由 Spring 容器实例化）。
+     */
+    public RouterAutoConfiguration() {
+    }
+
+    /**
+     * 按配置注册路由策略实现（轮询 / 权重 / 延迟），业务侧可同类型 bean 覆盖。
+     *
+     * @param properties 路由配置（策略枚举与权重表）
+     * @return 路由策略 bean
+     */
     @Bean
     @ConditionalOnMissingBean(RoutingStrategy.class)
     public RoutingStrategy routingStrategy(RouterProperties properties) {
@@ -41,6 +53,13 @@ public class RouterAutoConfiguration {
         };
     }
 
+    /**
+     * 注册多模型路由器：聚合容器内全部 {@link ChatClient} bean 并按策略分发。
+     *
+     * @param clients          模型 id → ChatClient 的映射
+     * @param routingStrategy  分发策略
+     * @return 聊天路由器 bean
+     */
     @Bean
     @ConditionalOnMissingBean(ChatRouter.class)
     public ChatRouter chatRouter(Map<String, ChatClient> clients, RoutingStrategy routingStrategy) {

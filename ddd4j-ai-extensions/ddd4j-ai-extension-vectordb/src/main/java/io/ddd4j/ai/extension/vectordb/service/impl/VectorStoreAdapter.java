@@ -21,6 +21,12 @@ public class VectorStoreAdapter implements VectorDbService {
 
     private final int defaultTopK;
 
+    /**
+     * 构造向量库适配器。
+     *
+     * @param vectorStore  委托的向量库实现
+     * @param defaultTopK  search 未显式指定 topK 时的默认检索条数
+     */
     public VectorStoreAdapter(VectorStore vectorStore, int defaultTopK) {
         this.vectorStore = Objects.requireNonNull(vectorStore, "vectorStore");
         this.defaultTopK = defaultTopK;

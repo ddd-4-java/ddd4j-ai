@@ -21,6 +21,16 @@ public record DocumentSection(
         List<DocumentTable> tables,
         List<DocumentImage> images) {
 
+    /**
+     * 规范构造器：子章节/表格/图片固化为不可变列表。
+     *
+     * @param title    章节标题
+     * @param level    层级深度（1 起）
+     * @param content  章节正文（Markdown 文本）
+     * @param children 子章节
+     * @param tables   章节内表格
+     * @param images   章节内图片
+     */
     public DocumentSection {
         children = List.copyOf(children);
         tables = List.copyOf(tables);

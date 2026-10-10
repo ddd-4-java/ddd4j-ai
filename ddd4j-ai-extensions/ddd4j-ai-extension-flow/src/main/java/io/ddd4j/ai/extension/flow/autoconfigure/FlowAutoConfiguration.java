@@ -31,6 +31,20 @@ import java.util.List;
 @EnableConfigurationProperties(FlowProperties.class)
 public class FlowAutoConfiguration {
 
+    /**
+     * 构造 FlowAutoConfiguration 自动装配类（由 Spring 容器实例化）。
+     */
+    public FlowAutoConfiguration() {
+    }
+
+    /**
+     * 构建图工作流服务：装配对话端口、可选工具回调与可选智能体端口。
+     *
+     * @param chatService    对话端口（LLM 节点执行用）
+     * @param toolCallbacks  工具回调延迟提供器；缺失按空集合处理
+     * @param agentService   智能体端口延迟提供器；缺失时 AGENT 节点不可用
+     * @return {@link FlowService} 实现
+     */
     @Bean
     @ConditionalOnMissingBean(FlowService.class)
     public FlowService flowService(ChatService chatService,

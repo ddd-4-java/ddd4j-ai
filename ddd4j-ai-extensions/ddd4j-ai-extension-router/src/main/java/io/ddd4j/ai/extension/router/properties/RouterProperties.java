@@ -16,6 +16,13 @@ import java.util.Map;
 @ConfigurationProperties(prefix = RouterProperties.PREFIX)
 public class RouterProperties {
 
+    /**
+     * 构造 RouterProperties 配置（由 Spring 容器绑定属性时实例化）。
+     */
+    public RouterProperties() {
+    }
+
+    /** 配置前缀（{@code ddd4j.ai.router}）。 */
     public static final String PREFIX = "ddd4j.ai.router";
 
     /**
@@ -33,9 +40,15 @@ public class RouterProperties {
      */
     private Map<String, Integer> weights = Map.of();
 
+    /**
+     * 路由策略枚举：轮询 / 权重 / 延迟探测。
+     */
     public enum StrategyType {
+        /** 轮询：按序循环分发（默认）。 */
         ROUND_ROBIN,
+        /** 权重：按权重表加权随机分发。 */
         WEIGHTED,
+        /** 延迟：按各模型响应时延择优分发。 */
         LATENCY
     }
 }

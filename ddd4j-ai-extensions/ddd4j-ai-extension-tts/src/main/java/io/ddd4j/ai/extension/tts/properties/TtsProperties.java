@@ -14,6 +14,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = TtsProperties.PREFIX)
 public class TtsProperties {
 
+    /**
+     * 构造 TtsProperties 配置（由 Spring 容器绑定属性时实例化）。
+     */
+    public TtsProperties() {
+    }
+
+    /** 配置前缀（{@code ddd4j.ai.tts}）。 */
     public static final String PREFIX = "ddd4j.ai.tts";
 
     /**

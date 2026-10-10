@@ -24,6 +24,19 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(VectorDbProperties.class)
 public class VectorDbAutoConfiguration {
 
+    /**
+     * 构造 VectorDbAutoConfiguration 自动装配类（由 Spring 容器实例化）。
+     */
+    public VectorDbAutoConfiguration() {
+    }
+
+    /**
+     * 注册通用向量库服务：适配容器内任意 {@link VectorStore} 实现。
+     *
+     * @param vectorStore  向量库实现（由业务侧 starter 提供）
+     * @param properties   向量库配置（默认检索条数）
+     * @return 向量库服务 bean
+     */
     @Bean
     @ConditionalOnMissingBean(VectorDbService.class)
     public VectorDbService vectorDbService(VectorStore vectorStore, VectorDbProperties properties) {

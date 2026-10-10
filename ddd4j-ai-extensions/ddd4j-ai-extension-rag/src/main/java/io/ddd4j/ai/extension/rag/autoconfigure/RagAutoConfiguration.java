@@ -27,12 +27,32 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(RagProperties.class)
 public class RagAutoConfiguration {
 
+    /**
+     * 构造 RagAutoConfiguration 自动装配类（由 Spring 容器实例化）。
+     */
+    public RagAutoConfiguration() {
+    }
+
+    /**
+     * 注册默认直通重排器（业务侧可同类型 bean 覆盖）。
+     *
+     * @return 重排器 bean
+     */
     @Bean
     @ConditionalOnMissingBean
     public Reranker reranker() {
         return new NoopReranker();
     }
 
+    /**
+     * 注册 RAG 管道服务：检索 → 重排 → 模板增强 → 生成。
+     *
+     * @param chatService    对话端口
+     * @param vectorDbService 向量库端口
+     * @param reranker       重排器
+     * @param properties     RAG 配置
+     * @return RAG 服务 bean
+     */
     @Bean
     @ConditionalOnMissingBean(RagService.class)
     public RagService ragService(ChatService chatService, VectorDbService vectorDbService,

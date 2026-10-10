@@ -27,6 +27,19 @@ import org.springframework.context.annotation.Primary;
 @EnableConfigurationProperties(OcrProperties.class)
 public class OcrAutoConfiguration {
 
+    /**
+     * 构造 OcrAutoConfiguration 自动装配类（由 Spring 容器实例化）。
+     */
+    public OcrAutoConfiguration() {
+    }
+
+    /**
+     * 注册端口层唯一识别服务：按媒体类型分派到 PDFBox / Tika。
+     *
+     * @param pdfBoxOcrService PDF 直提实现
+     * @param tikaOcrService   多格式回退实现
+     * @return 组合识别服务 bean
+     */
     @Bean
     @Primary
     @ConditionalOnMissingBean(OcrService.class)
@@ -34,11 +47,22 @@ public class OcrAutoConfiguration {
         return new CompositeOcrService(pdfBoxOcrService, tikaOcrService);
     }
 
+    /**
+     * 注册 PDFBox 文本直提实现。
+     *
+     * @return PDFBox 识别服务 bean
+     */
     @Bean
     public PdfBoxOcrService pdfBoxOcrService() {
         return new PdfBoxOcrService();
     }
 
+    /**
+     * 注册 Tika 多格式识别实现（是否启用 Tesseract 由配置决定）。
+     *
+     * @param properties 文档识别配置
+     * @return Tika 识别服务 bean
+     */
     @Bean
     public TikaOcrService tikaOcrService(OcrProperties properties) {
         return new TikaOcrService(properties.isOcrEnabled());

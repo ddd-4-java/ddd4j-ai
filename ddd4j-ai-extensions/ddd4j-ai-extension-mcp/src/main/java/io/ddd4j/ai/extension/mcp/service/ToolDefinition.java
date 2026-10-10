@@ -18,6 +18,15 @@ public record ToolDefinition(
         Map<String, Object> parameters,
         ToolExecutor executor) {
 
+    /**
+     * 规范构造器：校验四要素均非 null。
+     *
+     * @param name        工具名称
+     * @param description 工具描述
+     * @param parameters  参数 JSON Schema
+     * @param executor    执行回调
+     * @throws NullPointerException 任一要素为 null 时
+     */
     public ToolDefinition {
         Objects.requireNonNull(name, "name must not be null");
         Objects.requireNonNull(description, "description must not be null");
@@ -25,7 +34,18 @@ public record ToolDefinition(
         Objects.requireNonNull(executor, "executor must not be null");
     }
 
+    /**
+     * 工具执行回调（函数式接口）：接收 JSON 参数 Map，返回执行结果。
+     */
+    @FunctionalInterface
     public interface ToolExecutor {
+        /**
+         * 执行工具。
+         *
+         * @param arguments JSON 解析后的参数
+         * @return 执行结果
+         * @throws Exception 执行失败时原样抛出
+         */
         Object execute(Map<String, Object> arguments) throws Exception;
     }
 }

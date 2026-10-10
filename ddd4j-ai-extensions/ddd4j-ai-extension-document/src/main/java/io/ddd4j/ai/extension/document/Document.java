@@ -23,6 +23,18 @@ public record Document(
         String fullMarkdown,
         java.util.Map<String, Object> metadata) {
 
+    /**
+     * 规范构造器：章节/表格/图片固化为不可变列表，元数据 {@code null} 归一为空 Map。
+     *
+     * @param title        文档标题（converter 提取或文件名兜底）
+     * @param mime         内容媒体类型
+     * @param source       输出来源（markitdown4j / 4 组件委托 / Tika 兜底）
+     * @param sections     结构化章节树
+     * @param tables       文档级表格
+     * @param images       文档级图片（src 为 base64 data URL 或 URL）
+     * @param fullMarkdown 完整 Markdown 文本（智能体主消费形态）
+     * @param metadata     附加元数据（页数、标题等）
+     */
     public Document {
         sections = java.util.List.copyOf(sections);
         tables = java.util.List.copyOf(tables);

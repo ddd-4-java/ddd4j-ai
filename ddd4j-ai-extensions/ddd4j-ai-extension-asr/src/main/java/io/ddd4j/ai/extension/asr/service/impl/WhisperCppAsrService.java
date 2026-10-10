@@ -20,16 +20,37 @@ public class WhisperCppAsrService implements AsrService {
     private final String modelPath;
     private volatile WhisperCpp whisper;
 
+    /**
+     * 构造转写服务（模型文件此时尚未加载，首次转写时懒加载）。
+     *
+     * @param modelPath Whisper 模型文件路径（ggml 格式）
+     */
     public WhisperCppAsrService(String modelPath) {
         this.modelPath = modelPath;
     }
 
+    /**
+     * 转写内存中的音频字节：先解析 WAV 头并重采样为 16kHz 单声道，再交给 Whisper。
+     *
+     * @param audio  WAV 字节（或裸 PCM）
+     * @param format 非 WAV 时的回退音频格式假设
+     * @return 转写出的文本
+     * @throws Exception 音频转换失败或模型加载/转写出错
+     */
     @Override
     public String transcribe(byte[] audio, AudioFormat format) throws Exception {
         float[] samples = WavConverter.toFloatMono16k(audio, format);
         return transcribeSamples(samples);
     }
 
+    /**
+     * 转写音频文件：读取全部字节后委托给字节版转写。
+     *
+     * @param audio  音频文件
+     * @param format 非 WAV 时的回退音频格式假设
+     * @return 转写出的文本
+     * @throws Exception 读取文件失败或模型加载/转写出错
+     */
     @Override
     public String transcribe(File audio, AudioFormat format) throws Exception {
         return transcribe(Files.readAllBytes(audio.toPath()), format);
