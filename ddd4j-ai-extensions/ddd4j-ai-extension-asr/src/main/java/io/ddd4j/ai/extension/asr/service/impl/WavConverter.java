@@ -1,5 +1,9 @@
 package io.ddd4j.ai.extension.asr.service.impl;
 
+import java.beans.ConstructorProperties;
+
+import java.util.Objects;
+
 import io.ddd4j.ai.extension.asr.service.AudioFormat;
 
 import java.nio.charset.StandardCharsets;
@@ -91,9 +95,19 @@ public final class WavConverter {
     /**
      * WAV 头解析结果；非 WAV 返回 null。
      */
-    record Header(int sampleRate, int channels, int bitsPerSample, byte[] data) {
+    final static class Header {
 
-        static Header parse ( byte[] bytes){
+        private static final long serialVersionUID = 0L;
+
+        private final int sampleRate;
+
+        private final int channels;
+
+        private final int bitsPerSample;
+
+        private final byte[] data;
+
+        static Header parse(byte[] bytes) {
             if (bytes.length < 44 || !"RIFF".equals(ascii(bytes, 0, 4)) || !"WAVE".equals(ascii(bytes, 8, 4))) {
                 return null;
             }
@@ -110,8 +124,7 @@ public final class WavConverter {
                     sampleRate = littleEndianInt(bytes, position + 12);
                     bits = littleEndianShort(bytes, position + 22);
                 } else if ("data".equals(id)) {
-                    data = Arrays.copyOfRange(bytes, position + 8,
-                            Math.min(bytes.length, position + 8 + size));
+                    data = Arrays.copyOfRange(bytes, position + 8, Math.min(bytes.length, position + 8 + size));
                     break;
                 }
                 position += 8 + size + (size % 2);
@@ -122,19 +135,83 @@ public final class WavConverter {
             return new Header(sampleRate, channels, bits, data);
         }
 
-        private static String ascii ( byte[] bytes, int offset, int length){
+        private static String ascii(byte[] bytes, int offset, int length) {
             return new String(bytes, offset, length, StandardCharsets.US_ASCII);
         }
 
-        private static int littleEndianShort ( byte[] bytes, int offset){
+        private static int littleEndianShort(byte[] bytes, int offset) {
             return (bytes[offset] & 0xFF) | ((bytes[offset + 1] & 0xFF) << 8);
         }
 
-        private static int littleEndianInt ( byte[] bytes, int offset){
-            return (bytes[offset] & 0xFF)
-                    | ((bytes[offset + 1] & 0xFF) << 8)
-                    | ((bytes[offset + 2] & 0xFF) << 16)
-                    | ((bytes[offset + 3] & 0xFF) << 24);
+        private static int littleEndianInt(byte[] bytes, int offset) {
+            return (bytes[offset] & 0xFF) | ((bytes[offset + 1] & 0xFF) << 8) | ((bytes[offset + 2] & 0xFF) << 16) | ((bytes[offset + 3] & 0xFF) << 24);
+        }
+
+        @ConstructorProperties({ "sampleRate", "channels", "bitsPerSample", "data" })
+        Header(int sampleRate, int channels, int bitsPerSample, byte[] data) {
+            this.sampleRate = sampleRate;
+            this.channels = channels;
+            this.bitsPerSample = bitsPerSample;
+            this.data = data;
+        }
+
+        public int sampleRate() {
+            return sampleRate;
+        }
+
+        public int channels() {
+            return channels;
+        }
+
+        public int bitsPerSample() {
+            return bitsPerSample;
+        }
+
+        public byte[] data() {
+            return data;
+        }
+
+        public int getSampleRate() {
+            return sampleRate();
+        }
+
+        public int getChannels() {
+            return channels();
+        }
+
+        public int getBitsPerSample() {
+            return bitsPerSample();
+        }
+
+        public byte[] getData() {
+            return data();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (Objects.isNull(obj) || getClass() != obj.getClass()) {
+                return false;
+            }
+            Header other = (Header) obj;
+            return this.sampleRate == other.sampleRate && this.channels == other.channels && this.bitsPerSample == other.bitsPerSample && Objects.equals(this.data, other.data);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = 0;
+            result = 31 * result + Integer.hashCode(sampleRate);
+            result = 31 * result + Integer.hashCode(channels);
+            result = 31 * result + Integer.hashCode(bitsPerSample);
+            result = 31 * result + Objects.hashCode(data);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "Header[sampleRate=" + sampleRate + ", channels=" + channels + ", bitsPerSample=" + bitsPerSample + ", data=" + data + "]";
         }
     }
 }
