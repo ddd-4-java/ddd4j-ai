@@ -23,6 +23,10 @@ public class CompositeOcrService implements OcrService {
         this.tikaOcrService = tikaOcrService;
     }
 
+    private static boolean isPdf(MediaType mediaType) {
+        return mediaType != null && MediaType.APPLICATION_PDF.equalsTypeAndSubtype(mediaType);
+    }
+
     @Override
     public String extractText(InputStream input, MediaType mediaType) throws Exception {
         if (pdfBoxOcrService != null && isPdf(mediaType)) {
@@ -37,9 +41,5 @@ public class CompositeOcrService implements OcrService {
             return pdfBoxOcrService.extract(input, mediaType);
         }
         return tikaOcrService.extract(input, mediaType);
-    }
-
-    private static boolean isPdf(MediaType mediaType) {
-        return mediaType != null && MediaType.APPLICATION_PDF.equalsTypeAndSubtype(mediaType);
     }
 }

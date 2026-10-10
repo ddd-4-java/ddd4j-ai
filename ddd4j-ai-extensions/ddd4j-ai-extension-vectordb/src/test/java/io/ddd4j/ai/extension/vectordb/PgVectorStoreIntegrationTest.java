@@ -32,38 +32,7 @@ class PgVectorStoreIntegrationTest {
     @Container
     static final PostgreSQLContainer<?> PGVECTOR = new PostgreSQLContainer<>(
             DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
-
-    /**
-     * 确定性二维嵌入：[首字符编码, 常量]。
-     */
-    static class FirstCharEmbeddingModel implements org.springframework.ai.embedding.EmbeddingModel {
-
-        @Override
-        public float[] embed(String text) {
-            char c = text.isEmpty() ? 'a' : text.charAt(0);
-            return new float[]{c, 100.0f};
-        }
-
-        @Override
-        public float[] embed(Document document) {
-            return embed(document.getText());
-        }
-
-        @Override
-        public org.springframework.ai.embedding.EmbeddingResponse call(
-                org.springframework.ai.embedding.EmbeddingRequest request) {
-            List<org.springframework.ai.embedding.Embedding> embeddings = new java.util.ArrayList<>();
-            var instructions = request.getInstructions();
-            for (int i = 0; i < instructions.size(); i++) {
-                embeddings.add(new org.springframework.ai.embedding.Embedding(
-                        embed(instructions.get(i)), i));
-            }
-            return new org.springframework.ai.embedding.EmbeddingResponse(embeddings);
-        }
-    }
-
     static JdbcTemplate jdbcTemplate;
-
     static VectorDbService vectorDb;
 
     @BeforeAll
@@ -127,5 +96,34 @@ class PgVectorStoreIntegrationTest {
         vectorDb.delete(List.of(doc.getId()));
 
         assertThat(vectorDb.search("temp", 4, null)).isEmpty();
+    }
+
+    /**
+     * 确定性二维嵌入：[首字符编码, 常量]。
+     */
+    static class FirstCharEmbeddingModel implements org.springframework.ai.embedding.EmbeddingModel {
+
+        @Override
+        public float[] embed(String text) {
+            char c = text.isEmpty() ? 'a' : text.charAt(0);
+            return new float[]{c, 100.0f};
+        }
+
+        @Override
+        public float[] embed(Document document) {
+            return embed(document.getText());
+        }
+
+        @Override
+        public org.springframework.ai.embedding.EmbeddingResponse call(
+                org.springframework.ai.embedding.EmbeddingRequest request) {
+            List<org.springframework.ai.embedding.Embedding> embeddings = new java.util.ArrayList<>();
+            var instructions = request.getInstructions();
+            for (int i = 0; i < instructions.size(); i++) {
+                embeddings.add(new org.springframework.ai.embedding.Embedding(
+                        embed(instructions.get(i)), i));
+            }
+            return new org.springframework.ai.embedding.EmbeddingResponse(embeddings);
+        }
     }
 }

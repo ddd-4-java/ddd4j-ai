@@ -21,6 +21,17 @@ import static org.mockito.Mockito.when;
  */
 class MultiModelChatRouterTest {
 
+    private static ChatClient stubClient(String content) {
+        ChatClient client = mock(ChatClient.class);
+        ChatClient.ChatClientRequestSpec spec = mock(ChatClient.ChatClientRequestSpec.class);
+        ChatClient.CallResponseSpec call = mock(ChatClient.CallResponseSpec.class);
+        when(client.prompt()).thenReturn(spec);
+        when(spec.user(anyString())).thenReturn(spec);
+        when(spec.call()).thenReturn(call);
+        when(call.content()).thenReturn(content);
+        return client;
+    }
+
     @Test
     void route_forwardsToSelectedClient() {
         Map<String, ChatClient> clients = new LinkedHashMap<>();
@@ -52,16 +63,5 @@ class MultiModelChatRouterTest {
         org.assertj.core.api.Assertions.assertThatThrownBy(
                         () -> new MultiModelChatRouter(Map.of(), new RoundRobinStrategy()))
                 .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    private static ChatClient stubClient(String content) {
-        ChatClient client = mock(ChatClient.class);
-        ChatClient.ChatClientRequestSpec spec = mock(ChatClient.ChatClientRequestSpec.class);
-        ChatClient.CallResponseSpec call = mock(ChatClient.CallResponseSpec.class);
-        when(client.prompt()).thenReturn(spec);
-        when(spec.user(anyString())).thenReturn(spec);
-        when(spec.call()).thenReturn(call);
-        when(call.content()).thenReturn(content);
-        return client;
     }
 }

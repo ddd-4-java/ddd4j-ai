@@ -43,54 +43,6 @@ import static org.mockito.Mockito.when;
  */
 class AzureSpeechServiceTest {
 
-    /**
-     * 记录型 TTS 回调。
-     */
-    static class RecText2Voice implements SpeechServiceText2VoiceCallback {
-        byte[] audio;
-        String fail;
-        String cancel;
-
-        @Override
-        public void onCancel(String reason) {
-            this.cancel = reason;
-        }
-
-        @Override
-        public void onSuccess(byte[] audioData) {
-            this.audio = audioData;
-        }
-
-        @Override
-        public void onFail(String reason) {
-            this.fail = reason;
-        }
-    }
-
-    /**
-     * 记录型 STT 回调。
-     */
-    static class RecVoice2Text implements SpeechServiceVoice2TextCallback {
-        String text;
-        String fail;
-        String cancel;
-
-        @Override
-        public void onFail(String reason) {
-            this.fail = reason;
-        }
-
-        @Override
-        public void onCancel(String reason) {
-            this.cancel = reason;
-        }
-
-        @Override
-        public void onSuccess(String text) {
-            this.text = text;
-        }
-    }
-
     @BeforeAll
     static void requireAzureSdkNative() {
         boolean loadable;
@@ -125,8 +77,6 @@ class AzureSpeechServiceTest {
         return service;
     }
 
-    // ---------- afterPropertiesSet ----------
-
     @Test
     void afterPropertiesSetBuildsConfigFromProperties() throws Exception {
         SpeechConfig configMock = mock(SpeechConfig.class);
@@ -142,8 +92,6 @@ class AzureSpeechServiceTest {
             verify(configMock).setSpeechRecognitionLanguage("zh-CN");
         }
     }
-
-    // ---------- tts：同步合成 ----------
 
     @Test
     void ttsSuccessReturnsAudio() throws Exception {
@@ -171,6 +119,8 @@ class AzureSpeechServiceTest {
             assertThat(result.getAudio()).isEqualTo(audio);
         }
     }
+
+    // ---------- afterPropertiesSet ----------
 
     @Test
     void ttsCanceledReturnsFailureVo() throws Exception {
@@ -205,7 +155,7 @@ class AzureSpeechServiceTest {
         }
     }
 
-    // ---------- text2Voice：回调合成 ----------
+    // ---------- tts：同步合成 ----------
 
     @Test
     void text2VoiceSuccessInvokesOnSuccess() throws Exception {
@@ -266,7 +216,99 @@ class AzureSpeechServiceTest {
         }
     }
 
+    // ---------- text2Voice：回调合成 ----------
+
+    @Test
+    void voice2TextRecognizedInvokesOnSuccess() throws Exception {
+        try (SttMocks mocks = SttMocks.setup(ResultReason.RecognizedSpeech, "你好世界", null)) {
+            AzureSpeechService service = newService();
+            service.afterPropertiesSet();
+
+            RecVoice2Text callback = new RecVoice2Text();
+            service.voice2TextFromWavByteArray(null, new byte[]{0, 1}, callback);
+
+            assertThat(callback.text).isEqualTo("你好世界");
+            assertThat(callback.fail).isNull();
+            assertThat(callback.cancel).isNull();
+        }
+    }
+
+    @Test
+    void voice2TextNoMatchInvokesOnFail() throws Exception {
+        try (SttMocks mocks = SttMocks.setup(ResultReason.NoMatch, null, null)) {
+            AzureSpeechService service = newService();
+            service.afterPropertiesSet();
+
+            RecVoice2Text callback = new RecVoice2Text();
+            service.voice2TextFromWavByteArray(null, new byte[]{0, 1}, callback);
+
+            assertThat(callback.fail).isEqualTo("NoMatch");
+            assertThat(callback.text).isNull();
+        }
+    }
+
     // ---------- voice2TextFromWavByteArray：识别分支 ----------
+
+    @Test
+    void voice2TextCanceledInvokesOnCancel() throws Exception {
+        try (SttMocks mocks = SttMocks.setup(ResultReason.Canceled, null, "connection lost")) {
+            AzureSpeechService service = newService();
+            service.afterPropertiesSet();
+
+            RecVoice2Text callback = new RecVoice2Text();
+            service.voice2TextFromWavByteArray(null, new byte[]{0, 1}, callback);
+
+            assertThat(callback.cancel).isEqualTo("connection lost");
+        }
+    }
+
+    /**
+     * 记录型 TTS 回调。
+     */
+    static class RecText2Voice implements SpeechServiceText2VoiceCallback {
+        byte[] audio;
+        String fail;
+        String cancel;
+
+        @Override
+        public void onCancel(String reason) {
+            this.cancel = reason;
+        }
+
+        @Override
+        public void onSuccess(byte[] audioData) {
+            this.audio = audioData;
+        }
+
+        @Override
+        public void onFail(String reason) {
+            this.fail = reason;
+        }
+    }
+
+    /**
+     * 记录型 STT 回调。
+     */
+    static class RecVoice2Text implements SpeechServiceVoice2TextCallback {
+        String text;
+        String fail;
+        String cancel;
+
+        @Override
+        public void onFail(String reason) {
+            this.fail = reason;
+        }
+
+        @Override
+        public void onCancel(String reason) {
+            this.cancel = reason;
+        }
+
+        @Override
+        public void onSuccess(String text) {
+            this.text = text;
+        }
+    }
 
     /**
      * 组装 STT 路径的全部 mock 资源（调用方在 try-with-resources 中逐个关闭）。
@@ -318,48 +360,6 @@ class AzureSpeechServiceTest {
             audioConfigStatic.close();
             audioStreamStatic.close();
             speechConfigStatic.close();
-        }
-    }
-
-    @Test
-    void voice2TextRecognizedInvokesOnSuccess() throws Exception {
-        try (SttMocks mocks = SttMocks.setup(ResultReason.RecognizedSpeech, "你好世界", null)) {
-            AzureSpeechService service = newService();
-            service.afterPropertiesSet();
-
-            RecVoice2Text callback = new RecVoice2Text();
-            service.voice2TextFromWavByteArray(null, new byte[]{0, 1}, callback);
-
-            assertThat(callback.text).isEqualTo("你好世界");
-            assertThat(callback.fail).isNull();
-            assertThat(callback.cancel).isNull();
-        }
-    }
-
-    @Test
-    void voice2TextNoMatchInvokesOnFail() throws Exception {
-        try (SttMocks mocks = SttMocks.setup(ResultReason.NoMatch, null, null)) {
-            AzureSpeechService service = newService();
-            service.afterPropertiesSet();
-
-            RecVoice2Text callback = new RecVoice2Text();
-            service.voice2TextFromWavByteArray(null, new byte[]{0, 1}, callback);
-
-            assertThat(callback.fail).isEqualTo("NoMatch");
-            assertThat(callback.text).isNull();
-        }
-    }
-
-    @Test
-    void voice2TextCanceledInvokesOnCancel() throws Exception {
-        try (SttMocks mocks = SttMocks.setup(ResultReason.Canceled, null, "connection lost")) {
-            AzureSpeechService service = newService();
-            service.afterPropertiesSet();
-
-            RecVoice2Text callback = new RecVoice2Text();
-            service.voice2TextFromWavByteArray(null, new byte[]{0, 1}, callback);
-
-            assertThat(callback.cancel).isEqualTo("connection lost");
         }
     }
 }

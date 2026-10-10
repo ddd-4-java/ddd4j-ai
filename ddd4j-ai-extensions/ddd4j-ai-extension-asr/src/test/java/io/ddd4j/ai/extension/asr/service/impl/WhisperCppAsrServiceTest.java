@@ -14,6 +14,15 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  */
 class WhisperCppAsrServiceTest {
 
+    private static boolean isNativeAvailable() {
+        try {
+            new WhisperCpp().close();
+            return true;
+        } catch (Throwable e) {
+            return false;
+        }
+    }
+
     @Test
     void transcribe_missingModel_throws() {
         assumeTrue(isNativeAvailable(), "whisper native library not available on this host");
@@ -30,14 +39,5 @@ class WhisperCppAsrServiceTest {
         WhisperCppAsrService service = new WhisperCppAsrService("models/x.bin");
         assertThatThrownBy(() -> service.transcribe(new byte[]{1, 2, 3}, AudioFormat.wav44100Stereo16()))
                 .isInstanceOf(Throwable.class);
-    }
-
-    private static boolean isNativeAvailable() {
-        try {
-            new WhisperCpp().close();
-            return true;
-        } catch (Throwable e) {
-            return false;
-        }
     }
 }

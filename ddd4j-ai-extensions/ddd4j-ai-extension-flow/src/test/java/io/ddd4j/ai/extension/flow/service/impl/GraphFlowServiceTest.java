@@ -33,6 +33,15 @@ class GraphFlowServiceTest {
     private ChatService chatService;
     private ToolCallback upperTool;
 
+    private static FlowNodeSpec llm(String id, String prompt, String outputKey) {
+        return FlowNodeSpec.builder()
+                .id(id)
+                .type(FlowNodeType.LLM)
+                .prompt(prompt)
+                .outputKey(outputKey)
+                .build();
+    }
+
     @BeforeEach
     void setUp() {
         chatService = mock(ChatService.class);
@@ -179,14 +188,5 @@ class GraphFlowServiceTest {
 
         assertThatThrownBy(() -> service.run(graph, Map.of("route", "nope")))
                 .isInstanceOf(RuntimeException.class);
-    }
-
-    private static FlowNodeSpec llm(String id, String prompt, String outputKey) {
-        return FlowNodeSpec.builder()
-                .id(id)
-                .type(FlowNodeType.LLM)
-                .prompt(prompt)
-                .outputKey(outputKey)
-                .build();
     }
 }

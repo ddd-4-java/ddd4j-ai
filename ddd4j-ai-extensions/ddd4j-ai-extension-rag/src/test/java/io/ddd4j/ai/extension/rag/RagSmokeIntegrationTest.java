@@ -48,17 +48,13 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 @Testcontainers(disabledWithoutDocker = true)
 class RagSmokeIntegrationTest {
 
-    private static final String CHAT_MODEL = "qwen2.5:0.5b";
-
-    private static final String EMBEDDING_MODEL = "all-minilm";
-
     @Container
     static final OllamaContainer OLLAMA = new OllamaContainer(DockerImageName.parse("ollama/ollama:latest"));
-
     @Container
     static final PostgreSQLContainer<?> PGVECTOR = new PostgreSQLContainer<>(
             DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
-
+    private static final String CHAT_MODEL = "qwen2.5:0.5b";
+    private static final String EMBEDDING_MODEL = "all-minilm";
     static RagService rag;
 
     @BeforeAll

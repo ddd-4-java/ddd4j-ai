@@ -39,6 +39,14 @@ public final class AgentScopeAgentAdapter implements AgentService {
         this.harnessAgent = Objects.requireNonNull(harnessAgent, "harnessAgent");
     }
 
+    private static String extractText(Msg msg) {
+        if (msg == null) {
+            return "";
+        }
+        String text = msg.getTextContent();
+        return text == null ? "" : text;
+    }
+
     @Override
     public AgentResult execute(AgentTask task) {
         Objects.requireNonNull(task, "task");
@@ -80,14 +88,6 @@ public final class AgentScopeAgentAdapter implements AgentService {
         };
         String content = event.getMessage() == null ? "" : event.getMessage().getTextContent();
         return new AgentStep(type, content == null ? "" : content, Math.abs(content.hashCode() % 10000));
-    }
-
-    private static String extractText(Msg msg) {
-        if (msg == null) {
-            return "";
-        }
-        String text = msg.getTextContent();
-        return text == null ? "" : text;
     }
 
     /**

@@ -36,10 +36,10 @@ public class RagProperties {
      */
     private String promptTemplate = """
             请基于以下参考资料回答问题。若资料不足以回答，请明确说明。
-
+            
             参考资料：
             {information}
-
+            
             问题：{question}
             """;
 }

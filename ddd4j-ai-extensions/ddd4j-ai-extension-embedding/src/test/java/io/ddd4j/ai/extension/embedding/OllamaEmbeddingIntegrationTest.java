@@ -27,11 +27,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Testcontainers(disabledWithoutDocker = true)
 class OllamaEmbeddingIntegrationTest {
 
-    private static final String MODEL = "all-minilm";
-
     @Container
     static final OllamaContainer OLLAMA = new OllamaContainer(DockerImageName.parse("ollama/ollama:latest"));
-
+    private static final String MODEL = "all-minilm";
     static EmbeddingService embeddingService;
 
     @BeforeAll

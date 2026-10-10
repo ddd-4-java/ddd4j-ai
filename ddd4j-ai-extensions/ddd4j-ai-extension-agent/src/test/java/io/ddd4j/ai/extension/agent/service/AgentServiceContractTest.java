@@ -16,32 +16,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class AgentServiceContractTest {
 
-    static class FakeAgentService implements AgentService {
-
-        private final RuntimeException failure;
-
-        FakeAgentService() {
-            this(null);
-        }
-
-        FakeAgentService(RuntimeException failure) {
-            this.failure = failure;
-        }
-
-        @Override
-        public AgentResult execute(AgentTask task) {
-            if (failure != null) {
-                throw failure;
-            }
-            return new AgentResult("done", List.of(new AgentStep("result", "done", 0)), task.conversationId());
-        }
-
-        @Override
-        public Flux<AgentStep> stream(AgentTask task) {
-            return Flux.fromIterable(execute(task).steps());
-        }
-    }
-
     @Test
     void execute_returnsResultWithTrajectory() throws Exception {
         AgentResult result = new FakeAgentService().execute(AgentTask.of("task"));
@@ -85,5 +59,31 @@ class AgentServiceContractTest {
         assertThatThrownBy(() -> service.streamEvents(AgentTask.of("task")))
                 .isInstanceOf(UnsupportedOperationException.class)
                 .hasMessageContaining("streamEvents 未实现");
+    }
+
+    static class FakeAgentService implements AgentService {
+
+        private final RuntimeException failure;
+
+        FakeAgentService() {
+            this(null);
+        }
+
+        FakeAgentService(RuntimeException failure) {
+            this.failure = failure;
+        }
+
+        @Override
+        public AgentResult execute(AgentTask task) {
+            if (failure != null) {
+                throw failure;
+            }
+            return new AgentResult("done", List.of(new AgentStep("result", "done", 0)), task.conversationId());
+        }
+
+        @Override
+        public Flux<AgentStep> stream(AgentTask task) {
+            return Flux.fromIterable(execute(task).steps());
+        }
     }
 }

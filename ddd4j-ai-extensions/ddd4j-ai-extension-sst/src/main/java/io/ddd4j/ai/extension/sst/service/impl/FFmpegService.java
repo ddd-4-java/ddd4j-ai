@@ -13,6 +13,8 @@ import java.io.OutputStream;
 @Slf4j
 public class FFmpegService {
 
+    private String ffmpegBin = "ffmpeg";
+
     private byte[] ffmpegConvertBytes(String[] command, byte[] sourceAry) throws IOException, InterruptedException {
         log.info(StringUtils.join(command));
         // 执行FFmpeg命令
@@ -42,7 +44,6 @@ public class FFmpegService {
 
         return outputStream.toByteArray();
     }
-
 
     private byte[] ffmpegConvertByInputStream(String[] command, InputStream inputStream) throws IOException, InterruptedException {
         // 执行FFmpeg命令
@@ -78,10 +79,6 @@ public class FFmpegService {
 
         return outputStream.toByteArray();
     }
-
-
-    private String ffmpegBin = "ffmpeg";
-
 
     public byte[] convertWavToMp3FromByteAry(byte[] sourceAry) throws IOException, InterruptedException {
         // 构建FFmpeg命令

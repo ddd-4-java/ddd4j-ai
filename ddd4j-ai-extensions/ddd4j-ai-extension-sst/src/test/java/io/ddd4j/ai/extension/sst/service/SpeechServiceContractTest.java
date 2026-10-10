@@ -15,6 +15,57 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class SpeechServiceContractTest {
 
+    @Test
+    void text2VoiceDeliversAudioViaCallback() {
+        FakeSpeechService service = new FakeSpeechService();
+        RecordingText2VoiceCallback callback = new RecordingText2VoiceCallback();
+
+        service.text2Voice("你好", callback);
+
+        assertThat(callback.audio).isEqualTo("你好".getBytes(StandardCharsets.UTF_8));
+        assertThat(callback.failReason).isNull();
+        assertThat(callback.cancelReason).isNull();
+    }
+
+    @Test
+    void ttsReturnsSynchronousResult() {
+        FakeSpeechService service = new FakeSpeechService();
+
+        TTSResultVO result = service.tts("cfg", "你好");
+
+        assertThat(result.getStatus()).isEqualTo(1);
+        assertThat(result.getMsg()).isEqualTo("成功");
+        assertThat(result.getAudio()).isNotEmpty();
+    }
+
+    @Test
+    void voice2TextCallbacksCoverSuccessFailAndCancel() {
+        FakeSpeechService service = new FakeSpeechService();
+
+        RecordingVoice2TextCallback success = new RecordingVoice2TextCallback();
+        service.voice2TextFromWavFile("a.wav", success);
+        assertThat(success.text).isEqualTo("识别文本");
+
+        RecordingVoice2TextCallback fromBytes = new RecordingVoice2TextCallback();
+        service.voice2TextFromWavByteArray(null, new byte[0], fromBytes);
+        assertThat(fromBytes.text).isEqualTo("识别文本");
+
+        RecordingVoice2TextCallback failed = new RecordingVoice2TextCallback();
+        service.voice2TextFromMp3ByteArray(null, new byte[0], failed);
+        assertThat(failed.failReason).isEqualTo("NoMatch");
+        assertThat(failed.text).isNull();
+    }
+
+    @Test
+    void nullCallbackMustNotBreakInvocation() {
+        FakeSpeechService service = new FakeSpeechService();
+
+        // 端口约定：callback 判空后静默跳过，不抛异常
+        service.text2Voice("你好", null);
+        service.voice2TextFromWavByteArray(null, new byte[0], null);
+        service.voice2TextFromMp3ByteArray(null, new byte[0], null);
+    }
+
     /**
      * 记录型回调桩：捕获回调结果。
      */
@@ -102,56 +153,5 @@ class SpeechServiceContractTest {
                 callback.onFail("NoMatch");
             }
         }
-    }
-
-    @Test
-    void text2VoiceDeliversAudioViaCallback() {
-        FakeSpeechService service = new FakeSpeechService();
-        RecordingText2VoiceCallback callback = new RecordingText2VoiceCallback();
-
-        service.text2Voice("你好", callback);
-
-        assertThat(callback.audio).isEqualTo("你好".getBytes(StandardCharsets.UTF_8));
-        assertThat(callback.failReason).isNull();
-        assertThat(callback.cancelReason).isNull();
-    }
-
-    @Test
-    void ttsReturnsSynchronousResult() {
-        FakeSpeechService service = new FakeSpeechService();
-
-        TTSResultVO result = service.tts("cfg", "你好");
-
-        assertThat(result.getStatus()).isEqualTo(1);
-        assertThat(result.getMsg()).isEqualTo("成功");
-        assertThat(result.getAudio()).isNotEmpty();
-    }
-
-    @Test
-    void voice2TextCallbacksCoverSuccessFailAndCancel() {
-        FakeSpeechService service = new FakeSpeechService();
-
-        RecordingVoice2TextCallback success = new RecordingVoice2TextCallback();
-        service.voice2TextFromWavFile("a.wav", success);
-        assertThat(success.text).isEqualTo("识别文本");
-
-        RecordingVoice2TextCallback fromBytes = new RecordingVoice2TextCallback();
-        service.voice2TextFromWavByteArray(null, new byte[0], fromBytes);
-        assertThat(fromBytes.text).isEqualTo("识别文本");
-
-        RecordingVoice2TextCallback failed = new RecordingVoice2TextCallback();
-        service.voice2TextFromMp3ByteArray(null, new byte[0], failed);
-        assertThat(failed.failReason).isEqualTo("NoMatch");
-        assertThat(failed.text).isNull();
-    }
-
-    @Test
-    void nullCallbackMustNotBreakInvocation() {
-        FakeSpeechService service = new FakeSpeechService();
-
-        // 端口约定：callback 判空后静默跳过，不抛异常
-        service.text2Voice("你好", null);
-        service.voice2TextFromWavByteArray(null, new byte[0], null);
-        service.voice2TextFromMp3ByteArray(null, new byte[0], null);
     }
 }

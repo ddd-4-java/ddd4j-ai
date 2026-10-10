@@ -30,11 +30,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Testcontainers(disabledWithoutDocker = true)
 class OllamaChatIntegrationTest {
 
-    private static final String MODEL = "qwen2.5:0.5b";
-
     @Container
     static final OllamaContainer OLLAMA = new OllamaContainer(DockerImageName.parse("ollama/ollama:latest"));
-
+    private static final String MODEL = "qwen2.5:0.5b";
     static ChatClientAdapter adapter;
 
     static MemoryService memory;

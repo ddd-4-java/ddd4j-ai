@@ -13,27 +13,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class AiHandlerContractTest {
 
-    /**
-     * 最小测试桩：透传输入并标记自身元数据。
-     */
-    static final class EchoHandler implements AiHandler {
-
-        static final String NAME = "test-echo-handler";
-
-        private int invocations;
-
-        @Override
-        public String name() {
-            return NAME;
-        }
-
-        @Override
-        public AiResponse handle(AiRequest request) {
-            invocations++;
-            return new AiResponse(request.input(), Map.of("handler", NAME));
-        }
-    }
-
     @Test
     void handlerIsAnAiComponent() {
         EchoHandler handler = new EchoHandler();
@@ -74,5 +53,26 @@ class AiHandlerContractTest {
         handler.handle(AiRequest.of("b"));
 
         assertThat(handler.handle(AiRequest.of("c")).output()).isEqualTo("c");
+    }
+
+    /**
+     * 最小测试桩：透传输入并标记自身元数据。
+     */
+    static final class EchoHandler implements AiHandler {
+
+        static final String NAME = "test-echo-handler";
+
+        private int invocations;
+
+        @Override
+        public String name() {
+            return NAME;
+        }
+
+        @Override
+        public AiResponse handle(AiRequest request) {
+            invocations++;
+            return new AiResponse(request.input(), Map.of("handler", NAME));
+        }
     }
 }

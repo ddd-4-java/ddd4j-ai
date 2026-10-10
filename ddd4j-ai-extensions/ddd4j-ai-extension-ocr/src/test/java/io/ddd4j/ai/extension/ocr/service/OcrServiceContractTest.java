@@ -18,6 +18,37 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class OcrServiceContractTest {
 
+    private final InputStream sample = new ByteArrayInputStream("sample".getBytes());
+
+    @Test
+    void extractText_returnsNonEmptyText() throws Exception {
+        String text = new FakeOcrService().extractText(sample, MediaType.TEXT_PLAIN);
+        assertThat(text).isNotBlank();
+    }
+
+    @Test
+    void extract_returnsDocumentList() throws Exception {
+        List<Document> documents = new FakeOcrService().extract(sample, MediaType.TEXT_PLAIN);
+        assertThat(documents).isNotEmpty();
+        assertThat(documents.get(0).getText()).contains("extracted");
+    }
+
+    @Test
+    void extractText_propagatesEngineFailure() {
+        RuntimeException cause = new IllegalStateException("engine down");
+        assertThatThrownBy(() -> new FakeOcrService(cause).extractText(sample, MediaType.TEXT_PLAIN))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("engine down");
+    }
+
+    @Test
+    void extract_propagatesEngineFailure() {
+        RuntimeException cause = new IllegalStateException("engine down");
+        assertThatThrownBy(() -> new FakeOcrService(cause).extract(sample, MediaType.TEXT_PLAIN))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("engine down");
+    }
+
     /**
      * 桩实现：固定返回文本与单篇文档，可配置抛错验证错误路径。
      */
@@ -48,36 +79,5 @@ class OcrServiceContractTest {
             }
             return List.of(new Document.Builder().text("extracted").build());
         }
-    }
-
-    private final InputStream sample = new ByteArrayInputStream("sample".getBytes());
-
-    @Test
-    void extractText_returnsNonEmptyText() throws Exception {
-        String text = new FakeOcrService().extractText(sample, MediaType.TEXT_PLAIN);
-        assertThat(text).isNotBlank();
-    }
-
-    @Test
-    void extract_returnsDocumentList() throws Exception {
-        List<Document> documents = new FakeOcrService().extract(sample, MediaType.TEXT_PLAIN);
-        assertThat(documents).isNotEmpty();
-        assertThat(documents.get(0).getText()).contains("extracted");
-    }
-
-    @Test
-    void extractText_propagatesEngineFailure() {
-        RuntimeException cause = new IllegalStateException("engine down");
-        assertThatThrownBy(() -> new FakeOcrService(cause).extractText(sample, MediaType.TEXT_PLAIN))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("engine down");
-    }
-
-    @Test
-    void extract_propagatesEngineFailure() {
-        RuntimeException cause = new IllegalStateException("engine down");
-        assertThatThrownBy(() -> new FakeOcrService(cause).extract(sample, MediaType.TEXT_PLAIN))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("engine down");
     }
 }

@@ -16,6 +16,33 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class ChatRouterContractTest {
 
+    @Test
+    void route_returnsResult() {
+        assertThat(new FakeChatRouter().route(AiRequest.of("hi"))).isEqualTo("routed");
+    }
+
+    @Test
+    void route_propagatesFailure() {
+        RuntimeException cause = new IllegalStateException("router down");
+        assertThatThrownBy(() -> new FakeChatRouter(cause).route(AiRequest.of("hi")))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("router down");
+    }
+
+    @Test
+    void streamRoute_emitsTokens() {
+        List<String> tokens = new FakeChatRouter().streamRoute(AiRequest.of("hi")).collectList().block();
+        assertThat(tokens).containsExactly("routed");
+    }
+
+    @Test
+    void streamRoute_propagatesFailure() {
+        RuntimeException cause = new IllegalStateException("router down");
+        List<String> tokens = new FakeChatRouter(cause).streamRoute(AiRequest.of("hi"))
+                .onErrorResume(e -> Flux.just(e.getMessage())).collectList().block();
+        assertThat(tokens).containsExactly("router down");
+    }
+
     static class FakeChatRouter implements ChatRouter {
 
         private final RuntimeException failure;
@@ -43,32 +70,5 @@ class ChatRouterContractTest {
             }
             return Flux.just("routed");
         }
-    }
-
-    @Test
-    void route_returnsResult() {
-        assertThat(new FakeChatRouter().route(AiRequest.of("hi"))).isEqualTo("routed");
-    }
-
-    @Test
-    void route_propagatesFailure() {
-        RuntimeException cause = new IllegalStateException("router down");
-        assertThatThrownBy(() -> new FakeChatRouter(cause).route(AiRequest.of("hi")))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("router down");
-    }
-
-    @Test
-    void streamRoute_emitsTokens() {
-        List<String> tokens = new FakeChatRouter().streamRoute(AiRequest.of("hi")).collectList().block();
-        assertThat(tokens).containsExactly("routed");
-    }
-
-    @Test
-    void streamRoute_propagatesFailure() {
-        RuntimeException cause = new IllegalStateException("router down");
-        List<String> tokens = new FakeChatRouter(cause).streamRoute(AiRequest.of("hi"))
-                .onErrorResume(e -> Flux.just(e.getMessage())).collectList().block();
-        assertThat(tokens).containsExactly("router down");
     }
 }
