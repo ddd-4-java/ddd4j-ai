@@ -1,5 +1,7 @@
 package io.ddd4j.ai.extension.document.parser;
 
+import java.beans.ConstructorProperties;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FilterInputStream;
@@ -469,11 +471,107 @@ public final class TikaDocumentParser implements DocumentParser {
     }
 
     /** Tika 解析产物：Markdown 全文 + 结构化字段 + 原始元数据。 */
-    private record Parsed(String markdown,
-                          List<DocumentSection> sections,
-                          List<DocumentTable> tables,
-                          List<DocumentImage> images,
-                          Metadata tikaMetadata,
-                          int droppedImages) {
+    private final static class Parsed {
+
+        private static final long serialVersionUID = 0L;
+
+        private final String markdown;
+
+        private final List<DocumentSection> sections;
+
+        private final List<DocumentTable> tables;
+
+        private final List<DocumentImage> images;
+
+        private final Metadata tikaMetadata;
+
+        private final int droppedImages;
+
+        @ConstructorProperties({ "markdown", "sections", "tables", "images", "tikaMetadata", "droppedImages" })
+        private Parsed(String markdown, List<DocumentSection> sections, List<DocumentTable> tables, List<DocumentImage> images, Metadata tikaMetadata, int droppedImages) {
+            this.markdown = markdown;
+            this.sections = sections;
+            this.tables = tables;
+            this.images = images;
+            this.tikaMetadata = tikaMetadata;
+            this.droppedImages = droppedImages;
+        }
+
+        public String markdown() {
+            return markdown;
+        }
+
+        public List<DocumentSection> sections() {
+            return sections;
+        }
+
+        public List<DocumentTable> tables() {
+            return tables;
+        }
+
+        public List<DocumentImage> images() {
+            return images;
+        }
+
+        public Metadata tikaMetadata() {
+            return tikaMetadata;
+        }
+
+        public int droppedImages() {
+            return droppedImages;
+        }
+
+        public String getMarkdown() {
+            return markdown();
+        }
+
+        public List<DocumentSection> getSections() {
+            return sections();
+        }
+
+        public List<DocumentTable> getTables() {
+            return tables();
+        }
+
+        public List<DocumentImage> getImages() {
+            return images();
+        }
+
+        public Metadata getTikaMetadata() {
+            return tikaMetadata();
+        }
+
+        public int getDroppedImages() {
+            return droppedImages();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (Objects.isNull(obj) || getClass() != obj.getClass()) {
+                return false;
+            }
+            Parsed other = (Parsed) obj;
+            return Objects.equals(this.markdown, other.markdown) && Objects.equals(this.sections, other.sections) && Objects.equals(this.tables, other.tables) && Objects.equals(this.images, other.images) && Objects.equals(this.tikaMetadata, other.tikaMetadata) && this.droppedImages == other.droppedImages;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = 0;
+            result = 31 * result + Objects.hashCode(markdown);
+            result = 31 * result + Objects.hashCode(sections);
+            result = 31 * result + Objects.hashCode(tables);
+            result = 31 * result + Objects.hashCode(images);
+            result = 31 * result + Objects.hashCode(tikaMetadata);
+            result = 31 * result + Integer.hashCode(droppedImages);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "Parsed[markdown=" + markdown + ", sections=" + sections + ", tables=" + tables + ", images=" + images + ", tikaMetadata=" + tikaMetadata + ", droppedImages=" + droppedImages + "]";
+        }
     }
 }
