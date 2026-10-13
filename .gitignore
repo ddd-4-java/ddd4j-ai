@@ -39,4 +39,5 @@ secrets.yml
 __MACOSX
 unpackage
 node_modules
+.codegraph/
 
