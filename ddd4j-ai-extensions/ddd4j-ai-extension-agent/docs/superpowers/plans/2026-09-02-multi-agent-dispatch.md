@@ -191,7 +191,7 @@ public AgentScheduler agentScheduler(ObjectProvider<XxlJobExecutor> executorProv
 ```
 
 - 后续 agent-job：新增 `AgentJobAgentScheduler implements AgentScheduler` 即插入（接口已抽象）
-- **后续任务（本 plan 外）**：`/Users/wandl/workspaces/workspace-octoclaw-labs/agent-job` 与 agentscope 整合 = 新增
+- **后续任务（本 plan 外）**：`/Users/dev//workspaces/workspace-octoclaw-labs/agent-job` 与 agentscope 整合 = 新增
   extensions-scheduler-agent-job
 
 - [x] Step 1 失败测试（scheduler=xxl-job + XxlJobExecutor Bean → AgentScheduler 装配；未配置回退）

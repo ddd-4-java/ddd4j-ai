@@ -258,7 +258,7 @@ return builder.build();
 - [x] **Step 2: docs 回写**
     - `docs/superpowers/specs/2026-08-12-agent-component-design.md` 状态：`待实施` → `已实现（Agentscope 2.0.0）`
     - 本 plan 头部加「实施记录」+ 「修订记录（v2.1）」说明 API 校正过程
-- [x] **Step 3: 推送双远程**（feature/2.0.x → github + codeup origin）
+- [x] **Step 3: 推送双远程**（feature/2.0.x → github + 内网平台 origin）
 - [x] **Step 4: cherry-pick 到 feature/1.0.x**（包名 `extension`；pom 模型 4.0.0；冲突手动解决）
 
 ---
