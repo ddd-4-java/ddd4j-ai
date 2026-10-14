@@ -30,78 +30,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(classes = DocumentAutoConfiguration.class)
 class FormatMatrixIntegrationTest {
 
-    @Autowired
-    private DocumentReader reader;
-
-    @Test
-    void txt_readsContent(@TempDir Path tmp) throws Exception {
-        Path file = tmp.resolve("a.txt");
-        Files.writeString(file, "Hello matrix\nSecond line");
-        Document d = reader.read(file);
-        assertThat(d.fullMarkdown()).contains("Hello matrix").contains("Second line");
-        assertThat(d.mime()).isEqualTo("text/plain");
-    }
-
-    @Test
-    void html_extractsStructure(@TempDir Path tmp) throws Exception {
-        Path file = tmp.resolve("a.html");
-        Files.writeString(file, "<html><body><h1>Report</h1><h2>Sales</h2>"
-                + "<table><tr><th>R</th><th>A</th></tr><tr><td>E</td><td>1</td></tr></table></body></html>");
-        Document d = reader.read(file);
-        assertThat(d.sections()).isNotEmpty();
-        assertThat(d.sections().get(0).title()).isEqualTo("Report");
-        assertThat(d.tables()).isNotEmpty();
-        assertThat(d.fullMarkdown()).contains("# Report");
-    }
-
-    @Test
-    void csv_readsTable(@TempDir Path tmp) throws Exception {
-        Path file = tmp.resolve("a.csv");
-        Files.writeString(file, "name,amount\napple,3\nbanana,5");
-        Document d = reader.read(file);
-        assertThat(d.fullMarkdown()).contains("name").contains("amount").contains("banana");
-    }
-
-    @Test
-    void png_parsesMetadata(@TempDir Path tmp) throws Exception {
-        Path file = tmp.resolve("a.png");
-        Files.write(file, ONE_PX_PNG);
-        Document d = reader.read(file);
-        assertThat(d.mime()).startsWith("image/");
-        assertThat(d.metadata()).containsEntry("source", "tika");
-    }
-
-    @Test
-    void wav_audioBranchWithoutAsr(@TempDir Path tmp) throws Exception {
-        Path file = tmp.resolve("a.wav");
-        Files.write(file, wavBytes());
-        // 无 AsrService bean 的默认上下文：音频仅元数据，不抛异常
-        Document d = reader.read(file);
-        assertThat(d.mime()).startsWith("audio/");
-    }
-
-    @Test
-    void pdf_readsText(@TempDir Path tmp) throws Exception {
-        Path file = tmp.resolve("a.pdf");
-        createPdf(file.toFile(), "Invoice total 100");
-        Document d = reader.read(file);
-        assertThat(d.mime()).isEqualTo("application/pdf");
-        assertThat(d.fullMarkdown()).contains("Invoice").contains("100");
-    }
-
-    @Test
-    void docx_readsTextAndImage(@TempDir Path tmp) throws Exception {
-        Path file = tmp.resolve("a.docx");
-        Files.write(file, minimalDocxWithImage());
-        Document d = reader.read(file);
-        assertThat(d.fullMarkdown()).contains("Hello embedded image");
-        assertThat(d.images()).anyMatch(img -> img.src().startsWith("data:image/png;base64,"));
-    }
-
-    // ---- 本地样本构造 helpers ----
-
     private static final byte[] ONE_PX_PNG = Base64.getDecoder().decode(
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==");
+    @Autowired
+    private DocumentReader reader;
 
     private static byte[] wavBytes() {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -188,5 +120,72 @@ class FormatMatrixIntegrationTest {
             zip.closeEntry();
         }
         return out.toByteArray();
+    }
+
+    @Test
+    void txt_readsContent(@TempDir Path tmp) throws Exception {
+        Path file = tmp.resolve("a.txt");
+        Files.writeString(file, "Hello matrix\nSecond line");
+        Document d = reader.read(file);
+        assertThat(d.fullMarkdown()).contains("Hello matrix").contains("Second line");
+        assertThat(d.mime()).isEqualTo("text/plain");
+    }
+
+    @Test
+    void html_extractsStructure(@TempDir Path tmp) throws Exception {
+        Path file = tmp.resolve("a.html");
+        Files.writeString(file, "<html><body><h1>Report</h1><h2>Sales</h2>"
+                + "<table><tr><th>R</th><th>A</th></tr><tr><td>E</td><td>1</td></tr></table></body></html>");
+        Document d = reader.read(file);
+        assertThat(d.sections()).isNotEmpty();
+        assertThat(d.sections().get(0).title()).isEqualTo("Report");
+        assertThat(d.tables()).isNotEmpty();
+        assertThat(d.fullMarkdown()).contains("# Report");
+    }
+
+    @Test
+    void csv_readsTable(@TempDir Path tmp) throws Exception {
+        Path file = tmp.resolve("a.csv");
+        Files.writeString(file, "name,amount\napple,3\nbanana,5");
+        Document d = reader.read(file);
+        assertThat(d.fullMarkdown()).contains("name").contains("amount").contains("banana");
+    }
+
+    // ---- 本地样本构造 helpers ----
+
+    @Test
+    void png_parsesMetadata(@TempDir Path tmp) throws Exception {
+        Path file = tmp.resolve("a.png");
+        Files.write(file, ONE_PX_PNG);
+        Document d = reader.read(file);
+        assertThat(d.mime()).startsWith("image/");
+        assertThat(d.metadata()).containsEntry("source", "tika");
+    }
+
+    @Test
+    void wav_audioBranchWithoutAsr(@TempDir Path tmp) throws Exception {
+        Path file = tmp.resolve("a.wav");
+        Files.write(file, wavBytes());
+        // 无 AsrService bean 的默认上下文：音频仅元数据，不抛异常
+        Document d = reader.read(file);
+        assertThat(d.mime()).startsWith("audio/");
+    }
+
+    @Test
+    void pdf_readsText(@TempDir Path tmp) throws Exception {
+        Path file = tmp.resolve("a.pdf");
+        createPdf(file.toFile(), "Invoice total 100");
+        Document d = reader.read(file);
+        assertThat(d.mime()).isEqualTo("application/pdf");
+        assertThat(d.fullMarkdown()).contains("Invoice").contains("100");
+    }
+
+    @Test
+    void docx_readsTextAndImage(@TempDir Path tmp) throws Exception {
+        Path file = tmp.resolve("a.docx");
+        Files.write(file, minimalDocxWithImage());
+        Document d = reader.read(file);
+        assertThat(d.fullMarkdown()).contains("Hello embedded image");
+        assertThat(d.images()).anyMatch(img -> img.src().startsWith("data:image/png;base64,"));
     }
 }

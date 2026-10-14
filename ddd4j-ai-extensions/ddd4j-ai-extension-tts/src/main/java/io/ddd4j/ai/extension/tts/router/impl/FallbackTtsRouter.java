@@ -57,6 +57,20 @@ public class FallbackTtsRouter implements TtsRouter {
         this.backends = List.copyOf(backends.values());
     }
 
+    /**
+     * 公开工厂（无后端顺序保证），仅供测试。
+     *
+     * @param backends 可变后端列表，不允许为空
+     * @return 降级路由器
+     */
+    public static FallbackTtsRouter of(TtsService... backends) {
+        java.util.LinkedHashMap<String, TtsService> map = new java.util.LinkedHashMap<>();
+        for (int i = 0; i < backends.length; i++) {
+            map.put("backend-" + i, backends[i]);
+        }
+        return new FallbackTtsRouter(Collections.unmodifiableMap(map));
+    }
+
     @Override
     public List<String> backendNames() {
         return backendNames;
@@ -103,19 +117,5 @@ public class FallbackTtsRouter implements TtsRouter {
                     }
                     return flux;
                 });
-    }
-
-    /**
-     * 公开工厂（无后端顺序保证），仅供测试。
-     *
-     * @param backends 可变后端列表，不允许为空
-     * @return 降级路由器
-     */
-    public static FallbackTtsRouter of(TtsService... backends) {
-        java.util.LinkedHashMap<String, TtsService> map = new java.util.LinkedHashMap<>();
-        for (int i = 0; i < backends.length; i++) {
-            map.put("backend-" + i, backends[i]);
-        }
-        return new FallbackTtsRouter(Collections.unmodifiableMap(map));
     }
 }

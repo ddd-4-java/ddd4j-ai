@@ -1,5 +1,7 @@
 package io.ddd4j.ai.extension.document.parser;
 
+import java.beans.ConstructorProperties;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FilterInputStream;
@@ -43,9 +45,9 @@ import io.ddd4j.ai.extension.document.properties.DocumentProperties;
 /**
  * Tika 通用解析适配器：AutoDetectParser 覆盖 PDF / Office / HTML / CSV / 纯文本等全格式，
  * 作为通用基础实现（最低优先级兜底）。<ul>
- *   <li>MIME：{@link Tika#detect(byte[], String)} 内容嗅探 + 文件名联合检测（不依赖手写后缀映射）</li>
- *   <li>内容：{@link ToMarkdownContentHandler} 输出结构化 Markdown（标题/列表/表格 → GFM），供 RAG 分块</li>
- *   <li>元数据：透传 Tika 提取的 author/created/pages 等，供溯源与过滤</li>
+ * <li>MIME：{@link Tika#detect(byte[], String)} 内容嗅探 + 文件名联合检测（不依赖手写后缀映射）</li>
+ * <li>内容：{@link ToMarkdownContentHandler} 输出结构化 Markdown（标题/列表/表格 → GFM），供 RAG 分块</li>
+ * <li>元数据：透传 Tika 提取的 author/created/pages 等，供溯源与过滤</li>
  * </ul>
  * 注：计划原定 markitdown4j 1.0.0 承担此角色，但其 class 文件为 Java 25 编译（version 69），
  * 项目 target Java 17 无法加载且无低版本可退，故按计划预留的 {@link SourceType#TIKA_FALLBACK}
@@ -88,6 +90,75 @@ public final class TikaDocumentParser implements DocumentParser {
     public TikaDocumentParser(DocumentProperties properties, AsrService asrService) {
         this.properties = properties;
         this.asrService = asrService;
+    }
+
+    private static boolean isAudio(String mime) {
+        return mime != null && mime.startsWith("audio/");
+    }
+
+    private static ParseContext context(EmbeddedImageExtractor extractor) {
+        ParseContext context = new ParseContext();
+        context.set(EmbeddedDocumentExtractor.class, extractor);
+        return context;
+    }
+
+    private static ParseContext ocrContext(EmbeddedImageExtractor extractor) {
+        ParseContext context = context(extractor);
+        TesseractOCRConfig config = new TesseractOCRConfig();
+        config.setOutputType(TesseractOCRConfig.OUTPUT_TYPE.TXT);
+        context.set(TesseractOCRConfig.class, config);
+        context.set(TesseractOCRParser.class, new TesseractOCRParser());
+        return context;
+    }
+
+    /**
+     * 流式解析：TikaInputStream 按需 spool（大文件落盘临时文件），SecureContentHandler 限制
+     * SAX 实体数与输出量（zip 炸弹/高压缩比攻击面防护），不整体入内存。
+     */
+    private static Parsed doParse(Path path, ParseContext context, EmbeddedImageExtractor extractor) throws Exception {
+        StringWriter writer = new StringWriter();
+        MarkdownStructureHandler structure = new MarkdownStructureHandler();
+        TeeContentHandler tee = new TeeContentHandler(new ToMarkdownContentHandler(writer), structure);
+        try (org.apache.tika.io.TikaInputStream stream = org.apache.tika.io.TikaInputStream.get(path)) {
+            org.apache.tika.sax.SecureContentHandler secure = new org.apache.tika.sax.SecureContentHandler(tee, stream);
+            Metadata metadata = new Metadata();
+            new AutoDetectParser().parse(stream, secure, metadata, context);
+            List<DocumentImage> images = new ArrayList<>(structure.images());
+            images.addAll(extractor.images());
+            return new Parsed(writer.toString(), structure.sections(), structure.tables(), images,
+                    metadata, extractor.dropped());
+        }
+    }
+
+    private static void putIfAbsent(Map<String, Object> target, String key, Object value) {
+        if (value != null && !String.valueOf(value).isBlank() && !target.containsKey(key)) {
+            target.put(key, value);
+        }
+    }
+
+    private static String first(Metadata metadata, String... keys) {
+        for (String key : keys) {
+            String value = metadata.get(key);
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private static String detectLanguage(String text) {
+        try {
+            if (text == null || text.isBlank()) {
+                return null;
+            }
+            org.apache.tika.language.detect.LanguageResult result =
+                    org.apache.tika.language.detect.LanguageDetector.getDefaultLanguageDetector()
+                            .detect(text.length() > 2000 ? text.substring(0, 2000) : text);
+            String language = result.getLanguage();
+            return language == null || language.isBlank() || "unknown".equals(language) ? null : language;
+        } catch (Exception e) {
+            return null; // 语言检测不可用（无模型）不阻塞解析
+        }
     }
 
     @Override
@@ -154,17 +225,15 @@ public final class TikaDocumentParser implements DocumentParser {
         }
     }
 
-    /** 限额复制：超过 max-file-size-bytes 抛 {@link DocumentTooLargeException}（流式计数，不全量入内存）。 */
+    /**
+     * 限额复制：超过 max-file-size-bytes 抛 {@link DocumentTooLargeException}（流式计数，不全量入内存）。
+     */
     private void copyLimited(InputStream in, Path target) throws IOException {
         long limit = properties.getMaxFileSizeBytes();
         InputStream source = limit > 0 ? new LimitedInputStream(in, limit) : in;
         try (source; java.io.OutputStream out = Files.newOutputStream(target)) {
             source.transferTo(out);
         }
-    }
-
-    private static boolean isAudio(String mime) {
-        return mime != null && mime.startsWith("audio/");
     }
 
     private Parsed appendTranscription(Parsed parsed, byte[] bytes) {
@@ -206,13 +275,9 @@ public final class TikaDocumentParser implements DocumentParser {
         return properties.isOcrEnabled();
     }
 
-    private static ParseContext context(EmbeddedImageExtractor extractor) {
-        ParseContext context = new ParseContext();
-        context.set(EmbeddedDocumentExtractor.class, extractor);
-        return context;
-    }
-
-    /** 注入解析超时：病态文档超时抛 TikaTimeoutException，不降级重试（重试只会再挂一次）。 */
+    /**
+     * 注入解析超时：病态文档超时抛 TikaTimeoutException，不降级重试（重试只会再挂一次）。
+     */
     private ParseContext withTimeout(ParseContext context) {
         long timeout = properties.getParseTimeoutMillis();
         if (timeout > 0) {
@@ -222,33 +287,148 @@ public final class TikaDocumentParser implements DocumentParser {
         return context;
     }
 
-    private static ParseContext ocrContext(EmbeddedImageExtractor extractor) {
-        ParseContext context = context(extractor);
-        TesseractOCRConfig config = new TesseractOCRConfig();
-        config.setOutputType(TesseractOCRConfig.OUTPUT_TYPE.TXT);
-        context.set(TesseractOCRConfig.class, config);
-        context.set(TesseractOCRParser.class, new TesseractOCRParser());
-        return context;
+    private Document map(String name, String mime, Parsed parsed) {
+        String markdown = parsed.markdown() == null ? "" : parsed.markdown().strip();
+        Map<String, Object> metadata = new HashMap<>();
+        // 全量透传 Tika 元数据（EXIF / 音频 / 办公作者时间页数等，markitdown 无此能力）
+        for (String key : parsed.tikaMetadata().names()) {
+            metadata.put(key, parsed.tikaMetadata().get(key));
+        }
+        // 规范化精选键（对 RAG 溯源友好）
+        putIfAbsent(metadata, "author", first(parsed.tikaMetadata(), "dc:creator", "Author"));
+        putIfAbsent(metadata, "created", first(parsed.tikaMetadata(), "dcterms:created", "Creation-Date"));
+        putIfAbsent(metadata, "pageCount", first(parsed.tikaMetadata(), "xmpTPg:NPages"));
+        if (properties.isEnableLanguageDetection()) {
+            putIfAbsent(metadata, "language", detectLanguage(markdown));
+        }
+        if (parsed.droppedImages() > 0) {
+            metadata.put("embeddedImagesTruncated", true);
+            log.warn("embedded images truncated: kept={}, dropped={}",
+                    parsed.images().size(), parsed.droppedImages());
+        }
+        metadata.put("source", "tika");
+        metadata.put("detectedMime", mime);
+        return new Document(
+                name == null ? "Document" : name,
+                mime,
+                SourceType.TIKA_FALLBACK,
+                parsed.sections(),
+                parsed.tables(),
+                parsed.images(),
+                markdown,
+                metadata);
     }
 
-    /** 流式解析：TikaInputStream 按需 spool（大文件落盘临时文件），SecureContentHandler 限制
-     *  SAX 实体数与输出量（zip 炸弹/高压缩比攻击面防护），不整体入内存。 */
-    private static Parsed doParse(Path path, ParseContext context, EmbeddedImageExtractor extractor) throws Exception {
-        StringWriter writer = new StringWriter();
-        MarkdownStructureHandler structure = new MarkdownStructureHandler();
-        TeeContentHandler tee = new TeeContentHandler(new ToMarkdownContentHandler(writer), structure);
-        try (org.apache.tika.io.TikaInputStream stream = org.apache.tika.io.TikaInputStream.get(path)) {
-            org.apache.tika.sax.SecureContentHandler secure = new org.apache.tika.sax.SecureContentHandler(tee, stream);
-            Metadata metadata = new Metadata();
-            new AutoDetectParser().parse(stream, secure, metadata, context);
-            List<DocumentImage> images = new ArrayList<>(structure.images());
-            images.addAll(extractor.images());
-            return new Parsed(writer.toString(), structure.sections(), structure.tables(), images,
-                    metadata, extractor.dropped());
+    /**
+     * Tika 解析产物：Markdown 全文 + 结构化字段 + 原始元数据。
+     */
+    private final static class Parsed {
+
+        private static final long serialVersionUID = 0L;
+
+        private final String markdown;
+
+        private final List<DocumentSection> sections;
+
+        private final List<DocumentTable> tables;
+
+        private final List<DocumentImage> images;
+
+        private final Metadata tikaMetadata;
+
+        private final int droppedImages;
+
+        @ConstructorProperties({ "markdown", "sections", "tables", "images", "tikaMetadata", "droppedImages" })
+        private Parsed(String markdown, List<DocumentSection> sections, List<DocumentTable> tables, List<DocumentImage> images, Metadata tikaMetadata, int droppedImages) {
+            this.markdown = markdown;
+            this.sections = sections;
+            this.tables = tables;
+            this.images = images;
+            this.tikaMetadata = tikaMetadata;
+            this.droppedImages = droppedImages;
+        }
+
+        public String markdown() {
+            return markdown;
+        }
+
+        public List<DocumentSection> sections() {
+            return sections;
+        }
+
+        public List<DocumentTable> tables() {
+            return tables;
+        }
+
+        public List<DocumentImage> images() {
+            return images;
+        }
+
+        public Metadata tikaMetadata() {
+            return tikaMetadata;
+        }
+
+        public int droppedImages() {
+            return droppedImages;
+        }
+
+        public String getMarkdown() {
+            return markdown();
+        }
+
+        public List<DocumentSection> getSections() {
+            return sections();
+        }
+
+        public List<DocumentTable> getTables() {
+            return tables();
+        }
+
+        public List<DocumentImage> getImages() {
+            return images();
+        }
+
+        public Metadata getTikaMetadata() {
+            return tikaMetadata();
+        }
+
+        public int getDroppedImages() {
+            return droppedImages();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (Objects.isNull(obj) || getClass() != obj.getClass()) {
+                return false;
+            }
+            Parsed other = (Parsed) obj;
+            return Objects.equals(this.markdown, other.markdown) && Objects.equals(this.sections, other.sections) && Objects.equals(this.tables, other.tables) && Objects.equals(this.images, other.images) && Objects.equals(this.tikaMetadata, other.tikaMetadata) && this.droppedImages == other.droppedImages;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = 0;
+            result = 31 * result + Objects.hashCode(markdown);
+            result = 31 * result + Objects.hashCode(sections);
+            result = 31 * result + Objects.hashCode(tables);
+            result = 31 * result + Objects.hashCode(images);
+            result = 31 * result + Objects.hashCode(tikaMetadata);
+            result = 31 * result + Integer.hashCode(droppedImages);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "Parsed[markdown=" + markdown + ", sections=" + sections + ", tables=" + tables + ", images=" + images + ", tikaMetadata=" + tikaMetadata + ", droppedImages=" + droppedImages + "]";
         }
     }
 
-    /** 限额读流：累计字节超限即抛，避免全量入内存后才拒绝。 */
+    /**
+     * 限额读流：累计字节超限即抛，避免全量入内存后才拒绝。
+     */
     private static final class LimitedInputStream extends FilterInputStream {
 
         private final long limit;
@@ -287,8 +467,10 @@ public final class TikaDocumentParser implements DocumentParser {
         }
     }
 
-    /** 收集容器文档（docx/zip 等）内嵌图片 → base64 data URL（对齐 markitdown 的图片提取），
-     *  受数量与单图大小双限额约束（图片轰炸防护），丢弃计数透出至 metadata。 */
+    /**
+     * 收集容器文档（docx/zip 等）内嵌图片 → base64 data URL（对齐 markitdown 的图片提取），
+     * 受数量与单图大小双限额约束（图片轰炸防护），丢弃计数透出至 metadata。
+     */
     private static final class EmbeddedImageExtractor implements EmbeddedDocumentExtractor {
 
         private final int maxImages;
@@ -340,77 +522,5 @@ public final class TikaDocumentParser implements DocumentParser {
             String src = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(data);
             images.add(new DocumentImage(metadata.get("resourceName"), src));
         }
-    }
-
-    private Document map(String name, String mime, Parsed parsed) {
-        String markdown = parsed.markdown() == null ? "" : parsed.markdown().strip();
-        Map<String, Object> metadata = new HashMap<>();
-        // 全量透传 Tika 元数据（EXIF / 音频 / 办公作者时间页数等，markitdown 无此能力）
-        for (String key : parsed.tikaMetadata().names()) {
-            metadata.put(key, parsed.tikaMetadata().get(key));
-        }
-        // 规范化精选键（对 RAG 溯源友好）
-        putIfAbsent(metadata, "author", first(parsed.tikaMetadata(), "dc:creator", "Author"));
-        putIfAbsent(metadata, "created", first(parsed.tikaMetadata(), "dcterms:created", "Creation-Date"));
-        putIfAbsent(metadata, "pageCount", first(parsed.tikaMetadata(), "xmpTPg:NPages"));
-        if (properties.isEnableLanguageDetection()) {
-            putIfAbsent(metadata, "language", detectLanguage(markdown));
-        }
-        if (parsed.droppedImages() > 0) {
-            metadata.put("embeddedImagesTruncated", true);
-            log.warn("embedded images truncated: kept={}, dropped={}",
-                    parsed.images().size(), parsed.droppedImages());
-        }
-        metadata.put("source", "tika");
-        metadata.put("detectedMime", mime);
-        return new Document(
-                name == null ? "Document" : name,
-                mime,
-                SourceType.TIKA_FALLBACK,
-                parsed.sections(),
-                parsed.tables(),
-                parsed.images(),
-                markdown,
-                metadata);
-    }
-
-    private static void putIfAbsent(Map<String, Object> target, String key, Object value) {
-        if (value != null && !String.valueOf(value).isBlank() && !target.containsKey(key)) {
-            target.put(key, value);
-        }
-    }
-
-    private static String first(Metadata metadata, String... keys) {
-        for (String key : keys) {
-            String value = metadata.get(key);
-            if (value != null && !value.isBlank()) {
-                return value;
-            }
-        }
-        return null;
-    }
-
-    private static String detectLanguage(String text) {
-        try {
-            if (text == null || text.isBlank()) {
-                return null;
-            }
-            org.apache.tika.language.detect.LanguageResult result =
-                    org.apache.tika.language.detect.LanguageDetector.getDefaultLanguageDetector()
-                            .detect(text.length() > 2000 ? text.substring(0, 2000) : text);
-            String language = result.getLanguage();
-            return language == null || language.isBlank() || "unknown".equals(language) ? null : language;
-        } catch (Exception e) {
-            return null; // 语言检测不可用（无模型）不阻塞解析
-        }
-    }
-
-    /** Tika 解析产物：Markdown 全文 + 结构化字段 + 原始元数据。 */
-    private record Parsed(String markdown,
-                          List<DocumentSection> sections,
-                          List<DocumentTable> tables,
-                          List<DocumentImage> images,
-                          Metadata tikaMetadata,
-                          int droppedImages) {
     }
 }

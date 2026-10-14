@@ -15,69 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class SpeechServiceContractTest {
 
-    /** 记录型回调桩：捕获回调结果。 */
-    static final class RecordingText2VoiceCallback implements SpeechServiceText2VoiceCallback {
-        byte[] audio;
-        String failReason;
-        String cancelReason;
-
-        @Override public void onCancel(String reason) { this.cancelReason = reason; }
-        @Override public void onSuccess(byte[] audioData) { this.audio = audioData; }
-        @Override public void onFail(String reason) { this.failReason = reason; }
-    }
-
-    static final class RecordingVoice2TextCallback implements SpeechServiceVoice2TextCallback {
-        String text;
-        String failReason;
-        String cancelReason;
-
-        @Override public void onFail(String reason) { this.failReason = reason; }
-        @Override public void onCancel(String reason) { this.cancelReason = reason; }
-        @Override public void onSuccess(String text) { this.text = text; }
-    }
-
-    /** 最小端口桩：泛型实参取 String，模拟各回调路径。 */
-    static final class FakeSpeechService implements SpeechService<String> {
-
-        TTSResultVO ttsResult = TTSResultVO.builder().status(1).msg("成功")
-                .audio("audio".getBytes(StandardCharsets.UTF_8)).build();
-
-        @Override
-        public void text2Voice(String content, SpeechServiceText2VoiceCallback callback) {
-            if (callback != null) {
-                callback.onSuccess(content.getBytes(StandardCharsets.UTF_8));
-            }
-        }
-
-        @Override
-        public TTSResultVO tts(String speechConfigDto, String content) {
-            return ttsResult;
-        }
-
-        @Override
-        public void voice2TextFromWavFile(String wavFile, SpeechServiceVoice2TextCallback callback) {
-            if (callback != null) {
-                callback.onSuccess("识别文本");
-            }
-        }
-
-        @Override
-        public void voice2TextFromWavByteArray(String speechConfigDto, byte[] wavFileBytes,
-                                               SpeechServiceVoice2TextCallback callback) {
-            if (callback != null) {
-                callback.onSuccess("识别文本");
-            }
-        }
-
-        @Override
-        public void voice2TextFromMp3ByteArray(String speechConfigDto, byte[] wavFileBytes,
-                                               SpeechServiceVoice2TextCallback callback) {
-            if (callback != null) {
-                callback.onFail("NoMatch");
-            }
-        }
-    }
-
     @Test
     void text2VoiceDeliversAudioViaCallback() {
         FakeSpeechService service = new FakeSpeechService();
@@ -127,5 +64,94 @@ class SpeechServiceContractTest {
         service.text2Voice("你好", null);
         service.voice2TextFromWavByteArray(null, new byte[0], null);
         service.voice2TextFromMp3ByteArray(null, new byte[0], null);
+    }
+
+    /**
+     * 记录型回调桩：捕获回调结果。
+     */
+    static final class RecordingText2VoiceCallback implements SpeechServiceText2VoiceCallback {
+        byte[] audio;
+        String failReason;
+        String cancelReason;
+
+        @Override
+        public void onCancel(String reason) {
+            this.cancelReason = reason;
+        }
+
+        @Override
+        public void onSuccess(byte[] audioData) {
+            this.audio = audioData;
+        }
+
+        @Override
+        public void onFail(String reason) {
+            this.failReason = reason;
+        }
+    }
+
+    static final class RecordingVoice2TextCallback implements SpeechServiceVoice2TextCallback {
+        String text;
+        String failReason;
+        String cancelReason;
+
+        @Override
+        public void onFail(String reason) {
+            this.failReason = reason;
+        }
+
+        @Override
+        public void onCancel(String reason) {
+            this.cancelReason = reason;
+        }
+
+        @Override
+        public void onSuccess(String text) {
+            this.text = text;
+        }
+    }
+
+    /**
+     * 最小端口桩：泛型实参取 String，模拟各回调路径。
+     */
+    static final class FakeSpeechService implements SpeechService<String> {
+
+        TTSResultVO ttsResult = TTSResultVO.builder().status(1).msg("成功")
+                .audio("audio".getBytes(StandardCharsets.UTF_8)).build();
+
+        @Override
+        public void text2Voice(String content, SpeechServiceText2VoiceCallback callback) {
+            if (callback != null) {
+                callback.onSuccess(content.getBytes(StandardCharsets.UTF_8));
+            }
+        }
+
+        @Override
+        public TTSResultVO tts(String speechConfigDto, String content) {
+            return ttsResult;
+        }
+
+        @Override
+        public void voice2TextFromWavFile(String wavFile, SpeechServiceVoice2TextCallback callback) {
+            if (callback != null) {
+                callback.onSuccess("识别文本");
+            }
+        }
+
+        @Override
+        public void voice2TextFromWavByteArray(String speechConfigDto, byte[] wavFileBytes,
+                                               SpeechServiceVoice2TextCallback callback) {
+            if (callback != null) {
+                callback.onSuccess("识别文本");
+            }
+        }
+
+        @Override
+        public void voice2TextFromMp3ByteArray(String speechConfigDto, byte[] wavFileBytes,
+                                               SpeechServiceVoice2TextCallback callback) {
+            if (callback != null) {
+                callback.onFail("NoMatch");
+            }
+        }
     }
 }

@@ -61,6 +61,31 @@ public class GraphFlowService implements FlowService {
         this.agentService = agentService;
     }
 
+    /**
+     * DSL 的 START/END 字面量映射为图引擎常量（__START__/__END__）。
+     */
+    private static String resolveTarget(String id) {
+        if ("START".equals(id)) {
+            return StateGraph.START;
+        }
+        if ("END".equals(id)) {
+            return StateGraph.END;
+        }
+        return id;
+    }
+
+    private static AsyncNodeAction noopAction() {
+        return state -> CompletableFuture.completedFuture(Map.of());
+    }
+
+    private static String buildPrompt(FlowNodeSpec spec, OverAllState state) {
+        String prompt = spec.prompt();
+        for (Map.Entry<String, Object> entry : state.data().entrySet()) {
+            prompt = prompt.replace("{" + entry.getKey() + "}", String.valueOf(entry.getValue()));
+        }
+        return prompt;
+    }
+
     @Override
     public CompiledGraph compile(FlowDefinition definition) throws GraphStateException {
         StateGraph graph = new StateGraph();
@@ -83,21 +108,6 @@ public class GraphFlowService implements FlowService {
             graph.addEdge(resolveTarget(edge.from()), resolveTarget(edge.to()));
         }
         return graph.compile();
-    }
-
-    /** DSL 的 START/END 字面量映射为图引擎常量（__START__/__END__）。 */
-    private static String resolveTarget(String id) {
-        if ("START".equals(id)) {
-            return StateGraph.START;
-        }
-        if ("END".equals(id)) {
-            return StateGraph.END;
-        }
-        return id;
-    }
-
-    private static AsyncNodeAction noopAction() {
-        return state -> CompletableFuture.completedFuture(Map.of());
     }
 
     @Override
@@ -131,7 +141,9 @@ public class GraphFlowService implements FlowService {
         };
     }
 
-    /** AGENT 节点：prompt 作指令调 AgentService，走 reactive 路径以免在非阻塞线程上 .block()。 */
+    /**
+     * AGENT 节点：prompt 作指令调 AgentService，走 reactive 路径以免在非阻塞线程上 .block()。
+     */
     private AsyncNodeAction agentAction(FlowNodeSpec spec) {
         return state -> {
             if (agentService == null) {
@@ -148,13 +160,5 @@ public class GraphFlowService implements FlowService {
     private AsyncEdgeAction branchAction(FlowNodeSpec spec) {
         return state -> CompletableFuture.completedFuture(
                 state.value(spec.inputKey()).map(Object::toString).orElse(""));
-    }
-
-    private static String buildPrompt(FlowNodeSpec spec, OverAllState state) {
-        String prompt = spec.prompt();
-        for (Map.Entry<String, Object> entry : state.data().entrySet()) {
-            prompt = prompt.replace("{" + entry.getKey() + "}", String.valueOf(entry.getValue()));
-        }
-        return prompt;
     }
 }

@@ -18,6 +18,6 @@ public class TTSDto {
     public TTSDto() {
     }
 
-        private String text;
+    private String text;
 
 }

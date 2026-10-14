@@ -20,6 +20,24 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class PdfBoxOcrServiceTest {
 
+    private static byte[] createPdfWithText(String content) throws Exception {
+        try (PDDocument document = new PDDocument()) {
+            PDPage page = new PDPage();
+            document.addPage(page);
+            try (PDPageContentStream stream = new PDPageContentStream(document, page)) {
+                stream.beginText();
+                stream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 12);
+                stream.newLineAtOffset(60, 720);
+                stream.showText(content);
+                stream.endText();
+            }
+            try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                document.save(out);
+                return out.toByteArray();
+            }
+        }
+    }
+
     @Test
     void extractText_extractsEmbeddedPdfText() throws Exception {
         byte[] pdf = createPdfWithText("Hello Ddd4j OCR");
@@ -37,24 +55,6 @@ class PdfBoxOcrServiceTest {
             assertThat(documents).hasSize(1);
             assertThat(documents.get(0).getText()).contains("Invoice 2026");
             assertThat(documents.get(0).getMetadata()).containsEntry("sourceType", "pdf");
-        }
-    }
-
-    private static byte[] createPdfWithText(String content) throws Exception {
-        try (PDDocument document = new PDDocument()) {
-            PDPage page = new PDPage();
-            document.addPage(page);
-            try (PDPageContentStream stream = new PDPageContentStream(document, page)) {
-                stream.beginText();
-                stream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 12);
-                stream.newLineAtOffset(60, 720);
-                stream.showText(content);
-                stream.endText();
-            }
-            try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-                document.save(out);
-                return out.toByteArray();
-            }
         }
     }
 }

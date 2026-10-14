@@ -39,7 +39,7 @@ public final class SpringAiToolkitBuilder {
      * @param toolkit   目标 Toolkit，不允许为 {@code null}
      */
     public static void registerSpringAiTools(List<ToolCallback> callbacks,
-                                            io.agentscope.core.tool.Toolkit toolkit) {
+                                             io.agentscope.core.tool.Toolkit toolkit) {
         if (callbacks == null || callbacks.isEmpty()) {
             return;
         }
@@ -87,7 +87,8 @@ public final class SpringAiToolkitBuilder {
             try {
                 com.fasterxml.jackson.databind.ObjectMapper mapper =
                         new com.fasterxml.jackson.databind.ObjectMapper();
-                return mapper.readValue(schema, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+                return mapper.readValue(schema, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {
+                });
             } catch (Exception e) {
                 log.debug("tool schema not parseable as map: name={}, schema={}", getName(), schema);
                 return Collections.emptyMap();

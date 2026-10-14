@@ -86,24 +86,28 @@ public class AgentProperties {
     public static class SubagentSpec {
 
         /**
-         * 默认构造器（配置属性类由 Spring 绑定）。
+         * 子智能体名称（唯一标识）。
          */
-        public SubagentSpec() {
-        }
-
-        /** 子智能体名称（唯一标识）。 */
         private String name;
 
-        /** 描述（供父智能体路由决策）。 */
+        /**
+         * 描述（供父智能体路由决策）。
+         */
         private String description;
 
-        /** 内联智能体指令体（system prompt 片段；与 model 二选一路径）。 */
+        /**
+         * 内联智能体指令体（system prompt 片段；与 model 二选一路径）。
+         */
         private String inlineAgentsBody;
 
-        /** 子智能体模型名（可选，覆盖父模型）。 */
+        /**
+         * 子智能体模型名（可选，覆盖父模型）。
+         */
         private String model;
 
-        /** 子智能体最大迭代次数（默认继承父配置）。 */
+        /**
+         * 子智能体最大迭代次数（默认继承父配置）。
+         */
         private Integer maxIters;
     }
 }

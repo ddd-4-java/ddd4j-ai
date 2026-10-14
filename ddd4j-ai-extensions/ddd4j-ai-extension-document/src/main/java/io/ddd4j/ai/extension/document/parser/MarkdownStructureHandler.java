@@ -33,14 +33,22 @@ final class MarkdownStructureHandler extends DefaultHandler {
     private final List<DocumentImage> images = new ArrayList<>();
 
     private final StringBuilder text = new StringBuilder();
-    private String headingTag;
-
-    private boolean inTable;
-    private boolean inHeaderRow;
     private final List<List<String>> headerRows = new ArrayList<>();
     private final List<List<String>> dataRows = new ArrayList<>();
+    private String headingTag;
+    private boolean inTable;
+    private boolean inHeaderRow;
     private List<String> row;
     private StringBuilder cell;
+
+    private static boolean isHeading(String name) {
+        return name.length() == 2 && name.charAt(0) == 'h'
+                && name.charAt(1) >= '1' && name.charAt(1) <= '6';
+    }
+
+    private static int headingLevel(String name) {
+        return name.charAt(1) - '0';
+    }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -166,16 +174,9 @@ final class MarkdownStructureHandler extends DefaultHandler {
         }
     }
 
-    private static boolean isHeading(String name) {
-        return name.length() == 2 && name.charAt(0) == 'h'
-                && name.charAt(1) >= '1' && name.charAt(1) <= '6';
-    }
-
-    private static int headingLevel(String name) {
-        return name.charAt(1) - '0';
-    }
-
-    /** 构建期可变 section（DocumentSection 为不可变 record）。 */
+    /**
+     * 构建期可变 section（DocumentSection 为不可变 record）。
+     */
     private static final class MutableSection {
 
         private final String title;

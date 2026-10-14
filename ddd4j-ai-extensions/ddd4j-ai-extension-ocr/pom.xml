@@ -11,7 +11,8 @@
     </parent>
 
     <artifactId>ddd4j-ai-extension-ocr</artifactId>
-    <description>文档/图像 OCR 组件：PDFBox PDF 文本直提 + Apache Tika 多格式解析（Office/HTML/图像，可选 Tesseract OCR）</description>
+    <description>文档/图像 OCR 组件：PDFBox PDF 文本直提 + Apache Tika 多格式解析（Office/HTML/图像，可选 Tesseract OCR）
+    </description>
 
     <dependencies>
         <dependency>

@@ -67,11 +67,44 @@ public class DashScopeRealtimeTtsService implements TtsService {
      * @return Realtime TTS 实现
      */
     public static DashScopeRealtimeTtsService create(String apiKey,
-                                                      String model,
-                                                      String voice,
-                                                      TtsMetrics metrics) {
+                                                     String model,
+                                                     String voice,
+                                                     TtsMetrics metrics) {
         DashScopeRealtimeClient client = DashScopeRealtimeClient.create(apiKey, model, voice);
         return new DashScopeRealtimeTtsService(client, metrics, voice);
+    }
+
+    /**
+     * 从 DashScope 事件 JSON 中提取 audio.delta。
+     *
+     * <p>协议约定（参考 agentscope-cpp 第 5.2 节）：
+     * <pre>
+     * Server → Client:
+     *   session.created
+     *   response.audio.delta {delta: <base64 audio>}
+     *   response.audio.done
+     *   response.done
+     * </pre>
+     */
+    private static JsonObject extractAudioPayload(JsonObject event) {
+        if (event == null) {
+            return null;
+        }
+        // 形态 1: {type: "response.audio.delta", audio: {delta: "..."}}
+        if (event.has("audio") && event.get("audio").isJsonObject()) {
+            JsonObject audio = event.getAsJsonObject("audio");
+            if (audio.has("delta")) {
+                return audio;
+            }
+        }
+        // 形态 2: 直接 {delta: "..."} 或 {type, delta}
+        if (event.has("delta") && event.get("delta").isJsonPrimitive()
+                && event.get("delta").getAsJsonPrimitive().isString()) {
+            JsonObject wrapped = new JsonObject();
+            wrapped.add("delta", event.get("delta"));
+            return wrapped;
+        }
+        return null;
     }
 
     @Override
@@ -164,39 +197,6 @@ public class DashScopeRealtimeTtsService implements TtsService {
     }
 
     /**
-     * 从 DashScope 事件 JSON 中提取 audio.delta。
-     *
-     * <p>协议约定（参考 agentscope-cpp 第 5.2 节）：
-     * <pre>
-     * Server → Client:
-     *   session.created
-     *   response.audio.delta {delta: <base64 audio>}
-     *   response.audio.done
-     *   response.done
-     * </pre>
-     */
-    private static JsonObject extractAudioPayload(JsonObject event) {
-        if (event == null) {
-            return null;
-        }
-        // 形态 1: {type: "response.audio.delta", audio: {delta: "..."}}
-        if (event.has("audio") && event.get("audio").isJsonObject()) {
-            JsonObject audio = event.getAsJsonObject("audio");
-            if (audio.has("delta")) {
-                return audio;
-            }
-        }
-        // 形态 2: 直接 {delta: "..."} 或 {type, delta}
-        if (event.has("delta") && event.get("delta").isJsonPrimitive()
-                && event.get("delta").getAsJsonPrimitive().isString()) {
-            JsonObject wrapped = new JsonObject();
-            wrapped.add("delta", event.get("delta"));
-            return wrapped;
-        }
-        return null;
-    }
-
-    /**
      * 当前 TTS 指标快照（用于运维 / 测试断言）。
      *
      * @return TTFA 指标采样器
@@ -205,7 +205,9 @@ public class DashScopeRealtimeTtsService implements TtsService {
         return metrics;
     }
 
-    /** 释放底层 WebSocket 连接（业务方按需调用；spring 关闭时会自动 close）。 */
+    /**
+     * 释放底层 WebSocket 连接（业务方按需调用；spring 关闭时会自动 close）。
+     */
     public void close() {
         client.close();
     }

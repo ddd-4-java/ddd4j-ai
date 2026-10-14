@@ -17,6 +17,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class ComponentDelegationParsersTest {
 
+    private static void assertContract(DocumentParser parser, MediaType type) {
+        assertThat(parser.supports()).isEqualTo(type);
+        assertThat(parser.order()).isGreaterThan(0); // 优先于通用兜底（0）
+    }
+
     @Test
     void easypdf_supportsPdfWithHighPriority() {
         assertContract(new EasypdfDocumentParser(), MediaType.PDF);
@@ -59,10 +64,5 @@ class ComponentDelegationParsersTest {
         } finally {
             pdf.delete();
         }
-    }
-
-    private static void assertContract(DocumentParser parser, MediaType type) {
-        assertThat(parser.supports()).isEqualTo(type);
-        assertThat(parser.order()).isGreaterThan(0); // 优先于通用兜底（0）
     }
 }

@@ -22,7 +22,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class TikaOcrEnabledTest {
 
-    /** 1x1 透明 PNG（base64）。 */
+    /**
+     * 1x1 透明 PNG（base64）。
+     */
     private static final byte[] ONE_PX_PNG = Base64.getDecoder().decode(
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==");
 

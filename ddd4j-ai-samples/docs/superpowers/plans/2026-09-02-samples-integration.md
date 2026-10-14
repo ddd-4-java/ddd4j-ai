@@ -2,9 +2,11 @@
 
 ## 背景与目标
 
-当前 ddd4j-ai-samples 有 13 个 1:1 组件示例（每个 Sample 对应一个 extension 模块），但缺少**集成示例**——同时串联多个组件的真实场景。参考 spring-ai-examples（49 模块，但**没有任何一个同时集成了 RAG + Tools + Memory**），我们有机会填补这个空白。
+当前 ddd4j-ai-samples 有 13 个 1:1 组件示例（每个 Sample 对应一个 extension 模块），但缺少 **集成示例**——同时串联多个组件的真实场景。参考
+spring-ai-examples（49 模块，但 **没有任何一个同时集成了 RAG + Tools + Memory**），我们有机会填补这个空白。
 
 **目标**：在现有 13 个组件示例基础上，新增 7 个集成示例，覆盖：
+
 1. 纯对话 + 记忆（基础但完整）
 2. RAG 全链路（文档→解析→嵌入→向量库→检索→生成）
 3. 智能体（ReAct 循环 + 工具调用 + MCP + 记忆）
@@ -50,10 +52,12 @@ ddd4j-ai-samples/
 **目标**：最基础的集成——多轮对话 + 记忆（展示 chat + memory 串联）
 
 **Files:**
+
 - Create: `integrated/chat-memory/ChatMemorySample.java`
 - Modify: `ddd4j-ai-samples/pom.xml`（确保 memory + chat 依赖已有）
 
 **核心逻辑：**
+
 ```java
 @Component
 public class ChatMemorySample {
@@ -75,10 +79,12 @@ public class ChatMemorySample {
 **目标**：串联 document + embedding + vectordb + rag + chat，展示完整的 RAG 知识库流水线
 
 **Files:**
+
 - Create: `integrated/rag-pipeline/RagPipelineSample.java`
 - Modify: `ddd4j-ai-samples/pom.xml`（确保 document 依赖已有）
 
 **核心逻辑：**
+
 ```java
 @Component
 public class RagPipelineSample {
@@ -101,9 +107,11 @@ public class RagPipelineSample {
 **目标**：最复杂的集成——智能体编排 + MCP 工具 + 本地工具 + 记忆（参考 spring-ai-examples 缺失的 RAG+Tools+Memory 集成）
 
 **Files:**
+
 - Create: `integrated/agent-with-tools/AgentWithToolsSample.java`
 
 **核心逻辑：**
+
 ```java
 @Component
 public class AgentWithToolsSample {
@@ -126,9 +134,11 @@ public class AgentWithToolsSample {
 **目标**：多模型路由策略（轮询/权重/延迟）
 
 **Files:**
+
 - Create: `integrated/multi-model-router/MultiModelRouterSample.java`
 
 **核心逻辑：**
+
 ```java
 @Component
 public class MultiModelRouterSample {
@@ -150,9 +160,11 @@ public class MultiModelRouterSample {
 **目标**：文档/图片 → OCR/解析 → 智能问答（串联 ocr + document + chat）
 
 **Files:**
+
 - Create: `integrated/document-understanding/DocumentUnderstandingSample.java`
 
 **核心逻辑：**
+
 ```java
 @Component
 public class DocumentUnderstandingSample {
@@ -174,9 +186,11 @@ public class DocumentUnderstandingSample {
 **目标**：工作流编排——多节点 graph（LLM/Tool/Branch）
 
 **Files:**
+
 - Create: `integrated/workflow-orchestration/WorkflowOrchestrationSample.java`
 
 **核心逻辑：**
+
 ```java
 @Component
 public class WorkflowOrchestrationSample {
@@ -198,9 +212,11 @@ public class WorkflowOrchestrationSample {
 **目标**：多智能体协作——orchestrator + 子智能体派发 + 结果合并
 
 **Files:**
+
 - Create: `integrated/multi-agent-dispatch/MultiAgentDispatchSample.java`
 
 **核心逻辑：**
+
 ```java
 @Component
 public class MultiAgentDispatchSample {
@@ -222,10 +238,12 @@ public class MultiAgentDispatchSample {
 **目标**：提供集成示例的参考配置文件 + 更新 README
 
 **Files:**
+
 - Create: `src/main/resources/application-integrated.yml`
 - Modify: `ddd4j-ai-samples/README.md`（或项目根 README 的 samples 章节）
 
 **application-integrated.yml 内容：**
+
 ```yaml
 # ddd4j-ai 集成示例参考配置
 spring:
@@ -281,7 +299,8 @@ ddd4j:
 ## Self-Review
 
 - **填补空白**：spring-ai-examples 没有 RAG+Tools+Memory 集成——我们的 agent-with-tools 示例直接填补
-- **7 个集成示例**覆盖了 ddd4j-ai 的全部核心能力域（chat/memory/embedding/vectordb/rag/mcp/ocr/document/agent/flow/router/asr/tts/mcp）
+- **7 个集成示例**覆盖了 ddd4j-ai
+  的全部核心能力域（chat/memory/embedding/vectordb/rag/mcp/ocr/document/agent/flow/router/asr/tts/mcp）
 - **零新增依赖**：全部基于已有 extension 模块
 - **编译验证**：每个 Task 独立 commit + mvn compile 验证
 - **向后兼容**：不修改现有 13 个组件示例

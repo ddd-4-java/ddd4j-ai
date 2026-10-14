@@ -25,6 +25,108 @@ class FallbackTtsRouterTest {
         return s.getBytes(StandardCharsets.UTF_8);
     }
 
+    private static TtsService fake(String name, byte[] bytes) {
+        return new TtsService() {
+            @Override
+            public byte[] synthesize(String text, String voice) {
+                return bytes;
+            }
+
+            @Override
+            public Flux<byte[]> streamSynthesize(String text, String voice) {
+                return Flux.just(bytes);
+            }
+
+            @Override
+            public String toString() {
+                return name;
+            }
+        };
+    }
+
+    private static TtsService fakeStream(String name, List<byte[]> chunks) {
+        return new TtsService() {
+            @Override
+            public byte[] synthesize(String text, String voice) throws Exception {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public Flux<byte[]> streamSynthesize(String text, String voice) {
+                return Flux.fromIterable(chunks);
+            }
+
+            @Override
+            public String toString() {
+                return name;
+            }
+        };
+    }
+
+    private static TtsService failing(String name, RuntimeException ex) {
+        return new TtsService() {
+            @Override
+            public byte[] synthesize(String text, String voice) {
+                throw ex;
+            }
+
+            @Override
+            public Flux<byte[]> streamSynthesize(String text, String voice) {
+                return Flux.error(ex);
+            }
+
+            @Override
+            public String toString() {
+                return name;
+            }
+        };
+    }
+
+    private static TtsService failingStream(String name, RuntimeException ex) {
+        return new TtsService() {
+            @Override
+            public byte[] synthesize(String text, String voice) {
+                throw ex;
+            }
+
+            @Override
+            public Flux<byte[]> streamSynthesize(String text, String voice) {
+                return Flux.error(ex);
+            }
+
+            @Override
+            public String toString() {
+                return name;
+            }
+        };
+    }
+
+    private static TtsService partialStream(String name, List<byte[]> chunks, RuntimeException errorAfter) {
+        return new TtsService() {
+            @Override
+            public byte[] synthesize(String text, String voice) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public Flux<byte[]> streamSynthesize(String text, String voice) {
+                return Flux.fromIterable(chunks).concatWith(Flux.error(errorAfter));
+            }
+
+            @Override
+            public String toString() {
+                return name;
+            }
+        };
+    }
+
+    private static Map<String, TtsService> ordered(String k1, TtsService v1, String k2, TtsService v2) {
+        Map<String, TtsService> map = new LinkedHashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        return map;
+    }
+
     @Test
     void rejectsEmptyBackendChain() {
         assertThatThrownBy(() -> new FallbackTtsRouter(Map.of()))
@@ -128,107 +230,5 @@ class FallbackTtsRouterTest {
         // 不可变
         org.junit.jupiter.api.Assertions.assertThrows(UnsupportedOperationException.class,
                 () -> router.backendNames().add("c"));
-    }
-
-    private static TtsService fake(String name, byte[] bytes) {
-        return new TtsService() {
-            @Override
-            public byte[] synthesize(String text, String voice) {
-                return bytes;
-            }
-
-            @Override
-            public Flux<byte[]> streamSynthesize(String text, String voice) {
-                return Flux.just(bytes);
-            }
-
-            @Override
-            public String toString() {
-                return name;
-            }
-        };
-    }
-
-    private static TtsService fakeStream(String name, List<byte[]> chunks) {
-        return new TtsService() {
-            @Override
-            public byte[] synthesize(String text, String voice) throws Exception {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public Flux<byte[]> streamSynthesize(String text, String voice) {
-                return Flux.fromIterable(chunks);
-            }
-
-            @Override
-            public String toString() {
-                return name;
-            }
-        };
-    }
-
-    private static TtsService failing(String name, RuntimeException ex) {
-        return new TtsService() {
-            @Override
-            public byte[] synthesize(String text, String voice) {
-                throw ex;
-            }
-
-            @Override
-            public Flux<byte[]> streamSynthesize(String text, String voice) {
-                return Flux.error(ex);
-            }
-
-            @Override
-            public String toString() {
-                return name;
-            }
-        };
-    }
-
-    private static TtsService failingStream(String name, RuntimeException ex) {
-        return new TtsService() {
-            @Override
-            public byte[] synthesize(String text, String voice) {
-                throw ex;
-            }
-
-            @Override
-            public Flux<byte[]> streamSynthesize(String text, String voice) {
-                return Flux.error(ex);
-            }
-
-            @Override
-            public String toString() {
-                return name;
-            }
-        };
-    }
-
-    private static TtsService partialStream(String name, List<byte[]> chunks, RuntimeException errorAfter) {
-        return new TtsService() {
-            @Override
-            public byte[] synthesize(String text, String voice) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public Flux<byte[]> streamSynthesize(String text, String voice) {
-                return Flux.fromIterable(chunks).concatWith(Flux.error(errorAfter));
-            }
-
-            @Override
-            public String toString() {
-                return name;
-            }
-        };
-    }
-
-    private static Map<String, TtsService> ordered(String k1, TtsService v1, String k2, TtsService v2) {
-        Map<String, TtsService> map = new LinkedHashMap<>();
-        map.put(k1, v1);
-        map.put(k2, v2);
-        return map;
     }
 }

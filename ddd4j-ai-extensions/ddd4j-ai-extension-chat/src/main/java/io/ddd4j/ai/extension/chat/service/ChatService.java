@@ -20,7 +20,7 @@ public interface ChatService {
     /**
      * 多轮对话：以 conversationId 关联会话记忆，本轮问答自动写回记忆。
      *
-     * @param message         用户消息
+     * @param message        用户消息
      * @param conversationId 会话标识
      * @return 模型回答
      */

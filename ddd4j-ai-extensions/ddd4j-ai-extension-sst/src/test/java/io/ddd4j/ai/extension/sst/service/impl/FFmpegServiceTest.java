@@ -36,7 +36,9 @@ class FFmpegServiceTest {
         }
     }
 
-    /** 生成 16kHz 单声道 16bit PCM 正弦波 WAV。 */
+    /**
+     * 生成 16kHz 单声道 16bit PCM 正弦波 WAV。
+     */
     static byte[] sineWav(int sampleRate, double seconds) {
         int samples = (int) (sampleRate * seconds);
         int dataSize = samples * 2;

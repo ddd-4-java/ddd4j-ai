@@ -4,11 +4,13 @@
 
 ## 设计哲学
 
-本扩展的设计哲学借鉴自 [agentscope-cpp 的 TTS 技术决策](../workspace-tinyclaw-ai/agentscope-cpp/docs/superpowers/plans/2026-09-10-tts-tech-decision.md)，核心要点：
+本扩展的设计哲学借鉴自 [agentscope-cpp 的 TTS 技术决策](../workspace-tinyclaw-ai/agentscope-cpp/docs/superpowers/plans/2026-09-10-tts-tech-decision.md)
+，核心要点：
 
 1. **TTFA（Time-to-First-Audio）优先于总合成时长** — 对话式 AI 的"听感延迟"由首块决定，而不是"全部说完的时间"。
 2. **流式文本输入 → 流式音频输出** — 不等 LLM 生成完整回答，按文本增量分批送 TTS。
-3. **WebSocket 长连接 vs 一次性 HTTP** — DashScope Realtime API 通过长连接维持会话状态，TTFA ~97ms（一次性 HTTP 调用 Edge TTS 约 500-1500ms）。
+3. **WebSocket 长连接 vs 一次性 HTTP** — DashScope Realtime API 通过长连接维持会话状态，TTFA ~97ms（一次性 HTTP 调用 Edge
+   TTS 约 500-1500ms）。
 4. **TextChunker 按标点边界切分** — max=24 chars / min=1 char，避免 TTS 在词中被截断产生碎片音频。
 5. **三级降级路由** — 在线 API → 本地兜底，主后端不可用时自动降级。
 
@@ -105,10 +107,10 @@ public class MyVoiceService {
 
 ## 性能对比
 
-| 后端 | TTFA | 流式 | API key | 推荐场景 |
-|------|------|------|---------|---------|
-| **DashScope Qwen3-TTS Realtime** | **~97ms** ⭐ | ✅ 真正流式 | 需要（阿里云百炼） | **生产首选** |
-| Edge TTS | 500-1500ms | ❌ 单元素流 | 免费 | 开发兜底 / 弱网 |
+| 后端                             | TTFA         | 流式        | API key            | 推荐场景        |
+|----------------------------------|--------------|-------------|--------------------|-----------------|
+| **DashScope Qwen3-TTS Realtime** | **~97ms** ⭐ | ✅ 真正流式 | 需要（阿里云百炼） | **生产首选**    |
+| Edge TTS                         | 500-1500ms   | ❌ 单元素流 | 免费               | 开发兜底 / 弱网 |
 
 > 数据来源：agentscope-cpp `2026-09-10-tts-tech-decision.md` §1.1 横向对比表。
 
@@ -125,7 +127,8 @@ public interface TtsRouter extends TtsService {
 }
 ```
 
-`TtsRouter` 继承 `TtsService`，业务方可统一注入（推荐）或按需注入命名 Bean（`edgeTtsService` / `dashScopeRealtimeTtsService`）。
+`TtsRouter` 继承 `TtsService`，业务方可统一注入（推荐）或按需注入命名 Bean（`edgeTtsService` /
+`dashScopeRealtimeTtsService`）。
 
 ## TTFA 指标
 
@@ -143,14 +146,14 @@ metrics.logSummary(logger);
 
 ## 与 agentscope-cpp 的对偶设计
 
-| agentscope-cpp | ddd4j-ai |
-|----------------|----------|
-| `StreamFirstChunkMiddleware` | `TextDeltaTtsBridge` |
-| `TextChunker` (max=24) | `TextChunker` (max=24) |
+| agentscope-cpp                | ddd4j-ai                                                  |
+|-------------------------------|-----------------------------------------------------------|
+| `StreamFirstChunkMiddleware`  | `TextDeltaTtsBridge`                                      |
+| `TextChunker` (max=24)        | `TextChunker` (max=24)                                    |
 | `Qwen3TtsRealtimeClient` (WS) | `DashScopeRealtimeTtsService` + `DashScopeRealtimeClient` |
-| `LocalTtsFallback` | `EdgeTtsService` |
-| `TtsRouter`（三级路由）| `FallbackTtsRouter`（primary → fallback）|
-| TTFA 指标（profiler）| `TtsMetrics`（自维护 + Logger）|
+| `LocalTtsFallback`            | `EdgeTtsService`                                          |
+| `TtsRouter`（三级路由）       | `FallbackTtsRouter`（primary → fallback）                 |
+| TTFA 指标（profiler）         | `TtsMetrics`（自维护 + Logger）                           |
 
 ## 不在 v1 范围
 
@@ -162,4 +165,4 @@ metrics.logSummary(logger);
 ## 已知限制
 
 - Edge TTS 受 whitemagic 库限制，整段合成后才返回 mp3 字节，`streamSynthesize` 实际是单元素 Flux。
-- DashScope 后端在 WebSocket 断开 / API 限流时会自动降级到 Edge，但**中途音频格式混杂**——上层播放器应能容忍。
+- DashScope 后端在 WebSocket 断开 / API 限流时会自动降级到 Edge，但 **中途音频格式混杂**——上层播放器应能容忍。

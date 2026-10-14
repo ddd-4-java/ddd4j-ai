@@ -19,24 +19,6 @@ class FlowAutoConfigurationTest {
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(FlowAutoConfiguration.class));
 
-    @Test
-    void backsOffWithoutChatService() {
-        contextRunner.run(context -> assertThat(context).doesNotHaveBean(FlowService.class));
-    }
-
-    @Test
-    void registersFlowServiceWithChatService() {
-        contextRunner.withBean(ChatService.class, FlowAutoConfigurationTest::stubChatService)
-                .run(context -> assertThat(context).hasSingleBean(FlowService.class));
-    }
-
-    @Test
-    void backsOffWhenDisabled() {
-        contextRunner.withBean(ChatService.class, FlowAutoConfigurationTest::stubChatService)
-                .withPropertyValues("ddd4j.ai.flow.enabled=false")
-                .run(context -> assertThat(context).doesNotHaveBean(FlowService.class));
-    }
-
     private static ChatService stubChatService() {
         return new ChatService() {
             @Override
@@ -54,5 +36,23 @@ class FlowAutoConfigurationTest {
                 return Flux.just("stub");
             }
         };
+    }
+
+    @Test
+    void backsOffWithoutChatService() {
+        contextRunner.run(context -> assertThat(context).doesNotHaveBean(FlowService.class));
+    }
+
+    @Test
+    void registersFlowServiceWithChatService() {
+        contextRunner.withBean(ChatService.class, FlowAutoConfigurationTest::stubChatService)
+                .run(context -> assertThat(context).hasSingleBean(FlowService.class));
+    }
+
+    @Test
+    void backsOffWhenDisabled() {
+        contextRunner.withBean(ChatService.class, FlowAutoConfigurationTest::stubChatService)
+                .withPropertyValues("ddd4j.ai.flow.enabled=false")
+                .run(context -> assertThat(context).doesNotHaveBean(FlowService.class));
     }
 }

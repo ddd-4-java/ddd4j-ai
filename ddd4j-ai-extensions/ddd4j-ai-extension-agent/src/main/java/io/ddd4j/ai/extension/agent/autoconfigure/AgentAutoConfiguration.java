@@ -40,9 +40,37 @@ import java.util.List;
 public class AgentAutoConfiguration {
 
     /**
-     * 默认构造器（自动装配类无状态）。
+     * 将 {@code AgentProperties#getSubagents()} 声明转换为 Agentscope 子智能体声明列表（静态供测试）。
+     *
+     * @param properties 智能体配置属性
+     * @return 转换后的子智能体声明列表，未配置或全部无效时返回空列表
      */
-    public AgentAutoConfiguration() {
+    public static List<io.agentscope.harness.agent.subagent.SubagentDeclaration> parseSubagents(
+            AgentProperties properties) {
+        if (properties.getSubagents() == null || properties.getSubagents().isEmpty()) {
+            return List.of();
+        }
+        return properties.getSubagents().stream()
+                .filter(spec -> spec.getName() != null && !spec.getName().isBlank())
+                .map(spec -> {
+                    io.agentscope.harness.agent.subagent.SubagentDeclaration.Builder sub =
+                            io.agentscope.harness.agent.subagent.SubagentDeclaration.builder()
+                                    .name(spec.getName());
+                    if (spec.getDescription() != null) {
+                        sub.description(spec.getDescription());
+                    }
+                    if (spec.getInlineAgentsBody() != null) {
+                        sub.inlineAgentsBody(spec.getInlineAgentsBody());
+                    }
+                    if (spec.getModel() != null) {
+                        sub.model(spec.getModel());
+                    }
+                    if (spec.getMaxIters() != null) {
+                        sub.maxIters(spec.getMaxIters());
+                    }
+                    return sub.build();
+                })
+                .toList();
     }
 
     /**
@@ -131,40 +159,6 @@ public class AgentAutoConfiguration {
             builder.model(model);
         }
         return builder.build();
-    }
-
-    /**
-     * 将 {@code AgentProperties#getSubagents()} 声明转换为 Agentscope 子智能体声明列表（静态供测试）。
-     *
-     * @param properties 智能体配置属性
-     * @return 转换后的子智能体声明列表，未配置或全部无效时返回空列表
-     */
-    public static List<io.agentscope.harness.agent.subagent.SubagentDeclaration> parseSubagents(
-            AgentProperties properties) {
-        if (properties.getSubagents() == null || properties.getSubagents().isEmpty()) {
-            return List.of();
-        }
-        return properties.getSubagents().stream()
-                .filter(spec -> spec.getName() != null && !spec.getName().isBlank())
-                .map(spec -> {
-                    io.agentscope.harness.agent.subagent.SubagentDeclaration.Builder sub =
-                            io.agentscope.harness.agent.subagent.SubagentDeclaration.builder()
-                                    .name(spec.getName());
-                    if (spec.getDescription() != null) {
-                        sub.description(spec.getDescription());
-                    }
-                    if (spec.getInlineAgentsBody() != null) {
-                        sub.inlineAgentsBody(spec.getInlineAgentsBody());
-                    }
-                    if (spec.getModel() != null) {
-                        sub.model(spec.getModel());
-                    }
-                    if (spec.getMaxIters() != null) {
-                        sub.maxIters(spec.getMaxIters());
-                    }
-                    return sub.build();
-                })
-                .toList();
     }
 
     /**

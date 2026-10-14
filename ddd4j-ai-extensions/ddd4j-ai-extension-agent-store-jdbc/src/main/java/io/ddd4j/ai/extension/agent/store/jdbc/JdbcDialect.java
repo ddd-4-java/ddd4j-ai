@@ -36,6 +36,41 @@ public enum JdbcDialect {
     private static final String INDEX = "idx_ddd4j_ai_dispatch_plan";
 
     /**
+     * 按数据库产品名选择方言；未知或 {@code null} 回落 H2 兼容写法。
+     *
+     * @param productName 数据库产品名（如 {@code MySQL}、{@code PostgreSQL}），可为 {@code null}
+     * @return 匹配到的方言，无法识别时返回 {@link #H2}
+     */
+    public static JdbcDialect forProductName(String productName) {
+        if (productName == null) {
+            return H2;
+        }
+        String normalized = productName.toLowerCase();
+        if (normalized.contains("mysql") || normalized.contains("mariadb")) {
+            return MYSQL;
+        }
+        if (normalized.contains("postgres")) {
+            return POSTGRESQL;
+        }
+        return H2;
+    }
+
+    /**
+     * 从连接元数据探测方言。
+     *
+     * @param dataSource 用于读取元数据的数据源
+     * @return 探测到的方言
+     * @throws IllegalStateException 连接或读取元数据失败时抛出
+     */
+    public static JdbcDialect from(DataSource dataSource) {
+        try (Connection connection = dataSource.getConnection()) {
+            return forProductName(connection.getMetaData().getDatabaseProductName());
+        } catch (SQLException e) {
+            throw new IllegalStateException("无法探测数据库方言: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * 返回本方言建表时大文本列应使用的 SQL 类型。
      *
      * @return MySQL 返回 {@code MEDIUMTEXT}（16MB）；其余返回 {@code TEXT}（PostgreSQL/H2 的 TEXT 无实际上限）
@@ -89,40 +124,5 @@ public enum JdbcDialect {
                     + " result=EXCLUDED.result, created_at=EXCLUDED.created_at";
             case H2 -> "MERGE INTO " + TABLE + " " + columns + " KEY(id) VALUES " + values;
         };
-    }
-
-    /**
-     * 按数据库产品名选择方言；未知或 {@code null} 回落 H2 兼容写法。
-     *
-     * @param productName 数据库产品名（如 {@code MySQL}、{@code PostgreSQL}），可为 {@code null}
-     * @return 匹配到的方言，无法识别时返回 {@link #H2}
-     */
-    public static JdbcDialect forProductName(String productName) {
-        if (productName == null) {
-            return H2;
-        }
-        String normalized = productName.toLowerCase();
-        if (normalized.contains("mysql") || normalized.contains("mariadb")) {
-            return MYSQL;
-        }
-        if (normalized.contains("postgres")) {
-            return POSTGRESQL;
-        }
-        return H2;
-    }
-
-    /**
-     * 从连接元数据探测方言。
-     *
-     * @param dataSource 用于读取元数据的数据源
-     * @return 探测到的方言
-     * @throws IllegalStateException 连接或读取元数据失败时抛出
-     */
-    public static JdbcDialect from(DataSource dataSource) {
-        try (Connection connection = dataSource.getConnection()) {
-            return forProductName(connection.getMetaData().getDatabaseProductName());
-        } catch (SQLException e) {
-            throw new IllegalStateException("无法探测数据库方言: " + e.getMessage(), e);
-        }
     }
 }

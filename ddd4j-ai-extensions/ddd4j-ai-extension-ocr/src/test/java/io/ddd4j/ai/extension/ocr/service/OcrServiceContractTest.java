@@ -18,36 +18,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class OcrServiceContractTest {
 
-    /** 桩实现：固定返回文本与单篇文档，可配置抛错验证错误路径。 */
-    static class FakeOcrService implements OcrService {
-
-        private final RuntimeException failure;
-
-        FakeOcrService() {
-            this(null);
-        }
-
-        FakeOcrService(RuntimeException failure) {
-            this.failure = failure;
-        }
-
-        @Override
-        public String extractText(InputStream input, MediaType mediaType) {
-            if (failure != null) {
-                throw failure;
-            }
-            return "extracted";
-        }
-
-        @Override
-        public List<Document> extract(InputStream input, MediaType mediaType) {
-            if (failure != null) {
-                throw failure;
-            }
-            return List.of(new Document.Builder().text("extracted").build());
-        }
-    }
-
     private final InputStream sample = new ByteArrayInputStream("sample".getBytes());
 
     @Test
@@ -77,5 +47,37 @@ class OcrServiceContractTest {
         assertThatThrownBy(() -> new FakeOcrService(cause).extract(sample, MediaType.TEXT_PLAIN))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("engine down");
+    }
+
+    /**
+     * 桩实现：固定返回文本与单篇文档，可配置抛错验证错误路径。
+     */
+    static class FakeOcrService implements OcrService {
+
+        private final RuntimeException failure;
+
+        FakeOcrService() {
+            this(null);
+        }
+
+        FakeOcrService(RuntimeException failure) {
+            this.failure = failure;
+        }
+
+        @Override
+        public String extractText(InputStream input, MediaType mediaType) {
+            if (failure != null) {
+                throw failure;
+            }
+            return "extracted";
+        }
+
+        @Override
+        public List<Document> extract(InputStream input, MediaType mediaType) {
+            if (failure != null) {
+                throw failure;
+            }
+            return List.of(new Document.Builder().text("extracted").build());
+        }
     }
 }

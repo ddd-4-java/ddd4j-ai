@@ -174,8 +174,8 @@ class DashScopeRealtimeTtsServiceTest {
      */
     static final class FakeDashScopeRealtimeClient implements DashScopeRealtimeClient {
 
-        private final AtomicInteger connectCalls = new AtomicInteger();
         final List<String> appendedTexts = new CopyOnWriteArrayList<>();
+        private final AtomicInteger connectCalls = new AtomicInteger();
         private final AtomicInteger commitCalls = new AtomicInteger();
         private final AtomicInteger finishCalls = new AtomicInteger();
         private final AtomicInteger closeCalls = new AtomicInteger();

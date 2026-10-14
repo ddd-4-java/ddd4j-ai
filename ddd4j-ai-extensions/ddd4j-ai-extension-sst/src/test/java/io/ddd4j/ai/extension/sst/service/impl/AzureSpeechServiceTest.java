@@ -1,5 +1,9 @@
 package io.ddd4j.ai.extension.sst.service.impl;
 
+import java.beans.ConstructorProperties;
+
+import java.util.Objects;
+
 import com.microsoft.cognitiveservices.speech.CancellationDetails;
 import com.microsoft.cognitiveservices.speech.CancellationReason;
 import com.microsoft.cognitiveservices.speech.ResultReason;
@@ -43,26 +47,132 @@ import static org.mockito.Mockito.when;
  */
 class AzureSpeechServiceTest {
 
-    /** 记录型 TTS 回调。 */
-    static class RecText2Voice implements SpeechServiceText2VoiceCallback {
-        byte[] audio;
-        String fail;
-        String cancel;
+/**
+     * 组装 STT 路径的全部 mock 资源（调用方在 try-with-resources 中逐个关闭）。
+     */
+    final static class SttMocks implements AutoCloseable {
 
-        @Override public void onCancel(String reason) { this.cancel = reason; }
-        @Override public void onSuccess(byte[] audioData) { this.audio = audioData; }
-        @Override public void onFail(String reason) { this.fail = reason; }
-    }
+        private static final long serialVersionUID = 0L;
 
-    /** 记录型 STT 回调。 */
-    static class RecVoice2Text implements SpeechServiceVoice2TextCallback {
-        String text;
-        String fail;
-        String cancel;
+        private final MockedStatic<SpeechConfig> speechConfigStatic;
 
-        @Override public void onFail(String reason) { this.fail = reason; }
-        @Override public void onCancel(String reason) { this.cancel = reason; }
-        @Override public void onSuccess(String text) { this.text = text; }
+        private final MockedStatic<AudioInputStream> audioStreamStatic;
+
+        private final MockedStatic<AudioConfig> audioConfigStatic;
+
+        private final MockedStatic<CancellationDetails> detailsStatic;
+
+        private final MockedConstruction<SpeechRecognizer> recognizerCtor;
+
+        static SttMocks setup(ResultReason reason, String text, String errorDetails) {
+            SpeechConfig configMock = mock(SpeechConfig.class);
+            PushAudioInputStream pushMock = mock(PushAudioInputStream.class);
+            AudioConfig audioConfigMock = mock(AudioConfig.class);
+            SpeechRecognitionResult resultMock = mock(SpeechRecognitionResult.class);
+            when(resultMock.getReason()).thenReturn(reason);
+            when(resultMock.getText()).thenReturn(text);
+            MockedStatic<SpeechConfig> speechConfigStatic = mockStatic(SpeechConfig.class);
+            speechConfigStatic.when(() -> SpeechConfig.fromSubscription(anyString(), anyString())).thenReturn(configMock);
+            MockedStatic<AudioInputStream> audioStreamStatic = mockStatic(AudioInputStream.class);
+            audioStreamStatic.when(AudioInputStream::createPushStream).thenReturn(pushMock);
+            MockedStatic<AudioConfig> audioConfigStatic = mockStatic(AudioConfig.class);
+            audioConfigStatic.when(() -> AudioConfig.fromStreamInput(pushMock)).thenReturn(audioConfigMock);
+            MockedStatic<CancellationDetails> detailsStatic = mockStatic(CancellationDetails.class);
+            if (errorDetails != null) {
+                CancellationDetails detailsMock = mock(CancellationDetails.class);
+                when(detailsMock.getReason()).thenReturn(CancellationReason.Error);
+                when(detailsMock.getErrorDetails()).thenReturn(errorDetails);
+                detailsStatic.when(() -> CancellationDetails.fromResult(resultMock)).thenReturn(detailsMock);
+            }
+            MockedConstruction<SpeechRecognizer> recognizerCtor = mockConstruction(SpeechRecognizer.class, (recognizer, ctx) -> when(recognizer.recognizeOnceAsync()).thenReturn(CompletableFuture.completedFuture(resultMock)));
+            return new SttMocks(speechConfigStatic, audioStreamStatic, audioConfigStatic, detailsStatic, recognizerCtor);
+        }
+
+        @Override
+        public void close() {
+            recognizerCtor.close();
+            detailsStatic.close();
+            audioConfigStatic.close();
+            audioStreamStatic.close();
+            speechConfigStatic.close();
+        }
+
+        @ConstructorProperties({ "speechConfigStatic", "audioStreamStatic", "audioConfigStatic", "detailsStatic", "recognizerCtor" })
+        SttMocks(MockedStatic<SpeechConfig> speechConfigStatic, MockedStatic<AudioInputStream> audioStreamStatic, MockedStatic<AudioConfig> audioConfigStatic, MockedStatic<CancellationDetails> detailsStatic, MockedConstruction<SpeechRecognizer> recognizerCtor) {
+            this.speechConfigStatic = speechConfigStatic;
+            this.audioStreamStatic = audioStreamStatic;
+            this.audioConfigStatic = audioConfigStatic;
+            this.detailsStatic = detailsStatic;
+            this.recognizerCtor = recognizerCtor;
+        }
+
+        public MockedStatic<SpeechConfig> speechConfigStatic() {
+            return speechConfigStatic;
+        }
+
+        public MockedStatic<AudioInputStream> audioStreamStatic() {
+            return audioStreamStatic;
+        }
+
+        public MockedStatic<AudioConfig> audioConfigStatic() {
+            return audioConfigStatic;
+        }
+
+        public MockedStatic<CancellationDetails> detailsStatic() {
+            return detailsStatic;
+        }
+
+        public MockedConstruction<SpeechRecognizer> recognizerCtor() {
+            return recognizerCtor;
+        }
+
+        public MockedStatic<SpeechConfig> getSpeechConfigStatic() {
+            return speechConfigStatic();
+        }
+
+        public MockedStatic<AudioInputStream> getAudioStreamStatic() {
+            return audioStreamStatic();
+        }
+
+        public MockedStatic<AudioConfig> getAudioConfigStatic() {
+            return audioConfigStatic();
+        }
+
+        public MockedStatic<CancellationDetails> getDetailsStatic() {
+            return detailsStatic();
+        }
+
+        public MockedConstruction<SpeechRecognizer> getRecognizerCtor() {
+            return recognizerCtor();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (Objects.isNull(obj) || getClass() != obj.getClass()) {
+                return false;
+            }
+            SttMocks other = (SttMocks) obj;
+            return Objects.equals(this.speechConfigStatic, other.speechConfigStatic) && Objects.equals(this.audioStreamStatic, other.audioStreamStatic) && Objects.equals(this.audioConfigStatic, other.audioConfigStatic) && Objects.equals(this.detailsStatic, other.detailsStatic) && Objects.equals(this.recognizerCtor, other.recognizerCtor);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = 0;
+            result = 31 * result + Objects.hashCode(speechConfigStatic);
+            result = 31 * result + Objects.hashCode(audioStreamStatic);
+            result = 31 * result + Objects.hashCode(audioConfigStatic);
+            result = 31 * result + Objects.hashCode(detailsStatic);
+            result = 31 * result + Objects.hashCode(recognizerCtor);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "SttMocks[speechConfigStatic=" + speechConfigStatic + ", audioStreamStatic=" + audioStreamStatic + ", audioConfigStatic=" + audioConfigStatic + ", detailsStatic=" + detailsStatic + ", recognizerCtor=" + recognizerCtor + "]";
+        }
     }
 
     @BeforeAll
@@ -88,7 +198,9 @@ class AzureSpeechServiceTest {
         return properties;
     }
 
-    /** 用原生反射注入 properties 字段，避免对 spring-test 的依赖。 */
+    /**
+     * 用原生反射注入 properties 字段，避免对 spring-test 的依赖。
+     */
     private static AzureSpeechService newService() throws Exception {
         AzureSpeechService service = new AzureSpeechService();
         Field field = AzureSpeechService.class.getDeclaredField("azureSpeechProperties");
@@ -96,8 +208,6 @@ class AzureSpeechServiceTest {
         field.set(service, properties());
         return service;
     }
-
-    // ---------- afterPropertiesSet ----------
 
     @Test
     void afterPropertiesSetBuildsConfigFromProperties() throws Exception {
@@ -115,7 +225,7 @@ class AzureSpeechServiceTest {
         }
     }
 
-    // ---------- tts：同步合成 ----------
+    // ---------- afterPropertiesSet ----------
 
     @Test
     void ttsSuccessReturnsAudio() throws Exception {
@@ -143,6 +253,8 @@ class AzureSpeechServiceTest {
             assertThat(result.getAudio()).isEqualTo(audio);
         }
     }
+
+    // ---------- tts：同步合成 ----------
 
     @Test
     void ttsCanceledReturnsFailureVo() throws Exception {
@@ -177,8 +289,6 @@ class AzureSpeechServiceTest {
         }
     }
 
-    // ---------- text2Voice：回调合成 ----------
-
     @Test
     void text2VoiceSuccessInvokesOnSuccess() throws Exception {
         byte[] audio = new byte[]{9, 8, 7};
@@ -205,6 +315,8 @@ class AzureSpeechServiceTest {
             assertThat(callback.fail).isNull();
         }
     }
+
+    // ---------- text2Voice：回调合成 ----------
 
     @Test
     void text2VoiceCanceledInvokesOnFail() throws Exception {
@@ -238,60 +350,11 @@ class AzureSpeechServiceTest {
         }
     }
 
+
+
     // ---------- voice2TextFromWavByteArray：识别分支 ----------
 
-    /** 组装 STT 路径的全部 mock 资源（调用方在 try-with-resources 中逐个关闭）。 */
-    record SttMocks(MockedStatic<SpeechConfig> speechConfigStatic,
-                    MockedStatic<AudioInputStream> audioStreamStatic,
-                    MockedStatic<AudioConfig> audioConfigStatic,
-                    MockedStatic<CancellationDetails> detailsStatic,
-                    MockedConstruction<SpeechRecognizer> recognizerCtor) implements AutoCloseable {
-
-        static SttMocks setup(ResultReason reason, String text, String errorDetails) {
-            SpeechConfig configMock = mock(SpeechConfig.class);
-            PushAudioInputStream pushMock = mock(PushAudioInputStream.class);
-            AudioConfig audioConfigMock = mock(AudioConfig.class);
-            SpeechRecognitionResult resultMock = mock(SpeechRecognitionResult.class);
-            when(resultMock.getReason()).thenReturn(reason);
-            when(resultMock.getText()).thenReturn(text);
-
-            MockedStatic<SpeechConfig> speechConfigStatic = mockStatic(SpeechConfig.class);
-            speechConfigStatic.when(() -> SpeechConfig.fromSubscription(anyString(), anyString()))
-                    .thenReturn(configMock);
-
-            MockedStatic<AudioInputStream> audioStreamStatic = mockStatic(AudioInputStream.class);
-            audioStreamStatic.when(AudioInputStream::createPushStream).thenReturn(pushMock);
-
-            MockedStatic<AudioConfig> audioConfigStatic = mockStatic(AudioConfig.class);
-            audioConfigStatic.when(() -> AudioConfig.fromStreamInput(pushMock)).thenReturn(audioConfigMock);
-
-            MockedStatic<CancellationDetails> detailsStatic = mockStatic(CancellationDetails.class);
-            if (errorDetails != null) {
-                CancellationDetails detailsMock = mock(CancellationDetails.class);
-                when(detailsMock.getReason()).thenReturn(CancellationReason.Error);
-                when(detailsMock.getErrorDetails()).thenReturn(errorDetails);
-                detailsStatic.when(() -> CancellationDetails.fromResult(resultMock)).thenReturn(detailsMock);
-            }
-
-            MockedConstruction<SpeechRecognizer> recognizerCtor = mockConstruction(SpeechRecognizer.class,
-                    (recognizer, ctx) -> when(recognizer.recognizeOnceAsync())
-                            .thenReturn(CompletableFuture.completedFuture(resultMock)));
-
-            return new SttMocks(speechConfigStatic, audioStreamStatic, audioConfigStatic,
-                    detailsStatic, recognizerCtor);
-        }
-
-        @Override
-        public void close() {
-            recognizerCtor.close();
-            detailsStatic.close();
-            audioConfigStatic.close();
-            audioStreamStatic.close();
-            speechConfigStatic.close();
-        }
-    }
-
-    @Test
+        @Test
     void voice2TextRecognizedInvokesOnSuccess() throws Exception {
         try (SttMocks mocks = SttMocks.setup(ResultReason.RecognizedSpeech, "你好世界", null)) {
             AzureSpeechService service = newService();
@@ -330,6 +393,54 @@ class AzureSpeechServiceTest {
             service.voice2TextFromWavByteArray(null, new byte[]{0, 1}, callback);
 
             assertThat(callback.cancel).isEqualTo("connection lost");
+        }
+    }
+
+    /**
+     * 记录型 TTS 回调。
+     */
+    static class RecText2Voice implements SpeechServiceText2VoiceCallback {
+        byte[] audio;
+        String fail;
+        String cancel;
+
+        @Override
+        public void onCancel(String reason) {
+            this.cancel = reason;
+        }
+
+        @Override
+        public void onSuccess(byte[] audioData) {
+            this.audio = audioData;
+        }
+
+        @Override
+        public void onFail(String reason) {
+            this.fail = reason;
+        }
+    }
+
+    /**
+     * 记录型 STT 回调。
+     */
+    static class RecVoice2Text implements SpeechServiceVoice2TextCallback {
+        String text;
+        String fail;
+        String cancel;
+
+        @Override
+        public void onFail(String reason) {
+            this.fail = reason;
+        }
+
+        @Override
+        public void onCancel(String reason) {
+            this.cancel = reason;
+        }
+
+        @Override
+        public void onSuccess(String text) {
+            this.text = text;
         }
     }
 }

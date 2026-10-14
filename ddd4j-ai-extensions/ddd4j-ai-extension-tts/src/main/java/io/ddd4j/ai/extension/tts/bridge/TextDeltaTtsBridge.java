@@ -67,6 +67,14 @@ public class TextDeltaTtsBridge {
     }
 
     /**
+     * 抑制未使用警告（Mono 类型仅供后续扩展使用）。
+     */
+    @SuppressWarnings("unused")
+    private static <T> Mono<T> ignored() {
+        return Mono.empty();
+    }
+
+    /**
      * 订阅 agent 事件流，把文本 delta 流式送入 TTS，返回拼接后的音频字节流。
      *
      * <p>音频流的元素是 TTS 后端返回的 {@code byte[]}（多个 chunk 按顺序拼接）。
@@ -137,7 +145,9 @@ public class TextDeltaTtsBridge {
         return tts.streamSynthesize(text, voice);
     }
 
-    /** 重置分块器（每轮新对话前调用）。 */
+    /**
+     * 重置分块器（每轮新对话前调用）。
+     */
     public void reset() {
         chunker.reset();
     }
@@ -149,11 +159,5 @@ public class TextDeltaTtsBridge {
      */
     public int pendingChunks() {
         return chunker.pendingSize();
-    }
-
-    /** 抑制未使用警告（Mono 类型仅供后续扩展使用）。 */
-    @SuppressWarnings("unused")
-    private static <T> Mono<T> ignored() {
-        return Mono.empty();
     }
 }

@@ -6,15 +6,15 @@
 
 ## 7 个集成场景
 
-| # | 目录 | 组件串联 | 关键方法 |
-|---|------|---------|---------|
-| 1 | `chat-memory-sse/` | chat + memory | `multiTurn()`/`streamFlux()` |
-| 2 | `rag-pipeline/` | document + embedding + vectordb + rag + chat | `ingestDocument()`/`askWithRag()` |
-| 3 | `smart-agent/` | agent + document + rag + mcp | `run()`/`runWithKnowledge()` |
-| 4 | `knowledge-base/` | document + embedding + vectordb + rag | `ingestFile()`/`search()` |
-| 5 | `multi-model-router/` | router + chat | `route()`/`routeStream()` |
-| 6 | `doc-understanding/` | document + ocr + chat + agent | `askAboutPdf()`/`extractAndAsk()` |
-| 7 | `orchestration/` | flow + agent + router | `runSequentialFlow()`/`runAgentNode()` |
+| # | 目录                  | 组件串联                                     | 关键方法                               |
+|---|-----------------------|----------------------------------------------|----------------------------------------|
+| 1 | `chat-memory-sse/`    | chat + memory                                | `multiTurn()`/`streamFlux()`           |
+| 2 | `rag-pipeline/`       | document + embedding + vectordb + rag + chat | `ingestDocument()`/`askWithRag()`      |
+| 3 | `smart-agent/`        | agent + document + rag + mcp                 | `run()`/`runWithKnowledge()`           |
+| 4 | `knowledge-base/`     | document + embedding + vectordb + rag        | `ingestFile()`/`search()`              |
+| 5 | `multi-model-router/` | router + chat                                | `route()`/`routeStream()`              |
+| 6 | `doc-understanding/`  | document + ocr + chat + agent                | `askAboutPdf()`/`extractAndAsk()`      |
+| 7 | `orchestration/`      | flow + agent + router                        | `runSequentialFlow()`/`runAgentNode()` |
 
 ## 约束
 

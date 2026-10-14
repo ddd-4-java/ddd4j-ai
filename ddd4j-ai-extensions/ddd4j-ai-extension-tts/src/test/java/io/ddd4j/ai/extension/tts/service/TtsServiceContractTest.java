@@ -16,35 +16,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class TtsServiceContractTest {
 
-    static class FakeTtsService implements TtsService {
-
-        private final RuntimeException failure;
-
-        FakeTtsService() {
-            this(null);
-        }
-
-        FakeTtsService(RuntimeException failure) {
-            this.failure = failure;
-        }
-
-        @Override
-        public byte[] synthesize(String text, String voice) {
-            if (failure != null) {
-                throw failure;
-            }
-            return text.getBytes(StandardCharsets.UTF_8);
-        }
-
-        @Override
-        public Flux<byte[]> streamSynthesize(String text, String voice) {
-            if (failure != null) {
-                return Flux.error(failure);
-            }
-            return Flux.just(synthesize(text, voice));
-        }
-    }
-
     @Test
     void synthesize_returnsAudioBytes() throws Exception {
         byte[] audio = new FakeTtsService().synthesize("hello", "zh-CN-XiaoxiaoNeural");
@@ -74,5 +45,34 @@ class TtsServiceContractTest {
                 .onErrorResume(e -> Flux.just(e.getMessage().getBytes(StandardCharsets.UTF_8)))
                 .collectList().block();
         assertThat(new String(chunks.get(0), StandardCharsets.UTF_8)).isEqualTo("network down");
+    }
+
+    static class FakeTtsService implements TtsService {
+
+        private final RuntimeException failure;
+
+        FakeTtsService() {
+            this(null);
+        }
+
+        FakeTtsService(RuntimeException failure) {
+            this.failure = failure;
+        }
+
+        @Override
+        public byte[] synthesize(String text, String voice) {
+            if (failure != null) {
+                throw failure;
+            }
+            return text.getBytes(StandardCharsets.UTF_8);
+        }
+
+        @Override
+        public Flux<byte[]> streamSynthesize(String text, String voice) {
+            if (failure != null) {
+                return Flux.error(failure);
+            }
+            return Flux.just(synthesize(text, voice));
+        }
     }
 }

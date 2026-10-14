@@ -56,6 +56,34 @@ public class TtsAutoConfiguration {
     private static final Logger log = LoggerFactory.getLogger(TtsAutoConfiguration.class);
 
     /**
+     * 按 {@code primary} 配置构造 ordered backend 链路：primary 在前，其余 fallback 按顺序追加。
+     *
+     * <p>若 primary 配置的后端不可用（如 DashScope 缺 api-key），自动降级到剩下唯一可用的后端，
+     * 而不是抛错；只有全部后端都不可用时才报错。
+     */
+    private static Map<String, TtsService> buildBackendChain(Map<String, TtsService> ttsServiceBeans,
+                                                             TtsProperties properties) {
+        Map<String, TtsService> chain = new LinkedHashMap<>();
+
+        String primaryName = properties.resolvedPrimary() == TtsProperties.PrimaryType.DASHSCOPE
+                ? "dashScopeRealtimeTtsService"
+                : "edgeTtsService";
+        String fallbackName = primaryName.equals("edgeTtsService")
+                ? "dashScopeRealtimeTtsService"
+                : "edgeTtsService";
+
+        TtsService primary = ttsServiceBeans.get(primaryName);
+        if (primary != null) {
+            chain.put(primaryName, primary);
+        }
+        TtsService fallback = ttsServiceBeans.get(fallbackName);
+        if (fallback != null && fallback != primary) {
+            chain.put(fallbackName, fallback);
+        }
+        return chain;
+    }
+
+    /**
      * Edge TTS 后端 Bean（always-on 默认后端）。
      *
      * @param properties TTS 配置属性（读取默认音色）
@@ -83,7 +111,7 @@ public class TtsAutoConfiguration {
     @ConditionalOnExpression("'${ddd4j.ai.tts.dashscope.enabled:true}'.equals('true') "
             + "and '${ddd4j.ai.tts.dashscope.api-key:}' != ''")
     public TtsService dashScopeRealtimeTtsService(TtsProperties properties,
-                                                 org.springframework.beans.factory.ObjectProvider<TtsMetrics> metricsProvider) {
+                                                  org.springframework.beans.factory.ObjectProvider<TtsMetrics> metricsProvider) {
         TtsMetrics metrics = metricsProvider.getIfAvailable();
         if (metrics == null) {
             metrics = new TtsMetrics();
@@ -124,33 +152,5 @@ public class TtsAutoConfiguration {
         }
         log.info("TTS router chain: {}", chain.keySet());
         return new FallbackTtsRouter(chain);
-    }
-
-    /**
-     * 按 {@code primary} 配置构造 ordered backend 链路：primary 在前，其余 fallback 按顺序追加。
-     *
-     * <p>若 primary 配置的后端不可用（如 DashScope 缺 api-key），自动降级到剩下唯一可用的后端，
-     * 而不是抛错；只有全部后端都不可用时才报错。
-     */
-    private static Map<String, TtsService> buildBackendChain(Map<String, TtsService> ttsServiceBeans,
-                                                              TtsProperties properties) {
-        Map<String, TtsService> chain = new LinkedHashMap<>();
-
-        String primaryName = properties.resolvedPrimary() == TtsProperties.PrimaryType.DASHSCOPE
-                ? "dashScopeRealtimeTtsService"
-                : "edgeTtsService";
-        String fallbackName = primaryName.equals("edgeTtsService")
-                ? "dashScopeRealtimeTtsService"
-                : "edgeTtsService";
-
-        TtsService primary = ttsServiceBeans.get(primaryName);
-        if (primary != null) {
-            chain.put(primaryName, primary);
-        }
-        TtsService fallback = ttsServiceBeans.get(fallbackName);
-        if (fallback != null && fallback != primary) {
-            chain.put(fallbackName, fallback);
-        }
-        return chain;
     }
 }

@@ -18,11 +18,7 @@ import java.io.OutputStream;
 @Slf4j
 public class FFmpegService {
 
-    /**
-     * 默认构造器（转码命令在方法内构建）。
-     */
-    public FFmpegService() {
-    }
+    private String ffmpegBin = "ffmpeg";
 
     private byte[] ffmpegConvertBytes(String[] command, byte[] sourceAry) throws IOException, InterruptedException {
         log.info(StringUtils.join(command));
@@ -53,7 +49,6 @@ public class FFmpegService {
 
         return outputStream.toByteArray();
     }
-
 
     private byte[] ffmpegConvertByInputStream(String[] command, InputStream inputStream) throws IOException, InterruptedException {
         // 执行FFmpeg命令
@@ -91,9 +86,6 @@ public class FFmpegService {
     }
 
 
-    private String ffmpegBin = "ffmpeg";
-
-
     /**
      * 将 WAV 字节流转码为 MP3（192kbps / 44100Hz / 单声道）。
      *
@@ -107,7 +99,7 @@ public class FFmpegService {
         String[] command = {
                 ffmpegBin,
                 "-i", "pipe:0",
-                "-ab","192k",// 比特率
+                "-ab", "192k",// 比特率
                 "-ar", "44100", // 采样率
                 "-ac", "1", // 单声道
                 "-f", "mp3",// 输出格式

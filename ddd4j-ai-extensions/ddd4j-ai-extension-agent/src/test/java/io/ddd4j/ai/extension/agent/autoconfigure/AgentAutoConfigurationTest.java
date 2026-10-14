@@ -23,6 +23,17 @@ class AgentAutoConfigurationTest {
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(AgentAutoConfiguration.class));
 
+    private static ToolCallback stubCallback() {
+        ToolCallback callback = mock(ToolCallback.class);
+        org.springframework.ai.tool.definition.ToolDefinition def =
+                mock(org.springframework.ai.tool.definition.ToolDefinition.class);
+        when(callback.getToolDefinition()).thenReturn(def);
+        when(def.name()).thenReturn("stub");
+        when(def.description()).thenReturn("stub");
+        when(def.inputSchema()).thenReturn("{}");
+        return callback;
+    }
+
     @Test
     void defaultContext_withoutApiKey_backsOff() {
         contextRunner.run(context -> {
@@ -106,16 +117,5 @@ class AgentAutoConfigurationTest {
         properties.getSubagents().add(blank);
 
         assertThat(AgentAutoConfiguration.parseSubagents(properties)).isEmpty();
-    }
-
-    private static ToolCallback stubCallback() {
-        ToolCallback callback = mock(ToolCallback.class);
-        org.springframework.ai.tool.definition.ToolDefinition def =
-                mock(org.springframework.ai.tool.definition.ToolDefinition.class);
-        when(callback.getToolDefinition()).thenReturn(def);
-        when(def.name()).thenReturn("stub");
-        when(def.description()).thenReturn("stub");
-        when(def.inputSchema()).thenReturn("{}");
-        return callback;
     }
 }

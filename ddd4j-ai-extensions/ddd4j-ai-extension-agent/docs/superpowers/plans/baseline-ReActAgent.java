@@ -37,6 +37,16 @@ public class ReActAgent implements AgentService {
         this.maxIterations = maxIterations;
     }
 
+    private static String extractAction(String response) {
+        Matcher matcher = ACTION_PATTERN.matcher(response);
+        return matcher.find() ? matcher.group(1) : null;
+    }
+
+    private static String extractActionInput(String response) {
+        Matcher matcher = ACTION_INPUT_PATTERN.matcher(response);
+        return matcher.find() ? matcher.group(1).strip() : null;
+    }
+
     @Override
     public AgentResult execute(AgentTask task) throws Exception {
         List<AgentStep> steps = new ArrayList<>();
@@ -88,15 +98,5 @@ public class ReActAgent implements AgentService {
         return toolCallbacks.stream()
                 .map(tool -> tool.getToolDefinition().name())
                 .collect(java.util.stream.Collectors.joining(", "));
-    }
-
-    private static String extractAction(String response) {
-        Matcher matcher = ACTION_PATTERN.matcher(response);
-        return matcher.find() ? matcher.group(1) : null;
-    }
-
-    private static String extractActionInput(String response) {
-        Matcher matcher = ACTION_INPUT_PATTERN.matcher(response);
-        return matcher.find() ? matcher.group(1).strip() : null;
     }
 }

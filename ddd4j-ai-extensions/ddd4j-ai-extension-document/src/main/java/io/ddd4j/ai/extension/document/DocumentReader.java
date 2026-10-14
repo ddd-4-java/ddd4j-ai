@@ -28,6 +28,24 @@ public final class DocumentReader {
                 .toList();
     }
 
+    private static String filenameSuffix(MediaType type) {
+        return switch (type) {
+            case PDF -> "f.pdf";
+            case DOCX -> "f.docx";
+            case XLSX -> "f.xlsx";
+            case PPTX -> "f.pptx";
+            case CSV -> "f.csv";
+            case HTML -> "f.html";
+            case IPYNB -> "f.ipynb";
+            case EPUB -> "f.epub";
+            case RSS -> "f.xml";
+            case ZIP -> "f.zip";
+            case PLAINTEXT -> "f.txt";
+            case MD -> "f.md";
+            default -> "f.bin";
+        };
+    }
+
     /**
      * 读取文件为统一文档模型。
      *
@@ -105,23 +123,5 @@ public final class DocumentReader {
             }
         }
         throw new UnsupportedOperationException("No parser available for " + type);
-    }
-
-    private static String filenameSuffix(MediaType type) {
-        return switch (type) {
-            case PDF -> "f.pdf";
-            case DOCX -> "f.docx";
-            case XLSX -> "f.xlsx";
-            case PPTX -> "f.pptx";
-            case CSV -> "f.csv";
-            case HTML -> "f.html";
-            case IPYNB -> "f.ipynb";
-            case EPUB -> "f.epub";
-            case RSS -> "f.xml";
-            case ZIP -> "f.zip";
-            case PLAINTEXT -> "f.txt";
-            case MD -> "f.md";
-            default -> "f.bin";
-        };
     }
 }

@@ -16,6 +16,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 class AiRequestTest {
 
+    @Test
+    void recordEquality() {
+        Map<String, Object> metadata = Map.of("k", "v");
+        assertThat(new AiRequest("a", metadata)).isEqualTo(new AiRequest("a", metadata));
+        assertThat(new AiRequest("a", metadata)).isNotEqualTo(new AiRequest("b", metadata));
+    }
+
     @Nested
     class Of {
 
@@ -69,12 +76,5 @@ class AiRequestTest {
             assertThrows(UnsupportedOperationException.class,
                     () -> request.metadata().put("k", "v"));
         }
-    }
-
-    @Test
-    void recordEquality() {
-        Map<String, Object> metadata = Map.of("k", "v");
-        assertThat(new AiRequest("a", metadata)).isEqualTo(new AiRequest("a", metadata));
-        assertThat(new AiRequest("a", metadata)).isNotEqualTo(new AiRequest("b", metadata));
     }
 }

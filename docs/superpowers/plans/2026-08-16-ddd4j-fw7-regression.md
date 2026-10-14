@@ -1,10 +1,13 @@
 # ddd4j feature/3.0.x FW7 全模块回归（Maven 4 构建 + API 适配）
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:
+> executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 用 Maven 4（4.0.0-rc-6，项目 wrapper 既定）真实构建 ddd4j feature/3.0.x，替换本地仓库中 modelVersion 降级的治理 POM；完成全模块 Spring Framework 7.0.8 编译适配与受影响模块测试回归。
+**Goal:** 用 Maven 4（4.0.0-rc-6，项目 wrapper 既定）真实构建 ddd4j feature/3.0.x，替换本地仓库中 modelVersion 降级的治理
+POM；完成全模块 Spring Framework 7.0.8 编译适配与受影响模块测试回归。
 
-**Architecture:** ddd4j 为 Maven 4 项目（pom modelVersion 4.1.0），治理 POM 已切 FW 7.0.8（`7a6c45cb`）；本批验证 9661 节点代码在 FW7 下的兼容性，修复已知的 FW7 移除项（`MimeType` 内部类、`NestedRuntimeException` 等）及其余编译错误。
+**Architecture:** ddd4j 为 Maven 4 项目（pom modelVersion 4.1.0），治理 POM 已切 FW 7.0.8（`7a6c45cb`）；本批验证 9661 节点代码在
+FW7 下的兼容性，修复已知的 FW7 移除项（`MimeType` 内部类、`NestedRuntimeException` 等）及其余编译错误。
 
 **Tech Stack:** Maven 4.0.0-rc-6（`~/.m2/wrapper/dists`）、JDK 21、Spring Framework 7.0.8、ArchUnit/JUnit6/Mockito5.23。
 
@@ -20,7 +23,8 @@
 
 ## Task 1: Maven 4 真实构建治理 POM 链
 
-- [x] **Step 1:** `mvn4 install -pl ddd4j-bom,ddd4j-dependencies,ddd4j-parent -am -DskipTests`（替换本地仓库中 modelVersion 4.0.0 降级 hack 版本）。
+- [x] **Step 1:** `mvn4 install -pl ddd4j-bom,ddd4j-dependencies,ddd4j-parent -am -DskipTests`（替换本地仓库中
+  modelVersion 4.0.0 降级 hack 版本）。
 - [x] **Step 2:** 验证 ddd4j-ai 仍 103 测试全绿（新治理 POM 兼容性确认）。
 
 ## Task 2: 全模块 FW7 编译探测
@@ -33,7 +37,7 @@
 > **Completed 2026-08-16：零修复需求。** 全 reactor `test-compile` 一次通过（BUILD SUCCESS）。
 > 事前排查的候选项均未命中：`LinkedMultiValueMap` 在 FW 7.0.x 仍保留（仅 SignKit 一处使用，编译通过）；
 > `NestedRuntimeException`/`MimeType` 直接引用为零。之前在 ddd4j-ai 遇到的 `MimeType$SpecificityComparator`
-> 报错是 spring-webflux 6.2（旧编译产物）× spring-core 7 的**反向混搭**问题，非 FW7 源码兼容性问题。
+> 报错是 spring-webflux 6.2（旧编译产物）× spring-core 7 的 **反向混搭**问题，非 FW7 源码兼容性问题。
 > 已知构建约束：maven-enforcer-plugin 3.6.3 的 ban-spring-dependencies 规则在 Maven 4.0.0-rc-6 下
 > 抛 Invalid Collect Request（工具链兼容性问题，与 FW7 无关），构建需 -Denforcer.skip=true 绕过。
 

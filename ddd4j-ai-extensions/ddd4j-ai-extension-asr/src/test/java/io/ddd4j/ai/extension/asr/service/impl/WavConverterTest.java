@@ -16,6 +16,45 @@ import static org.assertj.core.api.Assertions.within;
  */
 class WavConverterTest {
 
+    private static byte[] wavPcm16(short[] samples, int sampleRate, int channels) {
+        try {
+            int dataSize = samples.length * 2;
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            out.write("RIFF".getBytes(StandardCharsets.US_ASCII));
+            writeInt(out, 36 + dataSize);
+            out.write("WAVE".getBytes(StandardCharsets.US_ASCII));
+            out.write("fmt ".getBytes(StandardCharsets.US_ASCII));
+            writeInt(out, 16);
+            writeShort(out, 1); // PCM
+            writeShort(out, channels);
+            writeInt(out, sampleRate);
+            writeInt(out, sampleRate * channels * 2);
+            writeShort(out, (short) (channels * 2));
+            writeShort(out, (short) 16);
+            out.write("data".getBytes(StandardCharsets.US_ASCII));
+            writeInt(out, dataSize);
+            for (short sample : samples) {
+                out.write(sample & 0xFF);
+                out.write((sample >> 8) & 0xFF);
+            }
+            return out.toByteArray();
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static void writeShort(ByteArrayOutputStream out, int value) {
+        out.write(value & 0xFF);
+        out.write((value >> 8) & 0xFF);
+    }
+
+    private static void writeInt(ByteArrayOutputStream out, int value) {
+        out.write(value & 0xFF);
+        out.write((value >> 8) & 0xFF);
+        out.write((value >> 16) & 0xFF);
+        out.write((value >> 24) & 0xFF);
+    }
+
     @Test
     void toFloatMono16k_16kMono16bit_passthrough() {
         short[] samples = {0, 16_384, -16_384, 32_767};
@@ -55,44 +94,5 @@ class WavConverterTest {
     void toFloatMono16k_nonWavGarbage_returnsEmptyOrZero() {
         float[] out = WavConverter.toFloatMono16k(new byte[]{1, 2, 3}, AudioFormat.wav44100Stereo16());
         assertThat(out).isNotNull();
-    }
-
-    private static byte[] wavPcm16(short[] samples, int sampleRate, int channels) {
-        try {
-            int dataSize = samples.length * 2;
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            out.write("RIFF".getBytes(StandardCharsets.US_ASCII));
-            writeInt(out, 36 + dataSize);
-            out.write("WAVE".getBytes(StandardCharsets.US_ASCII));
-            out.write("fmt ".getBytes(StandardCharsets.US_ASCII));
-            writeInt(out, 16);
-            writeShort(out, 1); // PCM
-            writeShort(out, channels);
-            writeInt(out, sampleRate);
-            writeInt(out, sampleRate * channels * 2);
-            writeShort(out, (short) (channels * 2));
-            writeShort(out, (short) 16);
-            out.write("data".getBytes(StandardCharsets.US_ASCII));
-            writeInt(out, dataSize);
-            for (short sample : samples) {
-                out.write(sample & 0xFF);
-                out.write((sample >> 8) & 0xFF);
-            }
-            return out.toByteArray();
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    private static void writeShort(ByteArrayOutputStream out, int value) {
-        out.write(value & 0xFF);
-        out.write((value >> 8) & 0xFF);
-    }
-
-    private static void writeInt(ByteArrayOutputStream out, int value) {
-        out.write(value & 0xFF);
-        out.write((value >> 8) & 0xFF);
-        out.write((value >> 16) & 0xFF);
-        out.write((value >> 24) & 0xFF);
     }
 }

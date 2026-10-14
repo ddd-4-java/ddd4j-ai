@@ -48,10 +48,6 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 @Testcontainers(disabledWithoutDocker = true)
 class RagSmokeIntegrationTest {
 
-    private static final String CHAT_MODEL = "qwen2.5:0.5b";
-
-    private static final String EMBEDDING_MODEL = "all-minilm";
-
     // 测试镜像来源: https://testcontainers.com/modules/ollama/
     // 镜像钉版 ollama/ollama:0.40.1（来源: https://hub.docker.com/v2/repositories/ollama/ollama/tags?page_size=25，
     // 2026-10-08 查询确认 0.40.1 为最新稳定版；钉死非 latest 标签消除浮动镜像导致的测试不可复现）
@@ -62,7 +58,8 @@ class RagSmokeIntegrationTest {
     @Container
     static final PostgreSQLContainer<?> PGVECTOR = new PostgreSQLContainer<>(
             DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
-
+    private static final String CHAT_MODEL = "qwen2.5:0.5b";
+    private static final String EMBEDDING_MODEL = "all-minilm";
     static RagService rag;
 
     @BeforeAll

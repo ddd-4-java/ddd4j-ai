@@ -20,7 +20,32 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class ChatServiceContractTest {
 
-    /** 回声桩：多轮路径真实读写记忆。 */
+    @Test
+    void singleTurnReturnsAnswer() {
+        assertThat(new EchoChatService().chat("你好")).isEqualTo("echo:你好");
+    }
+
+    @Test
+    void multiTurnWritesBackToMemory() {
+        EchoChatService service = new EchoChatService();
+
+        service.chat("第一问", "conv-1");
+        service.chat("第二问", "conv-1");
+
+        assertThat(service.memory.get("conv-1")).hasSize(4); // 2 轮 × (user+assistant)
+        assertThat(service.memory.get("conv-1").get(3).getText()).isEqualTo("echo:第二问");
+    }
+
+    @Test
+    void streamingEmitsIncrementalContent() {
+        Flux<String> stream = new EchoChatService().streamChat("你好");
+
+        assertThat(stream.collectList().block()).containsExactly("echo:", "你好");
+    }
+
+    /**
+     * 回声桩：多轮路径真实读写记忆。
+     */
     static class EchoChatService implements ChatService {
 
         final MemoryService memory = new WindowMemoryService(new InMemoryChatMemoryRepository(), 20);
@@ -44,28 +69,5 @@ class ChatServiceContractTest {
         public Flux<String> streamChat(String message) {
             return Flux.just("echo:", message);
         }
-    }
-
-    @Test
-    void singleTurnReturnsAnswer() {
-        assertThat(new EchoChatService().chat("你好")).isEqualTo("echo:你好");
-    }
-
-    @Test
-    void multiTurnWritesBackToMemory() {
-        EchoChatService service = new EchoChatService();
-
-        service.chat("第一问", "conv-1");
-        service.chat("第二问", "conv-1");
-
-        assertThat(service.memory.get("conv-1")).hasSize(4); // 2 轮 × (user+assistant)
-        assertThat(service.memory.get("conv-1").get(3).getText()).isEqualTo("echo:第二问");
-    }
-
-    @Test
-    void streamingEmitsIncrementalContent() {
-        Flux<String> stream = new EchoChatService().streamChat("你好");
-
-        assertThat(stream.collectList().block()).containsExactly("echo:", "你好");
     }
 }

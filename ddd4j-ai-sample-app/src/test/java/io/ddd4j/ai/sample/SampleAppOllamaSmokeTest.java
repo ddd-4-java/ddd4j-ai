@@ -40,6 +40,12 @@ class SampleAppOllamaSmokeTest {
     // 2026-10-08 查询确认 0.40.1 为最新稳定版；钉死非 latest 标签消除浮动镜像导致的测试不可复现）
     @Container
     static final OllamaContainer OLLAMA = new OllamaContainer(DockerImageName.parse("ollama/ollama:0.40.1"));
+    @Autowired
+    ChatService chatService;
+    @Autowired
+    RagService ragService;
+    @Autowired
+    io.ddd4j.ai.extension.memory.service.MemoryService memoryService;
 
     @DynamicPropertySource
     static void ollamaEndpoint(DynamicPropertyRegistry registry) {
@@ -57,15 +63,6 @@ class SampleAppOllamaSmokeTest {
             assumeTrue(false, "ollama pull 异常（视为网络受限跳过）：" + e);
         }
     }
-
-    @Autowired
-    ChatService chatService;
-
-    @Autowired
-    RagService ragService;
-
-    @Autowired
-    io.ddd4j.ai.extension.memory.service.MemoryService memoryService;
 
     @Test
     @Timeout(value = 3, unit = TimeUnit.MINUTES)

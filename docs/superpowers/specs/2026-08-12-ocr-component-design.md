@@ -10,7 +10,8 @@
 
 ## 1. 背景
 
-OCR 是知识库（RAG）摄取非结构化文档（PDF、Office、图像）的前置能力。ocr 组件规划对接 Apache PDFBox（PDF 文本提取）、Apache Tika（多格式文档解析），并预留图像 OCR 扩展（Azure Vision / Tesseract）。
+OCR 是知识库（RAG）摄取非结构化文档（PDF、Office、图像）的前置能力。ocr 组件规划对接 Apache PDFBox（PDF 文本提取）、Apache
+Tika（多格式文档解析），并预留图像 OCR 扩展（Azure Vision / Tesseract）。
 
 ## 2. 目标
 
@@ -26,11 +27,11 @@ OCR 是知识库（RAG）摄取非结构化文档（PDF、Office、图像）的�
 
 ## 3. 关键决策（建议）
 
-| # | 决策候选 | 理由 |
-|---|---------|------|
-| O1 | PDF 走 PDFBox、Office/其他走 Tika | 各取所长 |
-| O2 | 端口接口统一 `OcrService.parse(...)` → `Document` | 与 rag 解耦 |
-| O3 | 图像 OCR 以扩展点暴露，默认不绑定模型 | 按需引入 Azure Vision/Tesseract |
+| #  | 决策候选                                          | 理由                            |
+|----|---------------------------------------------------|---------------------------------|
+| O1 | PDF 走 PDFBox、Office/其他走 Tika                 | 各取所长                        |
+| O2 | 端口接口统一 `OcrService.parse(...)` → `Document` | 与 rag 解耦                     |
+| O3 | 图像 OCR 以扩展点暴露，默认不绑定模型             | 按需引入 Azure Vision/Tesseract |
 
 ## 4. 总体架构
 
@@ -53,7 +54,8 @@ ddd4j-ai-extension-ocr/src/main/java/io/ddd4j/ai/cmpt/ocr
 
 ## 7. 依赖
 
-> ⚠️ **待引入依赖**：README 历史版本表列出 `Apache PDFBox 3.0.5` 与 `Apache Tika BOM 3.2.2`，但 `ddd4j-ai-dependencies/pom.xml` **当前未直接声明**。实施前需确认：
+> ⚠️ **待引入依赖**：README 历史版本表列出 `Apache PDFBox 3.0.5` 与 `Apache Tika BOM 3.2.2`，但
+> `ddd4j-ai-dependencies/pom.xml` **当前未直接声明**。实施前需确认：
 > - 是否经 `ddd4j-boot-dependencies` 间接提供；
 > - 若未提供，需在本组件 pom 或 `ddd4j-ai-dependencies` 补声明版本。
 
